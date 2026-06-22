@@ -56,13 +56,13 @@
             }
             .sticky-total {
                 position: sticky;
-                left: 75px; /* Berdampingan tepat setelah kolom branch */
+                left: 75px; 
                 background-color: #f8fafc !important;
                 z-index: 11;
                 box-shadow: 3px 0 5px -2px rgba(0,0,0,0.2);
             }
             td.sticky-total {
-                background-color: #f1f5f9 !important; /* Pembeda warna background total */
+                background-color: #f1f5f9 !important; 
             }
             th.sticky-branch { background-color: #f8fafc !important; }
         }
@@ -368,17 +368,12 @@
             document.getElementById('kpi-latest-lbl').innerText = lastMonth;
         }
 
-        // PERBAIKAN URUTAN STRUKTUR KOLOM TABEL & UKURANNYA
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
             
-            // Kolom Branch (Diberi Batas Maksimal Agar Kecil & Sticky)
             let headerHtml = `<th scope="col" class="px-2 py-2.5 rounded-tl-lg sticky-branch max-w-[75px] w-[75px] truncate">Branch</th>`;
-            
-            // Kolom Total (Dipindah Maju Menjadi Urutan Kedua & Sticky)
             headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-bold text-slate-800 sticky-total w-[65px] whitespace-nowrap">Amount</th>`;
             
-            // Kolom Produk Mengikuti di Belakangnya
             distinctProducts.forEach(prod => {
                 headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-semibold w-[75px] truncate" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
             });
@@ -620,8 +615,13 @@
             updateTable();
         }
 
-        // FORMAT BARU: KONVERSI NILAI RUPIAH KE MILYAR DENGAN FORMAT 2 DIGIT KOMA INDONESIA
-        function formatNumber(num) {
+        // KEMBALI KAN UTUH KE STANDARD UNTUK GRAFIK / DATA UMUM
+        function formatFullNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(Math.round(num));
+        }
+
+        // KHUSUS TABEL: FORMAT DALAM MILYAR DENGAN 2 DIGIT KOMA
+        function formatInMilyar(num) {
             const milyarValue = num / 1000000000;
             return new Intl.NumberFormat('id-ID', {
                 minimumFractionDigits: 2,
@@ -629,10 +629,14 @@
             }).format(milyarValue);
         }
 
-        // Khusus untuk tampilan angka besar di KPI Cards tetap dalam Milyar utuh
+        // FORMAT KPI CARDS: RINGKASAN OTOMATIS (Milyar / Juta) AGAR LAYAR HP MUAT
         function formatKPINumber(num) {
-            const milyarValue = num / 1000000000;
-            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(milyarValue) + " M";
+            if (num >= 1000000000) {
+                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(num / 1000000000) + " M";
+            } else if (num >= 1000000) {
+                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num / 1000000) + " Jt";
+            }
+            return formatFullNumber(num);
         }
 
         function updateKPIs() {
@@ -654,7 +658,7 @@
                 productTotals[product] += val;
             });
 
-            animateNumber(document.getElementById('kpi-total'), grandTotal, false, true);
+            animateNumber(document.getElementById('kpi-total'), grandTotal, 'kpi');
 
             const g1 = groupLabels[0];
             const g2 = groupLabels[1];
@@ -663,17 +667,17 @@
             const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
 
             document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
-            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0, false, true);
+            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0, 'kpi');
             if (document.getElementById('kpi-segment1-pct')) {
                 document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> dari total`;
-                animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
+                animateNumber(document.getElementById('anim-g1-pct'), g1Pct, 'pct');
             }
 
             document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
-            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0, false, true);
+            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0, 'kpi');
             if (document.getElementById('kpi-segment2-pct')) {
                 document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> dari total`;
-                animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
+                animateNumber(document.getElementById('anim-g2-pct'), g2Pct, 'pct');
             }
 
             let topProduct = "-";
@@ -687,7 +691,7 @@
                 const element = document.getElementById(`comp-group-pct-${idx}`);
                 if(element) {
                     const pct = grandTotal ? ((groupTotals[grp] / grandTotal) * 100) : 0;
-                    animateNumber(element, pct, true);
+                    animateNumber(element, pct, 'pct');
                 }
             });
         }
@@ -775,7 +779,7 @@
                             } 
                         },
                         tooltip: {
-                            callbacks: { label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); } }
+                            callbacks: { label: function(context) { return context.dataset.label + ': ' + formatFullNumber(context.raw); } }
                         }
                     },
                     scales: {
@@ -1026,7 +1030,6 @@
             });
         }
 
-        // PERBAIKAN TOTAL SUSUNAN DATA BODY TABEL & INJEKSI DATA BARU
         function updateTable() {
             const tbody = document.getElementById('data-table-body');
             tbody.innerHTML = '';
@@ -1057,20 +1060,18 @@
                 const tr = document.createElement('tr');
                 tr.className = "bg-white border-b hover:bg-slate-50 transition-colors";
                 
-                // Isi rincian produk diletakkan di belakang
                 let productCellsHtml = '';
                 distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-xs w-[75px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
+                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-xs w-[75px] truncate" style="color: ${productColors[prod]};">${formatInMilyar(item[prod] || 0)}</td>`;
                 });
 
-                // Kombinasi innerHTML: [Branch] -> [Total Amount (Freeze)] -> [Product-Product]
                 tr.innerHTML = `
                     <td class="px-2 py-2.5 font-medium sticky-branch max-w-[75px] w-[75px] truncate">
                         <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-0.5 text-xs truncate">
                             <i class="fa-solid fa-filter text-[8px] opacity-40 shrink-0"></i> ${item.name}
                         </a>
                     </td>
-                    <td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs sticky-total w-[65px] whitespace-nowrap">${formatNumber(item.total)}</td>
+                    <td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs sticky-total w-[65px] whitespace-nowrap">${formatInMilyar(item.total)}</td>
                     ${productCellsHtml}
                 `;
                 fragment.appendChild(tr);
@@ -1079,11 +1080,12 @@
             tbody.appendChild(fragment);
         }
 
-        function animateNumber(element, targetValue, isPercentage = false, isKPI = false) {
+        // PERBAIKAN ANIMASI: MEMBEDAKAN JALUR FORMAT FORMATTING AGAR BERJALAN SESUAI TIPE DATA
+        function animateNumber(element, targetValue, type = 'full') {
             if (!element) return;
             
             const startValue = 0;
-            const duration = 800; 
+            const duration = 600; 
             let startTime = null;
 
             function animation(currentTime) {
@@ -1092,23 +1094,23 @@
                 const easeProgress = progress * (2 - progress);
                 const currentValue = startValue + easeProgress * (targetValue - startValue);
 
-                if (isPercentage) {
+                if (type === 'pct') {
                     element.innerText = currentValue.toFixed(1) + '%';
-                } else if (isKPI) {
+                } else if (type === 'kpi') {
                     element.innerText = formatKPINumber(currentValue);
                 } else {
-                    element.innerText = formatNumber(currentValue);
+                    element.innerText = formatFullNumber(currentValue);
                 }
 
                 if (progress < 1) {
                     requestAnimationFrame(animation);
                 } else {
-                    if (isPercentage) {
+                    if (type === 'pct') {
                         element.innerText = targetValue.toFixed(1) + '%';
-                    } else if (isKPI) {
+                    } else if (type === 'kpi') {
                         element.innerText = formatKPINumber(targetValue);
                     } else {
-                        element.innerText = formatNumber(targetValue);
+                        element.innerText = formatFullNumber(targetValue);
                     }
                 }
             }
