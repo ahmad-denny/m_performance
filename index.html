@@ -45,26 +45,18 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* FITUR FREEZE/STICKY DOUBLE KOLOM UNTUK MOBILE */
+        /* Kunci kolom pertama tabel saat digeser di mobile */
         @media (max-width: 768px) {
-            .sticky-branch {
+            .sticky-column {
                 position: sticky;
                 left: 0;
-                background-color: #ffffff !important;
-                z-index: 12;
-                box-shadow: 2px 0 4px -2px rgba(0,0,0,0.15);
+                background-color: #ffffff;
+                z-index: 10;
+                box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
             }
-            .sticky-total {
-                position: sticky;
-                left: 75px; 
+            th.sticky-column {
                 background-color: #f8fafc !important;
-                z-index: 11;
-                box-shadow: 3px 0 5px -2px rgba(0,0,0,0.2);
             }
-            td.sticky-total {
-                background-color: #f1f5f9 !important; 
-            }
-            th.sticky-branch { background-color: #f8fafc !important; }
         }
     </style>
 </head>
@@ -130,64 +122,64 @@
 
         <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
             
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-                <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-indigo-500">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="bg-white rounded-xl p-4 md:p-5 card-shadow border-l-4 border-indigo-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-total">0</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider" id="kpi-total-label">Total Outstanding</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mt-1" id="kpi-total">0</h3>
                         </div>                        
-                        <div class="p-1.5 bg-indigo-50 rounded-lg text-indigo-600 text-xs md:text-sm hidden sm:block">
+                        <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 text-sm">
                             <i class="fa-solid fa-calculator"></i>
                         </div>
                     </div>
-                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 truncate">Latest: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
+                    <div class="mt-3 flex items-center text-[11px]">
+                        <span class="text-slate-400">Latest Month: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
                     </div>                    
                 </div>
 
-                <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-emerald-500">
+                <div class="bg-white rounded-xl p-4 md:p-5 card-shadow border-l-4 border-emerald-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment1">0</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider" id="kpi-segment1-label">Segment 1</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment1">0</h3>
                         </div>
-                        <div class="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 text-xs md:text-sm hidden sm:block">
+                        <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600 text-sm">
                             <i class="fa-solid fa-layer-group"></i>
                         </div>
                     </div>
-                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 truncate"><i id="kpi-segment1-pct" class="font-semibold text-emerald-600 not-italic">0%</i></span>
+                    <div class="mt-3 flex items-center text-[11px]">
+                        <span class="text-slate-400">Contribution: <i id="kpi-segment1-pct" class="font-semibold text-emerald-600 not-italic">0%</i></span>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-amber-500">
+                <div class="bg-white rounded-xl p-4 md:p-5 card-shadow border-l-4 border-amber-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment2">0</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider" id="kpi-segment2-label">Segment 2</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment2">0</h3>
                         </div>
-                        <div class="p-1.5 bg-amber-50 rounded-lg text-amber-600 text-xs md:text-sm hidden sm:block">
+                        <div class="p-2 bg-amber-50 rounded-lg text-amber-600 text-sm">
                             <i class="fa-solid fa-boxes-stacked"></i>
                         </div>
                     </div>
-                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 truncate"><i id="kpi-segment2-pct" class="font-semibold text-amber-600 not-italic">0%</i></span>
+                    <div class="mt-3 flex items-center text-[11px]">
+                        <span class="text-slate-400">Contribution: <i id="kpi-segment2-pct" class="font-semibold text-amber-600 not-italic">0%</i></span>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-blue-500">
+                <div class="bg-white rounded-xl p-4 md:p-5 card-shadow border-l-4 border-blue-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Top Product</p>
-                            <h3 class="text-sm md:text-2xl font-bold text-slate-800 mt-1 truncate max-w-[80px] sm:max-w-none" id="kpi-top-product">-</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Top Dominant Product</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mt-1 truncate max-w-[160px] sm:max-w-none" id="kpi-top-product">-</h3>
                         </div>
-                        <div class="p-1.5 bg-blue-50 rounded-lg text-blue-600 text-xs md:text-sm hidden sm:block">
+                        <div class="p-2 bg-blue-50 rounded-lg text-blue-600 text-sm">
                             <i class="fa-solid fa-trophy"></i>
                         </div>
                     </div>
-                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 italic truncate">Selected Month</span>
+                    <div class="mt-3 flex items-center text-[11px]">
+                        <span class="text-slate-400"><i>By Selected Month Volume</i></span>
                     </div>
                 </div>
             </div>
@@ -234,12 +226,9 @@
             </div>
 
             <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-sm md:text-base text-slate-700">Detailed Breakdown (dalam Milyar)</h3>
-                    <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-medium md:hidden"><i class="fa-solid fa-arrows-left-right mr-1"></i>Geser Kanan</span>
-                </div>
+                <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
                 <div class="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] table-fixed">
+                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[600px]">
                         <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0">
                             <tr id="dynamic-table-header-row"></tr>
                         </thead>
@@ -251,7 +240,7 @@
         </div>
     </main>
 
-    <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="loader"></div>
     </div>
 
@@ -293,7 +282,7 @@
             buildCSVTabs(); 
             loadSelectedCSV(currentActiveFileIndex); 
             initSidebarToggle();
-            initMobileSidebar();
+            initMobileSidebar(); // Pemicu kontrol layar sentuh HP
         });
 
         function buildCSVTabs() {
@@ -370,14 +359,14 @@
 
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
-            
-            let headerHtml = `<th scope="col" class="px-2 py-2.5 rounded-tl-lg sticky-branch max-w-[75px] w-[75px] truncate">Branch</th>`;
-            headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-bold text-slate-800 sticky-total w-[65px] whitespace-nowrap">Amount</th>`;
+            // Menambahkan class 'sticky-column' agar nama cabang tetap diam saat di-scroll ke kanan di layar HP
+            let headerHtml = `<th scope="col" class="px-3 py-2.5 rounded-tl-lg sticky-column shadow-sm">Branch</th>`;
             
             distinctProducts.forEach(prod => {
-                headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-semibold w-[75px] truncate" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
+                headerHtml += `<th scope="col" class="px-3 py-2.5 text-right font-semibold" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
             });
             
+            headerHtml += `<th scope="col" class="px-3 py-2.5 text-right rounded-tr-lg">Total Amount</th>`;
             headerRow.innerHTML = headerHtml;
 
             const compSubLabels = document.getElementById('dynamic-group-pct-labels');
@@ -412,6 +401,7 @@
             }
         }
 
+        // Handler Khusus Drawer Navigasi Mobile
         function initMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -485,6 +475,7 @@
 
                 select.addEventListener('change', () => {
                     handleFilterChange();
+                    // Otomatis tutup drawer di mobile begitu filter dipilih
                     if(window.innerWidth < 768) {
                         document.getElementById('sidebar').classList.add('-translate-x-full');
                         document.getElementById('sidebar-backdrop').classList.add('hidden');
@@ -615,28 +606,8 @@
             updateTable();
         }
 
-        // KEMBALI KAN UTUH KE STANDARD UNTUK GRAFIK / DATA UMUM
-        function formatFullNumber(num) {
+        function formatNumber(num) {
             return new Intl.NumberFormat('id-ID').format(Math.round(num));
-        }
-
-        // KHUSUS TABEL: FORMAT DALAM MILYAR DENGAN 2 DIGIT KOMA
-        function formatInMilyar(num) {
-            const milyarValue = num / 1000000000;
-            return new Intl.NumberFormat('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(milyarValue);
-        }
-
-        // FORMAT KPI CARDS: RINGKASAN OTOMATIS (Milyar / Juta) AGAR LAYAR HP MUAT
-        function formatKPINumber(num) {
-            if (num >= 1000000000) {
-                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(num / 1000000000) + " M";
-            } else if (num >= 1000000) {
-                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num / 1000000) + " Jt";
-            }
-            return formatFullNumber(num);
         }
 
         function updateKPIs() {
@@ -658,7 +629,7 @@
                 productTotals[product] += val;
             });
 
-            animateNumber(document.getElementById('kpi-total'), grandTotal, 'kpi');
+            animateNumber(document.getElementById('kpi-total'), grandTotal);
 
             const g1 = groupLabels[0];
             const g2 = groupLabels[1];
@@ -667,17 +638,17 @@
             const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
 
             document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
-            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0, 'kpi');
+            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
             if (document.getElementById('kpi-segment1-pct')) {
                 document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> dari total`;
-                animateNumber(document.getElementById('anim-g1-pct'), g1Pct, 'pct');
+                animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
             }
 
             document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
-            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0, 'kpi');
+            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
             if (document.getElementById('kpi-segment2-pct')) {
                 document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> dari total`;
-                animateNumber(document.getElementById('anim-g2-pct'), g2Pct, 'pct');
+                animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
             }
 
             let topProduct = "-";
@@ -691,7 +662,7 @@
                 const element = document.getElementById(`comp-group-pct-${idx}`);
                 if(element) {
                     const pct = grandTotal ? ((groupTotals[grp] / grandTotal) * 100) : 0;
-                    animateNumber(element, pct, 'pct');
+                    animateNumber(element, pct, true);
                 }
             });
         }
@@ -731,7 +702,7 @@
                     backgroundColor: getTransparentColor(productColors[prod]), 
                     borderWidth: 2,
                     tension: 0.3,
-                    pointRadius: window.innerWidth < 768 ? 2 : 4, 
+                    pointRadius: window.innerWidth < 768 ? 2 : 4, // Perkecil titik di HP
                     pointBackgroundColor: '#ffffff', 
                     pointBorderColor: productColors[prod],
                     pointBorderWidth: 1.5
@@ -775,15 +746,28 @@
                                 pointStyle: 'circle',
                                 boxWidth: 8, 
                                 padding: window.innerWidth < 768 ? 10 : 20,
-                                font: { size: window.innerWidth < 768 ? 9 : 11 }
+                                font: { size: window.innerWidth < 768 ? 9 : 11 },
+                                generateLabels: function(chart) {
+                                    return chart.data.datasets.map((dataset, i) => {
+                                        return {
+                                            text: dataset.label,
+                                            datasetIndex: i,
+                                            pointStyle: 'circle',
+                                            fillStyle: dataset.backgroundColor,
+                                            strokeStyle: dataset.borderColor,
+                                            lineWidth: 2,
+                                            hidden: !chart.isDatasetVisible(i)
+                                        };
+                                    });
+                                }
                             } 
                         },
                         tooltip: {
-                            callbacks: { label: function(context) { return context.dataset.label + ': ' + formatFullNumber(context.raw); } }
+                            callbacks: { label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); } }
                         }
                     },
                     scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 9 }, callback: (val) => (val / 1000000000).toFixed(1) + 'M' } },
+                        y: { grid: { display: false }, ticks: { font: { size: 9 }, callback: (val) => val / 1000 + 'k'} },
                         x: { grid: { display: false }, ticks: { font: { size: 9 } } }
                     }
                 }
@@ -822,7 +806,29 @@
                                 usePointStyle: true, 
                                 padding: window.innerWidth < 768 ? 10 : 20, 
                                 boxWidth: 8,
-                                font: { size: window.innerWidth < 768 ? 9 : 11 }
+                                font: { size: window.innerWidth < 768 ? 9 : 11 },
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        const dataset = data.datasets[0];
+                                        return data.labels.map((label, i) => {
+                                            const baseColor = dataset.backgroundColor[i];
+                                            const r = parseInt(baseColor.slice(1, 3), 16);
+                                            const g = parseInt(baseColor.slice(3, 5), 16);
+                                            const b = parseInt(baseColor.slice(5, 7), 16);
+                                            return {
+                                                text: label,
+                                                index: i,
+                                                pointStyle: 'circle',
+                                                fillStyle: `rgba(${r}, ${g}, ${b}, 0.15)`,
+                                                strokeStyle: baseColor,
+                                                lineWidth: 2,
+                                                hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
                             } 
                         }
                     }
@@ -1062,17 +1068,17 @@
                 
                 let productCellsHtml = '';
                 distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-xs w-[75px] truncate" style="color: ${productColors[prod]};">${formatInMilyar(item[prod] || 0)}</td>`;
+                    productCellsHtml += `<td class="px-3 py-2.5 text-right font-mono text-xs" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
                 });
 
                 tr.innerHTML = `
-                    <td class="px-2 py-2.5 font-medium sticky-branch max-w-[75px] w-[75px] truncate">
-                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-0.5 text-xs truncate">
-                            <i class="fa-solid fa-filter text-[8px] opacity-40 shrink-0"></i> ${item.name}
+                    <td class="px-3 py-2.5 font-medium sticky-column">
+                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs whitespace-nowrap">
+                            <i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}
                         </a>
                     </td>
-                    <td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs sticky-total w-[65px] whitespace-nowrap">${formatInMilyar(item.total)}</td>
                     ${productCellsHtml}
+                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${formatNumber(item.total)}</td>
                 `;
                 fragment.appendChild(tr);
             });
@@ -1080,12 +1086,11 @@
             tbody.appendChild(fragment);
         }
 
-        // PERBAIKAN ANIMASI: MEMBEDAKAN JALUR FORMAT FORMATTING AGAR BERJALAN SESUAI TIPE DATA
-        function animateNumber(element, targetValue, type = 'full') {
+        function animateNumber(element, targetValue, isPercentage = false) {
             if (!element) return;
             
             const startValue = 0;
-            const duration = 600; 
+            const duration = 800; 
             let startTime = null;
 
             function animation(currentTime) {
@@ -1094,23 +1099,19 @@
                 const easeProgress = progress * (2 - progress);
                 const currentValue = startValue + easeProgress * (targetValue - startValue);
 
-                if (type === 'pct') {
+                if (isPercentage) {
                     element.innerText = currentValue.toFixed(1) + '%';
-                } else if (type === 'kpi') {
-                    element.innerText = formatKPINumber(currentValue);
                 } else {
-                    element.innerText = formatFullNumber(currentValue);
+                    element.innerText = formatNumber(currentValue);
                 }
 
                 if (progress < 1) {
                     requestAnimationFrame(animation);
                 } else {
-                    if (type === 'pct') {
+                    if (isPercentage) {
                         element.innerText = targetValue.toFixed(1) + '%';
-                    } else if (type === 'kpi') {
-                        element.innerText = formatKPINumber(targetValue);
                     } else {
-                        element.innerText = formatFullNumber(targetValue);
+                        element.innerText = formatNumber(targetValue);
                     }
                 }
             }
