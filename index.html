@@ -45,16 +45,17 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* Kunci kolom pertama tabel saat digeser di mobile (FIXED NO CUT) */
+        /* Kunci kolom pertama tabel saat digeser di mobile */
         @media (max-width: 768px) {
             .sticky-column {
                 position: sticky;
                 left: 0;
                 background-color: #ffffff !important;
                 z-index: 20;
-                box-shadow: 4px 0 8px -4px rgba(0,0,0,0.15);
-                min-width: 140px; /* Memberikan ruang minimal agar nama cabang tidak terpotong/terlipat */
-                max-width: 180px;
+                box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
+                min-width: 130px;
+                white-space: normal !important;
+                word-break: break-words;
             }
             th.sticky-column {
                 background-color: #f8fafc !important;
@@ -62,7 +63,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 h-screen flex overflow-hidden relative">
+<body class="text-slate-800 min-h-screen md:h-screen flex overflow-y-auto md:overflow-hidden relative">
 
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
@@ -97,7 +98,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden w-full relative" id="main-content">
+    <main class="flex-1 flex flex-col min-h-screen md:h-full overflow-y-auto md:overflow-hidden w-full relative" id="main-content">
         <header class="bg-white border-b border-slate-200 flex flex-col justify-between px-4 md:px-6 shrink-0 pt-3">
             <div class="flex items-center justify-between w-full pb-2">
                 <div class="flex items-center gap-3">
@@ -238,9 +239,8 @@
             <!-- SECTION DETAILED TABLE BREAKDOWN -->
             <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
                 <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
-                <!-- Pembungkus disederhanakan agar tidak merusak koordinasi sticky left -->
                 <div class="overflow-x-auto w-full border border-slate-100 rounded-lg">
-                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[650px] border-collapse">
+                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[600px] border-collapse">
                         <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0 z-30">
                             <tr id="dynamic-table-header-row"></tr>
                         </thead>
