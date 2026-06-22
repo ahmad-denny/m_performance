@@ -251,10 +251,11 @@
     </div>
 
     <script>
-        const csvFilesConfig = [
+const csvFilesConfig = [
             { name: "Pembiayaan / Financing", file: "pembiayaan.csv", icon: "fa-hand-holding-dollar" },
-            { name: "Dana / Funding", file: "dana.csv", icon: "fa-vault" }
-        ];
+            { name: "Dana / Funding", file: "dana.csv", icon: "fa-vault" },
+            { name: "Hajj Portion", file: "hajj_portion.csv", icon: "fa-kaaba" } // <-- Tab ke-3 berhasil ditambahkan
+        ];        ];
 
         let currentActiveFileIndex = 0;
         let rawData = [];
