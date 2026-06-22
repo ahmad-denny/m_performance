@@ -360,7 +360,8 @@
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
             // Menambahkan class 'sticky-column' agar nama cabang tetap diam saat di-scroll ke kanan di layar HP
-            let headerHtml = `<th scope="col" class="px-3 py-2.5 rounded-tl-lg sticky-column shadow-sm">Branch</th>`;
+            // Cari baris ini di dalam fungsi buildDynamicTableHeader() Anda dan ubah px-3 menjadi px-2:
+            let headerHtml = `<th scope="col" class="px-2 py-2.5 rounded-tl-lg sticky-column shadow-sm max-w-[100px]">Branch</th>`;
             
             distinctProducts.forEach(prod => {
                 headerHtml += `<th scope="col" class="px-3 py-2.5 text-right font-semibold" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
@@ -606,8 +607,19 @@
             updateTable();
         }
 
+        // Fungsi format angka standar dengan titik (untuk grafik jika diperlukan)
         function formatNumber(num) {
             return new Intl.NumberFormat('id-ID').format(Math.round(num));
+        }
+
+        // FUNGSI BARU: Mengubah nominal ke satuan Milyar dengan format Indonesia (koma)
+        function formatToMilyar(num) {
+            const milyarValue = num / 1000000000;
+            // Menampilkan 2 angka di belakang koma, menggunakan format lokal Indonesia (id-ID)
+            return new Intl.NumberFormat('id-ID', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(milyarValue) + ' M';
         }
 
         function updateKPIs() {
@@ -1068,25 +1080,28 @@
                 
                 let productCellsHtml = '';
                 distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-3 py-2.5 text-right font-mono text-xs" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
+                    // MENGGUNAKAN formatToMilyar UNTUK NILAI PRODUK
+                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-xs whitespace-nowrap" style="color: ${productColors[prod]};">${formatToMilyar(item[prod] || 0)}</td>`;
                 });
 
                 tr.innerHTML = `
-                    <td class="px-3 py-2.5 font-medium sticky-column">
-                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs whitespace-nowrap">
-                            <i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}
+                    <td class="px-2 py-2.5 font-medium sticky-column max-w-[100px]">
+                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" 
+                           title="${item.name}" 
+                           class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs truncate">
+                            <i class="fa-solid fa-filter text-[9px] opacity-40 shrink-0"></i> 
+                            <span class="truncate">${item.name}</span>
                         </a>
                     </td>
                     ${productCellsHtml}
-                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${formatNumber(item.total)}</td>
+                    <td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs whitespace-nowrap">${formatToMilyar(item.total)}</td>
                 `;
                 fragment.appendChild(tr);
             });
 
             tbody.appendChild(fragment);
         }
-
-        function animateNumber(element, targetValue, isPercentage = false) {
+function animateNumber(element, targetValue, isPercentage = false) {
             if (!element) return;
             
             const startValue = 0;
@@ -1102,7 +1117,8 @@
                 if (isPercentage) {
                     element.innerText = currentValue.toFixed(1) + '%';
                 } else {
-                    element.innerText = formatNumber(currentValue);
+                    // KONDISI BARU: Jika bukan persen, otomatis animasikan ke format Milyar (M)
+                    element.innerText = formatToMilyar(currentValue);
                 }
 
                 if (progress < 1) {
@@ -1111,7 +1127,7 @@
                     if (isPercentage) {
                         element.innerText = targetValue.toFixed(1) + '%';
                     } else {
-                        element.innerText = formatNumber(targetValue);
+                        element.innerText = formatToMilyar(targetValue);
                     }
                 }
             }
