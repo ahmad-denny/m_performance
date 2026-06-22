@@ -45,36 +45,26 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* PERBAIKAN 2 & 3: Kunci Kolom Branch dan Total di Mobile */
+        /* FITUR FREEZE/STICKY DOUBLE KOLOM UNTUK MOBILE */
         @media (max-width: 768px) {
             .sticky-branch {
                 position: sticky;
                 left: 0;
-                background-color: #ffffff;
+                background-color: #ffffff !important;
                 z-index: 12;
                 box-shadow: 2px 0 4px -2px rgba(0,0,0,0.15);
-                max-width: 110px !important; /* Perkecil lebar kolom branch */
-                min-width: 110px !important;
-                width: 110px !important;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
-            th.sticky-branch {
-                background-color: #f8fafc !important;
-            }
-            
             .sticky-total {
                 position: sticky;
-                left: 110px; /* Menempel tepat setelah kolom branch */
-                background-color: #fdfdfd;
-                z-index: 11;
-                box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15);
-                min-width: 95px !important;
-                width: 95px !important;
-            }
-            th.sticky-total {
+                left: 75px; /* Berdampingan tepat setelah kolom branch */
                 background-color: #f8fafc !important;
+                z-index: 11;
+                box-shadow: 3px 0 5px -2px rgba(0,0,0,0.2);
             }
+            td.sticky-total {
+                background-color: #f1f5f9 !important; /* Pembeda warna background total */
+            }
+            th.sticky-branch { background-color: #f8fafc !important; }
         }
     </style>
 </head>
@@ -143,61 +133,61 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-indigo-500">
                     <div class="flex justify-between items-start">
-                        <div class="min-w-0 flex-1">
+                        <div>
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-0.5 md:mt-1 truncate" id="kpi-total">0</h3>
+                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-total">0</h3>
                         </div>                        
-                        <div class="p-1.5 bg-indigo-50 rounded-lg text-indigo-600 text-xs md:text-sm ml-1 shrink-0">
+                        <div class="p-1.5 bg-indigo-50 rounded-lg text-indigo-600 text-xs md:text-sm hidden sm:block">
                             <i class="fa-solid fa-calculator"></i>
                         </div>
                     </div>
-                    <div class="mt-2 md:mt-3 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 truncate">Month: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
+                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
+                        <span class="text-slate-400 truncate">Latest: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
                     </div>                    
                 </div>
 
                 <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-emerald-500">
                     <div class="flex justify-between items-start">
-                        <div class="min-w-0 flex-1">
+                        <div>
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-0.5 md:mt-1 truncate" id="kpi-segment1">0</h3>
+                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment1">0</h3>
                         </div>
-                        <div class="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 text-xs md:text-sm ml-1 shrink-0">
+                        <div class="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 text-xs md:text-sm hidden sm:block">
                             <i class="fa-solid fa-layer-group"></i>
                         </div>
                     </div>
-                    <div class="mt-2 md:mt-3 flex items-center text-[9px] md:text-[11px]">
+                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
                         <span class="text-slate-400 truncate"><i id="kpi-segment1-pct" class="font-semibold text-emerald-600 not-italic">0%</i></span>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-amber-500">
                     <div class="flex justify-between items-start">
-                        <div class="min-w-0 flex-1">
+                        <div>
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-0.5 md:mt-1 truncate" id="kpi-segment2">0</h3>
+                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-1" id="kpi-segment2">0</h3>
                         </div>
-                        <div class="p-1.5 bg-amber-50 rounded-lg text-amber-600 text-xs md:text-sm ml-1 shrink-0">
+                        <div class="p-1.5 bg-amber-50 rounded-lg text-amber-600 text-xs md:text-sm hidden sm:block">
                             <i class="fa-solid fa-boxes-stacked"></i>
                         </div>
                     </div>
-                    <div class="mt-2 md:mt-3 flex items-center text-[9px] md:text-[11px]">
+                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
                         <span class="text-slate-400 truncate"><i id="kpi-segment2-pct" class="font-semibold text-amber-600 not-italic">0%</i></span>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl p-3 md:p-5 card-shadow border-l-4 border-blue-500">
                     <div class="flex justify-between items-start">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Dominant</p>
-                            <h3 class="text-base md:text-2xl font-bold text-slate-800 mt-0.5 md:mt-1 truncate" id="kpi-top-product">-</h3>
+                        <div>
+                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Top Product</p>
+                            <h3 class="text-sm md:text-2xl font-bold text-slate-800 mt-1 truncate max-w-[80px] sm:max-w-none" id="kpi-top-product">-</h3>
                         </div>
-                        <div class="p-1.5 bg-blue-50 rounded-lg text-blue-600 text-xs md:text-sm ml-1 shrink-0">
+                        <div class="p-1.5 bg-blue-50 rounded-lg text-blue-600 text-xs md:text-sm hidden sm:block">
                             <i class="fa-solid fa-trophy"></i>
                         </div>
                     </div>
-                    <div class="mt-2 md:mt-3 flex items-center text-[9px] md:text-[11px]">
-                        <span class="text-slate-400 truncate"><i>By Volume</i></span>
+                    <div class="mt-2 flex items-center text-[9px] md:text-[11px]">
+                        <span class="text-slate-400 italic truncate">Selected Month</span>
                     </div>
                 </div>
             </div>
@@ -244,9 +234,12 @@
             </div>
 
             <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold text-sm md:text-base text-slate-700">Detailed Breakdown (dalam Milyar)</h3>
+                    <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-medium md:hidden"><i class="fa-solid fa-arrows-left-right mr-1"></i>Geser Kanan</span>
+                </div>
                 <div class="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[650px] table-fixed">
+                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] table-fixed">
                         <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0">
                             <tr id="dynamic-table-header-row"></tr>
                         </thead>
@@ -258,7 +251,7 @@
         </div>
     </main>
 
-    <div id="loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="loader"></div>
     </div>
 
@@ -375,18 +368,19 @@
             document.getElementById('kpi-latest-lbl').innerText = lastMonth;
         }
 
-        // PERBAIKAN 2 & 3: Modifikasi Urutan Kolom Header (Branch -> Total -> Produk) & Setup Class Freeze
+        // PERBAIKAN URUTAN STRUKTUR KOLOM TABEL & UKURANNYA
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
             
-            // Kolom 1 (Branch) Di-freeze & Kolom 2 (Total) Di-freeze tepat di sebelahnya
-            let headerHtml = `
-                <th scope="col" class="px-2 py-2.5 rounded-tl-lg sticky-branch shadow-sm md:w-44 text-left">Branch</th>
-                <th scope="col" class="px-3 py-2.5 text-right font-bold bg-slate-50 sticky-total shadow-sm md:w-36">Total Amount</th>
-            `;
+            // Kolom Branch (Diberi Batas Maksimal Agar Kecil & Sticky)
+            let headerHtml = `<th scope="col" class="px-2 py-2.5 rounded-tl-lg sticky-branch max-w-[75px] w-[75px] truncate">Branch</th>`;
             
+            // Kolom Total (Dipindah Maju Menjadi Urutan Kedua & Sticky)
+            headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-bold text-slate-800 sticky-total w-[65px] whitespace-nowrap">Amount</th>`;
+            
+            // Kolom Produk Mengikuti di Belakangnya
             distinctProducts.forEach(prod => {
-                headerHtml += `<th scope="col" class="px-3 py-2.5 text-right font-semibold md:w-32" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
+                headerHtml += `<th scope="col" class="px-2 py-2.5 text-right font-semibold w-[75px] truncate" style="color: ${productColors[prod]};">${prod.replace(/_/g, ' ')}</th>`;
             });
             
             headerRow.innerHTML = headerHtml;
@@ -626,8 +620,19 @@
             updateTable();
         }
 
+        // FORMAT BARU: KONVERSI NILAI RUPIAH KE MILYAR DENGAN FORMAT 2 DIGIT KOMA INDONESIA
         function formatNumber(num) {
-            return new Intl.NumberFormat('id-ID').format(Math.round(num));
+            const milyarValue = num / 1000000000;
+            return new Intl.NumberFormat('id-ID', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(milyarValue);
+        }
+
+        // Khusus untuk tampilan angka besar di KPI Cards tetap dalam Milyar utuh
+        function formatKPINumber(num) {
+            const milyarValue = num / 1000000000;
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(milyarValue) + " M";
         }
 
         function updateKPIs() {
@@ -649,7 +654,7 @@
                 productTotals[product] += val;
             });
 
-            animateNumber(document.getElementById('kpi-total'), grandTotal);
+            animateNumber(document.getElementById('kpi-total'), grandTotal, false, true);
 
             const g1 = groupLabels[0];
             const g2 = groupLabels[1];
@@ -657,17 +662,17 @@
             const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
             const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
 
-            document.getElementById('kpi-segment1-label').innerText = g1 ? `${g1}` : 'Segment 1';
-            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
+            document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
+            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0, false, true);
             if (document.getElementById('kpi-segment1-pct')) {
-                document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span>`;
+                document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> dari total`;
                 animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
             }
 
-            document.getElementById('kpi-segment2-label').innerText = g2 ? `${g2}` : 'Segment 2';
-            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
+            document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
+            animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0, false, true);
             if (document.getElementById('kpi-segment2-pct')) {
-                document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span>`;
+                document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> dari total`;
                 animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
             }
 
@@ -766,20 +771,7 @@
                                 pointStyle: 'circle',
                                 boxWidth: 8, 
                                 padding: window.innerWidth < 768 ? 10 : 20,
-                                font: { size: window.innerWidth < 768 ? 9 : 11 },
-                                generateLabels: function(chart) {
-                                    return chart.data.datasets.map((dataset, i) => {
-                                        return {
-                                            text: dataset.label,
-                                            datasetIndex: i,
-                                            pointStyle: 'circle',
-                                            fillStyle: dataset.backgroundColor,
-                                            strokeStyle: dataset.borderColor,
-                                            lineWidth: 2,
-                                            hidden: !chart.isDatasetVisible(i)
-                                        };
-                                    });
-                                }
+                                font: { size: window.innerWidth < 768 ? 9 : 11 }
                             } 
                         },
                         tooltip: {
@@ -787,7 +779,7 @@
                         }
                     },
                     scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 9 }, callback: (val) => val / 1000 + 'k'} },
+                        y: { grid: { display: false }, ticks: { font: { size: 9 }, callback: (val) => (val / 1000000000).toFixed(1) + 'M' } },
                         x: { grid: { display: false }, ticks: { font: { size: 9 } } }
                     }
                 }
@@ -826,29 +818,7 @@
                                 usePointStyle: true, 
                                 padding: window.innerWidth < 768 ? 10 : 20, 
                                 boxWidth: 8,
-                                font: { size: window.innerWidth < 768 ? 9 : 11 },
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    if (data.labels.length && data.datasets.length) {
-                                        const dataset = data.datasets[0];
-                                        return data.labels.map((label, i) => {
-                                            const baseColor = dataset.backgroundColor[i];
-                                            const r = parseInt(baseColor.slice(1, 3), 16);
-                                            const g = parseInt(baseColor.slice(3, 5), 16);
-                                            const b = parseInt(baseColor.slice(5, 7), 16);
-                                            return {
-                                                text: label,
-                                                index: i,
-                                                pointStyle: 'circle',
-                                                fillStyle: `rgba(${r}, ${g}, ${b}, 0.15)`,
-                                                strokeStyle: baseColor,
-                                                lineWidth: 2,
-                                                hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden
-                                            };
-                                        });
-                                    }
-                                    return [];
-                                }
+                                font: { size: window.innerWidth < 768 ? 9 : 11 }
                             } 
                         }
                     }
@@ -1056,7 +1026,7 @@
             });
         }
 
-        // PERBAIKAN 2 & 3: Pengaturan Susunan Isi Baris Data (Branch -> Total -> Produk) Selaras dengan Header
+        // PERBAIKAN TOTAL SUSUNAN DATA BODY TABEL & INJEKSI DATA BARU
         function updateTable() {
             const tbody = document.getElementById('data-table-body');
             tbody.innerHTML = '';
@@ -1087,20 +1057,20 @@
                 const tr = document.createElement('tr');
                 tr.className = "bg-white border-b hover:bg-slate-50 transition-colors";
                 
-                // Susun sel produk terlebih dahulu
+                // Isi rincian produk diletakkan di belakang
                 let productCellsHtml = '';
                 distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-3 py-2.5 text-right font-mono text-xs md:w-32" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
+                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-xs w-[75px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
                 });
 
-                // Terapkan class .sticky-branch pada Branch dan .sticky-total pada Total Amount
+                // Kombinasi innerHTML: [Branch] -> [Total Amount (Freeze)] -> [Product-Product]
                 tr.innerHTML = `
-                    <td class="px-2 py-2.5 font-medium sticky-branch md:w-44 truncate">
-                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs whitespace-nowrap">
-                            <i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}
+                    <td class="px-2 py-2.5 font-medium sticky-branch max-w-[75px] w-[75px] truncate">
+                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-0.5 text-xs truncate">
+                            <i class="fa-solid fa-filter text-[8px] opacity-40 shrink-0"></i> ${item.name}
                         </a>
                     </td>
-                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs bg-slate-50/70 sticky-total md:w-36">${formatNumber(item.total)}</td>
+                    <td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs sticky-total w-[65px] whitespace-nowrap">${formatNumber(item.total)}</td>
                     ${productCellsHtml}
                 `;
                 fragment.appendChild(tr);
@@ -1109,7 +1079,7 @@
             tbody.appendChild(fragment);
         }
 
-        function animateNumber(element, targetValue, isPercentage = false) {
+        function animateNumber(element, targetValue, isPercentage = false, isKPI = false) {
             if (!element) return;
             
             const startValue = 0;
@@ -1124,6 +1094,8 @@
 
                 if (isPercentage) {
                     element.innerText = currentValue.toFixed(1) + '%';
+                } else if (isKPI) {
+                    element.innerText = formatKPINumber(currentValue);
                 } else {
                     element.innerText = formatNumber(currentValue);
                 }
@@ -1133,6 +1105,8 @@
                 } else {
                     if (isPercentage) {
                         element.innerText = targetValue.toFixed(1) + '%';
+                    } else if (isKPI) {
+                        element.innerText = formatKPINumber(targetValue);
                     } else {
                         element.innerText = formatNumber(targetValue);
                     }
