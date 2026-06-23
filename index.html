@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Performance Dashboard Region Sumatera </title>
+    <title>Performance Dashboard Region Sumatera</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
@@ -52,9 +52,9 @@
                 background-color: #ffffff;
                 z-index: 10;
                 box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
-                /* Tambahkan dua baris di bawah ini */
-                min-w: 120px !important; 
-                max-w: 140px !important;
+                /* PERBAIKAN: Menggunakan sintaks properti CSS asli yang benar */
+                min-width: 130px !important; 
+                max-width: 150px !important;
             }
             th.sticky-column {
                 background-color: #f8fafc !important;
@@ -62,11 +62,11 @@
         }
     </style>
 </head>
-<body class="text-slate-800 h-screen md:h-screen h-[100dvh] flex overflow-hidden relative">
+<body class="text-slate-800 h-screen h-[100dvh] flex overflow-hidden relative">
 
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:sticky w-64 bg-slate-900 text-white flex flex-col shadow-xl z-40 sidebar-transition h-screen">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:sticky w-64 bg-slate-900 text-white flex flex-col shadow-xl z-40 sidebar-transition h-full h-[100dvh]">
         <button id="sidebar-toggle" class="hidden md:flex absolute -right-3 top-6 bg-indigo-500 text-white w-6 h-6 rounded-full items-center justify-center shadow-lg hover:bg-indigo-600 z-30 focus:outline-none">
             <i class="fa-solid fa-chevron-left text-xs transition-transform" id="toggle-icon"></i>
         </button>
@@ -123,7 +123,7 @@
             <div class="flex gap-1 border-b border-slate-100 -mx-4 px-4 overflow-x-auto whitespace-nowrap scrollbar-none" id="csv-tabs-container"></div>
         </header>
 
-        <div class="sticky top-[88px] md:top-[97px] z-20 bg-[#f8fafc] px-4 md:px-6 pt-3 pb-3 border-b border-slate-200/60 shadow-sm">
+        <div class="sticky top-[84px] md:top-[97px] z-20 bg-[#f8fafc] px-4 md:px-6 pt-3 pb-3 border-b border-slate-200/60 shadow-sm">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 
                 <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-indigo-500 min-w-0">
@@ -246,7 +246,7 @@
         </div>
     </main>
 
-    <div id="loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="loader"></div>
     </div>
 
@@ -407,7 +407,6 @@
             }
         }
 
-        // Handler Khusus Drawer Navigasi Mobile
         function initMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -416,13 +415,13 @@
         
             function openMobileNav() {
                 sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0'); // Pastikan kelas ini ditambahkan
+                sidebar.classList.add('translate-x-0');
                 backdrop.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
             }
         
             function closeMobileNav() {
-                sidebar.classList.remove('translate-x-0'); // Hapus saat ditutup
+                sidebar.classList.remove('translate-x-0');
                 sidebar.classList.add('-translate-x-full');
                 backdrop.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
@@ -432,6 +431,7 @@
             if(closeBtn) closeBtn.addEventListener('click', closeMobileNav);
             if(backdrop) backdrop.addEventListener('click', closeMobileNav);
         }
+        
         function cleanName(name) {
             if (name && name.length > 6 && name.substring(3, 6) === ' - ') {
                 return name.substring(6).trim();
@@ -618,7 +618,7 @@
 
         function toProperCase(str) {
             if (!str) return "-";
-                return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
         }
         
         function updateKPIs() {
@@ -1085,7 +1085,6 @@
                     productCellsHtml += `<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
                 });
 
-                // Cari baris ini di dalam fungsi updateTable():
                 tr.innerHTML = `
                     <td class="px-3 py-2.5 font-medium sticky-column">
                         <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs">
