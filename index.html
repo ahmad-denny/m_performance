@@ -84,7 +84,6 @@
         <nav class="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
             <div id="filter-container" class="space-y-4"></div>
             
-            <!-- Tempat Keterangan Ringkasan Analisis -->
             <div id="sidebar-summary-container" class="border-t border-slate-700/60 pt-4 mt-2 nav-text">
                 <label class="block text-[10px] font-medium text-indigo-400 mb-2 uppercase tracking-wider">
                     <i class="fa-solid fa-brain mr-1"></i> Analytic Summary
@@ -135,54 +134,61 @@
         <div class="sticky top-[84px] md:top-[97px] z-20 bg-[#f8fafc] px-4 md:px-6 pt-3 pb-3 border-b border-slate-200/60 shadow-sm">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-indigo-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-total">0</h3>
-                        </div>                        
-                        <div class="p-1 bg-indigo-50 rounded text-indigo-600 text-xs shrink-0">
-                            <i class="fa-solid fa-calculator"></i>
+                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-indigo-500 min-w-0 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start gap-1">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
+                                <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-total">0</h3>
+                            </div>                        
+                            <div class="p-1 bg-indigo-50 rounded text-indigo-600 text-xs shrink-0">
+                                <i class="fa-solid fa-calculator"></i>
+                            </div>
                         </div>
+                        <div class="mt-1.5 hidden min-w-0" id="kpi-total-mtd"></div>
                     </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px]">
+                    <div class="mt-2 flex items-center text-[9px] md:text-[10px] border-t border-slate-100 pt-1">
                         <span class="text-slate-400 truncate">Latest Month: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
                     </div>                    
                 </div>
 
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-emerald-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment1">0</h3>
+                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-emerald-500 min-w-0 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start gap-1">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
+                                <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment1">0</h3>
+                            </div>
+                            <div class="p-1 bg-emerald-50 rounded text-emerald-600 text-xs shrink-0">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
                         </div>
-                        <div class="p-1 bg-emerald-50 rounded text-emerald-600 text-xs shrink-0">
-                            <i class="fa-solid fa-layer-group"></i>
-                        </div>
+                        <div class="mt-1.5 hidden min-w-0" id="kpi-segment1-mtd"></div>
                     </div>
-                    <div class="mt-1 flex flex-col gap-0.5 text-[9px] md:text-[10px] min-w-0 w-full">
-                        <span class="text-slate-400 truncate" id="kpi-segment1-pct">0%</span>
-                        <span class="text-[9px] font-medium hidden" id="kpi-segment1-mtd"></span>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-amber-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment2">0</h3>
-                        </div>
-                        <div class="p-1 bg-amber-50 rounded text-amber-600 text-xs shrink-0">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                        </div>
-                    </div>
-                    <div class="mt-1 flex flex-col gap-0.5 text-[9px] md:text-[10px] min-w-0 w-full">
-                        <span class="text-slate-400 truncate" id="kpi-segment2-pct">0%</span>
-                        <span class="text-[9px] font-medium hidden" id="kpi-segment2-mtd"></span>
+                    <div class="mt-2 flex items-center text-[9px] md:text-[10px] border-t border-slate-100 pt-1" id="kpi-segment1-pct-container">
+                        <span class="text-slate-400 truncate" id="kpi-segment1-pct">0% dari total</span>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-blue-500 min-w-0">
+                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-amber-500 min-w-0 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start gap-1">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
+                                <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment2">0</h3>
+                            </div>
+                            <div class="p-1 bg-amber-50 rounded text-amber-600 text-xs shrink-0">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                            </div>
+                        </div>
+                        <div class="mt-1.5 hidden min-w-0" id="kpi-segment2-mtd"></div>
+                    </div>
+                    <div class="mt-2 flex items-center text-[9px] md:text-[10px] border-t border-slate-100 pt-1" id="kpi-segment2-pct-container">
+                        <span class="text-slate-400 truncate" id="kpi-segment2-pct">0% dari total</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-blue-500 min-w-0 flex flex-col justify-between">
                     <div class="flex justify-between items-start gap-1">
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Top Dominant Product</p>
@@ -192,7 +198,7 @@
                             <i class="fa-solid fa-trophy"></i>
                         </div>
                     </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px]">
+                    <div class="mt-2 flex items-center text-[9px] md:text-[10px] border-t border-slate-100 pt-1">
                         <span class="text-slate-400 italic truncate">By Volume Month</span>
                     </div>
                 </div>
@@ -200,7 +206,6 @@
         </div>
 
         <div class="p-4 md:p-6 space-y-6">
-            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 <div class="lg:col-span-2 bg-white rounded-xl p-4 md:p-6 card-shadow flex flex-col justify-between">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -253,7 +258,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -279,7 +283,7 @@
         
         let monthColumns = [];
         let lastMonth = '';
-        let prevMonth = ''; // Penampung bulan sebelumnya untuk hitungan MTD Growth
+        let prevMonth = ''; 
         let activeTimelineMonths = 0; 
 
         const filterColumns = ['CO-BRANCH', 'OFFICE', 'PRODUCT', 'GROUP'];
@@ -639,9 +643,10 @@
         
         function updateKPIs() {
             let groupTotals = {};
-            let groupPrevTotals = {}; // Penampung bulan sebelumnya untuk group/product
+            let groupPrevTotals = {}; 
             let productTotals = {};
             let grandTotal = 0;
+            let grandPrevTotal = 0;
 
             groupLabels.forEach(grp => {
                 groupTotals[grp] = 0;
@@ -659,6 +664,7 @@
                     groupPrevTotals[grp] += prevVal;
                 }
                 grandTotal += val;
+                grandPrevTotal += prevVal;
 
                 if (!productTotals[product]) productTotals[product] = 0;
                 productTotals[product] += val;
@@ -686,33 +692,46 @@
                 animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
             }
 
-            // === STRATEGI DINAMIS KELOLA MTD GROWTH KHUSUS FUNDING ===
+            // Target elemen MTD Growth
+            const mtdTotalElement = document.getElementById('kpi-total-mtd');
             const mtdG1Element = document.getElementById('kpi-segment1-mtd');
             const mtdG2Element = document.getElementById('kpi-segment2-mtd');
 
-            // Cek apakah tab yang aktif saat ini adalah Funding (index ke-1 berdasarkan konfigurasi csvFilesConfig)
+            // Logika Evaluasi Khusus untuk Tab Funding Aktif (Index 1)
             if (currentActiveFileIndex === 1 && prevMonth) {
-                // Kalkulasi pertumbuhan Segment 1
+                // 1. Hitung MTD Total Outstanding
+                let totalGrowth = 0;
+                if (grandPrevTotal > 0) {
+                    totalGrowth = ((grandTotal - grandPrevTotal) / grandPrevTotal) * 100;
+                }
+                const totalColor = totalGrowth >= 0 ? 'text-emerald-600' : 'text-rose-600';
+                const totalIcon = totalGrowth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+                mtdTotalElement.className = `block ${totalColor} font-bold mt-1 flex items-baseline gap-0.5`;
+                // Font persentase dibuat text-base (2x lebih besar dari text-[9px] MoM)
+                mtdTotalElement.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${totalIcon} text-xs"></i>${totalGrowth >= 0 ? '+' : ''}${totalGrowth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
+
+                // 2. Hitung MTD Segment 1
                 let g1Growth = 0;
                 if (groupPrevTotals[g1] > 0) {
                     g1Growth = ((groupTotals[g1] - groupPrevTotals[g1]) / groupPrevTotals[g1]) * 100;
                 }
                 const g1Color = g1Growth >= 0 ? 'text-emerald-600' : 'text-rose-600';
                 const g1Icon = g1Growth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
-                mtdG1Element.className = `text-[10px] font-semibold ${g1Color} mt-0.5 flex items-center gap-0.5`;
-                mtdG1Element.innerHTML = `<i class="fa-solid ${g1Icon}"></i> ${g1Growth >= 0 ? '+' : ''}${g1Growth.toFixed(2)}% <span class="text-slate-400 font-normal text-[9px]">MoM</span>`;
+                mtdG1Element.className = `block ${g1Color} font-bold mt-1 flex items-baseline gap-0.5`;
+                mtdG1Element.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${g1Icon} text-xs"></i>${g1Growth >= 0 ? '+' : ''}${g1Growth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
 
-                // Kalkulasi pertumbuhan Segment 2
+                // 3. Hitung MTD Segment 2
                 let g2Growth = 0;
                 if (groupPrevTotals[g2] > 0) {
                     g2Growth = ((groupTotals[g2] - groupPrevTotals[g2]) / groupPrevTotals[g2]) * 100;
                 }
                 const g2Color = g2Growth >= 0 ? 'text-emerald-600' : 'text-rose-600';
                 const g2Icon = g2Growth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
-                mtdG2Element.className = `text-[10px] font-semibold ${g2Color} mt-0.5 flex items-center gap-0.5`;
-                mtdG2Element.innerHTML = `<i class="fa-solid ${g2Icon}"></i> ${g2Growth >= 0 ? '+' : ''}${g2Growth.toFixed(2)}% <span class="text-slate-400 font-normal text-[9px]">MoM</span>`;
+                mtdG2Element.className = `block ${g2Color} font-bold mt-1 flex items-baseline gap-0.5`;
+                mtdG2Element.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${g2Icon} text-xs"></i>${g2Growth >= 0 ? '+' : ''}${g2Growth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
             } else {
-                // Sembunyikan jika bukan tab Funding atau data pembanding bulan sebelumnya belum terdeteksi
+                // Sembunyikan elemen MTD jika bukan tab Funding
+                mtdTotalElement.className = "hidden";
                 mtdG1Element.className = "hidden";
                 mtdG2Element.className = "hidden";
             }
