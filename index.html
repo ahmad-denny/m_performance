@@ -2,1447 +2,494 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Performance Dashboard Region Sumatera</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance Dashboard - Region Sumatera</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        /* Custom scrollbar untuk tabel agar tetap rapi */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        
-        .collapsed .nav-text, 
-        .collapsed .user-info,
-        .collapsed .filter-label,
-        .collapsed select {
-            display: none;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        
-        .collapsed .nav-header { justify-content: center; }
-        .collapsed .logo-text { display: none; }
-
-        @media (max-width: 768px) {
-            .sticky-column {
-                position: sticky;
-                left: 0;
-                background-color: #ffffff;
-                z-index: 10;
-                box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
-                min-width: 130px !important; 
-                max-width: 150px !important;
-            }
-            th.sticky-column {
-                background-color: #f8fafc !important;
-            }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="text-slate-800 h-screen h-[100dvh] flex overflow-hidden relative">
+<body class="bg-slate-100 font-sans text-slate-800 antialiased">
 
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
-
-    <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:sticky w-64 bg-slate-900 text-white flex flex-col shadow-xl z-40 sidebar-transition h-[100dvh]">
-        <button id="sidebar-toggle" class="hidden md:flex absolute -right-3 top-6 bg-indigo-500 text-white w-6 h-6 rounded-full items-center justify-center shadow-lg hover:bg-indigo-600 z-30 focus:outline-none">
-            <i class="fa-solid fa-chevron-left text-xs transition-transform" id="toggle-icon"></i>
-        </button>
-
-        <button id="sidebar-close-mobile" class="md:hidden absolute right-4 top-5 text-slate-400 hover:text-white text-lg">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="p-5 flex items-center gap-3 border-b border-slate-700 nav-header">
-            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
-                <i class="fa-solid fa-chart-line text-white text-sm"></i>
-            </div>
-            <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Dashboard</span></h1>
-        </div>
-
-        <nav class="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
-            <div id="filter-container" class="space-y-4"></div>
-            
-            <div id="sidebar-summary-container" class="border-t border-slate-700/60 pt-4 mt-2 nav-text">
-                <label class="block text-[10px] font-medium text-indigo-400 mb-2 uppercase tracking-wider">
-                    <i class="fa-solid fa-brain mr-1"></i> Analytic Summary
-                </label>
-                <div id="analytics-text-summary" class="text-[11px] text-slate-300 leading-relaxed bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/40 text-justify">
-                    Memilih filter untuk melihat ringkasan performa wilayah...
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-4 py-3 shadow-xs">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-chart-line text-lg flex items-center justify-center h-5 w-5"></i>
                 </div>
-            </div>
-        </nav>
-        
-        <div class="p-4 border-t border-slate-700 bg-slate-800 user-info">
-            <div class="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name=AD&background=4f46e5&color=fff" alt="User" class="w-9 h-9 rounded-full border-2 border-slate-600 shrink-0">
                 <div>
-                    <p class="text-xs font-medium">Region Sumatera</p>
-                    <p class="text-[10px] text-slate-400">Made by Love - RBPM</p>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">Region Sumatera</h1>
+                    <p class="text-xs text-slate-500 font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-blue-500"></i> Sales Performance Dashboard
+                    </p>
                 </div>
             </div>
-        </div>
-    </aside>
-
-    <main class="flex-1 flex flex-col h-full w-full relative overflow-y-auto bg-[#f8fafc]" id="main-content">
-        
-        <header class="bg-white border-b border-slate-200 flex flex-col justify-between px-4 md:px-6 shrink-0 pt-3 sticky top-0 z-30 shadow-sm w-full">
-            <div class="flex items-center justify-between w-full pb-2">
-                <div class="flex items-center gap-2">
-                    <button id="mobile-menu-btn" class="md:hidden text-slate-600 hover:text-slate-900 p-2 -ml-2 focus:outline-none flex items-center justify-center">
-                        <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
-                    <h2 class="text-base md:text-xl font-semibold text-slate-800 truncate" id="dashboard-main-title">Performance Analytics</h2>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-[10px] text-slate-500">As of Date</p>
-                        <p class="text-xs font-medium text-indigo-600" id="current-date">-</p>
-                    </div>
-                    <div>
-                        <button onclick="resetFilters()" class="px-2.5 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors flex items-center">
-                            <i class="fa-solid fa-rotate-right mr-1"></i> Reset
-                        </button>
-                    </div>
-                </div>
-            </div>
-        
-            <div class="flex gap-1 border-b border-slate-100 -mx-4 px-4 overflow-x-auto whitespace-nowrap scrollbar-none" id="csv-tabs-container"></div>
-        </header>
-
-        <div class="sticky top-[84px] md:top-[97px] z-20 bg-[#f8fafc] px-4 md:px-6 pt-3 pb-3 border-b border-slate-200/60 shadow-sm">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-                
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-indigo-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-total">0</h3>
-                            <div id="growth-total" class="hidden font-bold text-xs md:text-base tracking-tight mt-0.5"></div>
-                        </div>                        
-                        <div class="p-1 bg-indigo-50 rounded text-indigo-600 text-xs shrink-0">
-                            <i class="fa-solid fa-calculator"></i>
-                        </div>
-                    </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px]">
-                        <span class="text-slate-400 truncate">Latest Month: <i id="kpi-latest-lbl" class="not-italic font-medium text-slate-600">-</i></span>
-                    </div>                    
-                </div>
-
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-emerald-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment1">0</h3>
-                            <div id="growth-segment1" class="hidden font-bold text-xs md:text-base tracking-tight mt-0.5"></div>
-                        </div>
-                        <div class="p-1 bg-emerald-50 rounded text-emerald-600 text-xs shrink-0">
-                            <i class="fa-solid fa-layer-group"></i>
-                        </div>
-                    </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px] min-w-0 w-full">
-                        <span class="text-slate-400 truncate" id="kpi-segment1-pct">0%</span>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-amber-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment2">0</h3>
-                            <div id="growth-segment2" class="hidden font-bold text-xs md:text-base tracking-tight mt-0.5"></div>
-                        </div>
-                        <div class="p-1 bg-amber-50 rounded text-amber-600 text-xs shrink-0">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                        </div>
-                    </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px] min-w-0 w-full">
-                        <span class="text-slate-400 truncate" id="kpi-segment2-pct">0%</span>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-blue-500 min-w-0">
-                    <div class="flex justify-between items-start gap-1">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Top Dominant Product</p>
-                            <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-top-product">-</h3>
-                            <div id="growth-product" class="hidden font-bold text-xs md:text-base tracking-tight mt-0.5"></div>
-                        </div>
-                        <div class="p-1 bg-blue-50 rounded text-blue-600 text-xs shrink-0">
-                            <i class="fa-solid fa-trophy"></i>
-                        </div>
-                    </div>
-                    <div class="mt-1 flex items-center text-[9px] md:text-[10px]">
-                        <span id="kpi-top-product-sublabel" class="text-slate-400 italic truncate">By Volume Month</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="p-4 md:p-6 space-y-6">
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                <div class="lg:col-span-2 bg-white rounded-xl p-4 md:p-6 card-shadow flex flex-col justify-between">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                        <h3 class="font-semibold text-sm md:text-base text-slate-700" id="trend-title">Performance Trend</h3>
-                        <div class="inline-flex rounded-md shadow-sm bg-slate-100 p-1 self-stretch sm:self-auto justify-between" role="group">
-                            <button onclick="changeTimeline(3)" id="btn-time-3" class="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all">3M</button>
-                            <button onclick="changeTimeline(6)" id="btn-time-6" class="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all">6M</button>
-                            <button onclick="changeTimeline(12)" id="btn-time-12" class="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all">12M</button>
-                            <button onclick="changeTimeline(0)" id="btn-time-all" class="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-white bg-indigo-600 rounded-md transition-all">All</button>
+            <!-- Filter Controls -->
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <div class="relative w-full sm:w-40">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+                        <i class="fa-solid fa-file-csv"></i>
+                    </span>
+                    <select id="file-select" class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-1.5 pl-8 pr-8 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer">
+                        <option value="dana.csv">dana.csv</option>
+                        <option value="landing.csv">landing.csv</option>
+                    </select>
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400 text-[10px]">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </span>
+                </div>
+
+                <div class="relative w-full sm:w-36">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </span>
+                    <select id="period-select" class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-1.5 pl-8 pr-8 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer">
+                        <!-- Otomatis diisi oleh JavaScript -->
+                    </select>
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400 text-[10px]">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- DYNAMIC HEADER TITLE & DATE -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
+            <div>
+                <h2 id="dashboard-title" class="text-lg font-bold text-slate-900 tracking-tight">Performance Summary</h2>
+                <p id="as-of-date" class="text-xs text-slate-500 font-medium mt-0.5 hidden"></p>
+            </div>
+            <div id="loading-indicator" class="hidden items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-100 animate-pulse">
+                <i class="fa-solid fa-circle-notch animate-spin"></i> Refreshing Data...
+            </div>
+        </div>
+
+        <!-- KPI CARDS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- KPI 1: Grand Total -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Booking</p>
+                        <div class="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                            <i class="fa-solid fa-vault text-sm flex items-center justify-center h-4 w-4"></i>
                         </div>
                     </div>
-                    <div class="relative h-56 md:h-72 w-full flex-1">
-                        <canvas id="trendChart"></canvas>
-                    </div>
+                    <h3 id="kpi-total" class="text-2xl font-black text-slate-900 tracking-tight mt-2">-</h3>
                 </div>
-
-                <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                    <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-4" id="mix-chart-title">Product Mix (Latest Month)</h3>
-                    <div class="relative h-52 md:h-64 w-full flex justify-center">
-                        <canvas id="compositionChart"></canvas>
-                    </div>
-                    <div class="mt-4 grid grid-cols-2 gap-2 text-center text-[11px] text-slate-500" id="dynamic-group-pct-labels"></div>
-                </div>
+                <div id="growth-total" class="hidden"></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                    <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-4">Top 5 CO-Branches by Volume</h3>
-                    <div class="relative h-56 md:h-64 w-full">
-                        <canvas id="coBranchChart"></canvas>
+            <!-- KPI 2: Segment 1 (Retail / Simpedes) -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <p id="label-segment1" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Segment 1</p>
+                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                            <i class="fa-solid fa-users text-sm flex items-center justify-center h-4 w-4"></i>
+                        </div>
                     </div>
+                    <h3 id="kpi-segment1" class="text-2xl font-black text-slate-900 tracking-tight mt-2">-</h3>
                 </div>
-
-                <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                    <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-4">Top 5 Branches by Volume</h3>
-                    <div class="relative h-56 md:h-64 w-full">
-                        <canvas id="branchChart"></canvas>
-                    </div>
-                </div>
+                <div id="growth-segment1" class="hidden"></div>
             </div>
 
-            <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
-                <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
-                <div class="overflow-x-auto w-full border border-slate-100 rounded-lg">
-                    <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] border-collapse table-fixed">
-                        <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0 z-20">
-                            <tr id="dynamic-table-header-row"></tr>
-                        </thead>
-                        <tbody id="data-table-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
+            <!-- KPI 3: Segment 2 (Wholesale / Britama) -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <p id="label-segment2" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Segment 2</p>
+                        <div class="p-2 bg-purple-50 text-purple-600 rounded-xl">
+                            <i class="fa-solid fa-building text-sm flex items-center justify-center h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <h3 id="kpi-segment2" class="text-2xl font-black text-slate-900 tracking-tight mt-2">-</h3>
                 </div>
+                <div id="growth-segment2" class="hidden"></div>
             </div>
 
+            <!-- KPI 4: Top Dominant Product -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Top Product</p>
+                        <div class="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                            <i class="fa-solid fa-crown text-sm flex items-center justify-center h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <h3 id="kpi-product" class="text-lg font-bold text-slate-900 truncate tracking-tight mt-2" title="-">-</h3>
+                </div>
+                <div id="growth-product" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- BOTTOM DATA TABLE DETAILS -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-ol text-blue-600 text-xs"></i> Top 10 Leaders Performance
+                    </h3>
+                    <p class="text-[11px] text-slate-500 font-medium">Berdasarkan pencapaian total booking pada periode aktif</p>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-100 text-slate-600 font-semibold tracking-wider uppercase text-[10px]">
+                            <th class="py-3 px-4 text-center w-12">Rank</th>
+                            <th class="py-3 px-4 min-w-[150px]">Leader Name</th>
+                            <th class="py-3 px-4 min-w-[120px]">Segment 1</th>
+                            <th class="py-3 px-4 min-w-[120px]">Segment 2</th>
+                            <th class="py-3 px-4 text-right min-w-[130px]">Total Booking</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                        <!-- Data rows akan di-render di sini secara dinamis -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
-    <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div class="loader"></div>
-    </div>
-
+    <!-- CORE JAVASCRIPT LOGIC -->
     <script>
-        const csvFilesConfig = [
-            { name: "Financing", file: "pembiayaan.csv", icon: "fa-hand-holding-dollar" },
-            { name: "Funding", file: "dana.csv", icon: "fa-vault" },
-            { name: "Hajj", file: "haji.csv", icon: "fa-kaaba" },
-            { name: "Qris", file: "qris.csv", icon: "fa-qrcode" },
-            { name: "MDin", file: "mdin.csv", icon: "fa-mobile-alt" },
-            { name: "NPF", file: "coll.csv", icon: "fa-gauge" } 
-        ];
-
-        let currentActiveFileIndex = 0;
+        // Global State
         let rawData = [];
-        let filteredData = [];
-        let charts = {};
-        let isSidebarCollapsed = false;
-        
-        let monthColumns = [];
-        let lastMonth = '';
-        let prevMonth = ''; // Menampung bulan sebelumnya untuk hitung growth MTD
-        let activeTimelineMonths = 0; 
+        let currentFileName = "dana.csv";
 
-        const filterColumns = ['CO-BRANCH', 'OFFICE', 'PRODUCT', 'GROUP'];
-        
-        let distinctProducts = [];
-        let productColors = {};
-        let groupLabels = []; 
-       
-        function generateColorsForProducts(products) {
-            const presetColors = [
-                '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', 
-                '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#64748b'
-            ];
-            let colors = {};
-            products.forEach((prod, index) => {
-                colors[prod] = presetColors[index % presetColors.length];
-            });
-            return colors;
-        }
+        // DOM Elements
+        const fileSelect = document.getElementById('file-select');
+        const periodSelect = document.getElementById('period-select');
+        const dashboardTitle = document.getElementById('dashboard-title');
+        const asOfDateElement = document.getElementById('as-of-date');
+        const loadingIndicator = document.getElementById('loading-indicator');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            buildCSVTabs(); 
-            loadSelectedCSV(currentActiveFileIndex); 
-            initSidebarToggle();
-            initMobileSidebar(); 
+        // Event Listeners
+        fileSelect.addEventListener('change', (e) => {
+            currentFileName = e.target.value;
+            loadDataAndInit(currentFileName);
         });
 
-        function buildCSVTabs() {
-            const container = document.getElementById('csv-tabs-container');
-            container.innerHTML = '';
+        periodSelect.addEventListener('change', () => {
+            processAndRender();
+        });
 
-            csvFilesConfig.forEach((cfg, idx) => {
-                const btn = document.createElement('button');
-                btn.id = `tab-csv-${idx}`;
-                btn.className = `py-2.5 px-4 font-medium text-xs md:text-sm flex items-center gap-2 border-b-2 transition-all focus:outline-none shrink-0 ${
-                    idx === currentActiveFileIndex 
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' 
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                }`;
-                btn.innerHTML = `<i class="fa-solid ${cfg.icon}"></i> ${cfg.name}`;
-                btn.onclick = () => switchCSVTab(idx);
-                container.appendChild(btn);
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataAndInit(currentFileName);
+        });
+
+        // Fetch CSV and Initialize Filter Option
+        function loadDataAndInit(fileName) {
+            loadingIndicator.classList.remove('hidden');
+            loadingIndicator.classList.add('flex');
+
+            // Simulasi fetch / Load data dari file lokal CSV Anda
+            fetch(fileName)
+                .then(response => {
+                    if (!response.ok) throw new Error('File tidak ditemukan');
+                    return response.text();
+                })
+                .then(text => {
+                    rawData = parseCSV(text);
+                    populatePeriodFilter();
+                    processAndRender();
+                })
+                .catch(err => {
+                    console.error("Error loading data:", err);
+                    alert(`Gagal memuat file: ${fileName}. Pastikan file berada di direktori yang sama.`);
+                })
+                .finally(() => {
+                    loadingIndicator.classList.add('hidden');
+                    loadingIndicator.classList.remove('flex');
+                });
+        }
+
+        // Simple CSV Parser handling quotes and commas
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/);
+            if (lines.length === 0 || lines[0].trim() === "") return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === "") continue;
+                
+                // Regex to handle comma-separated values inside quotation marks
+                const matches = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    let val = matches[index] ? matches[index].trim() : "";
+                    val = val.replace(/^["']|["']$/g, ''); // Remove outer quotes
+                    row[header] = val;
+                });
+                result.push(row);
+            }
+            return result;
+        }
+
+        // Populate unique periods dynamically based on file type
+        function populatePeriodFilter() {
+            const previousSelection = periodSelect.value;
+            periodSelect.innerHTML = "";
+            
+            const periods = [...new Set(rawData.map(item => item.Periode))].filter(Boolean);
+            
+            // Urutkan periode secara descending (terbaru di atas)
+            periods.sort((a, b) => b.localeCompare(a));
+
+            periods.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p;
+                periodSelect.appendChild(option);
             });
+
+            // Pertahankan seleksi jika pilihan tersebut masih tersedia di file baru
+            if (periods.includes(previousSelection)) {
+                periodSelect.value = previousSelection;
+            }
         }
 
-        function switchCSVTab(index) {
-            if(index === currentActiveFileIndex) return;
+        // Process, Aggregate, Filter, and Render Data UI
+        function processAndRender() {
+            const selectedPeriod = periodSelect.value;
             
-            document.getElementById(`tab-csv-${currentActiveFileIndex}`).className = 'py-2.5 px-4 font-medium text-xs md:text-sm flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 shrink-0';
-            document.getElementById(`tab-csv-${index}`).className = 'py-2.5 px-4 font-medium text-xs md:text-sm flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/50 shrink-0';
-            
-            currentActiveFileIndex = index;
-            document.getElementById('loading').style.display = 'flex';
-            
-            activeTimelineMonths = 0; 
-            loadSelectedCSV(index);
+            // Aturan Kustom: Hanya tampilkan teks "As of" saat filter periode aktif terisi
+            if (selectedPeriod) {
+                asOfDateElement.textContent = `As of Date: ${selectedPeriod}`;
+                asOfDateElement.classList.remove('hidden');
+            } else {
+                asOfDateElement.classList.add('hidden');
+            }
+
+            // Atur nama label segment & Judul dinamis berdasarkan file aktif
+            let g1 = "", g2 = "";
+            if (currentFileName === "dana.csv") {
+                dashboardTitle.textContent = "Dana Performance Dashboard";
+                g1 = "Simpedes"; g2 = "Britama";
+                document.getElementById('label-segment1').textContent = "Total Simpedes";
+                document.getElementById('label-segment2').textContent = "Total Britama";
+            } else {
+                dashboardTitle.textContent = "Landing Performance Dashboard";
+                g1 = "Retail"; g2 = "Wholesale";
+                document.getElementById('label-segment1').textContent = "Total Retail";
+                document.getElementById('label-segment2').textContent = "Total Wholesale";
+            }
+
+            // Cari tahu bulan sebelumnya untuk perhitungan MTD Growth (Format asumsi: YYYY-MM atau YYYYMM)
+            const allPeriods = [...new Set(rawData.map(item => item.Periode))].filter(Boolean).sort();
+            const currentIndex = allPeriods.indexOf(selectedPeriod);
+            const prevPeriod = currentIndex > 0 ? allPeriods[currentIndex - 1] : null;
+
+            // Filter data khusus periode aktif & periode sebelumnya
+            const activeData = rawData.filter(item => item.Periode === selectedPeriod);
+            const prevData = prevPeriod ? rawData.filter(item => item.Periode === prevPeriod) : [];
+
+            updateKPIs(activeData, prevData, g1, g2);
+            renderTable(activeData, g1, g2);
         }
 
-        function loadSelectedCSV(index) {
-            const targetFile = csvFilesConfig[index];
-            document.getElementById('dashboard-main-title').innerText = `${targetFile.name.split(' / ')[0]} Dashboard`;
+        // Calculate and Update KPI Dashboard Blocks
+        function updateKPIs(activeData, prevData, g1, g2) {
+            let grandTotal = 0;
+            let groupTotals = { [g1]: 0, [g2]: 0 };
+            let productTotals = {};
 
-            Papa.parse(targetFile.file, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                delimiter: "", 
-                complete: function(results) {
-                    rawData = results.data;
-                    if(rawData.length > 0) {
-                        detectColumns(rawData[0]);
-                        distinctProducts = [...new Set(rawData.map(row => row.PRODUCT))].filter(Boolean);
-                        productColors = generateColorsForProducts(distinctProducts);
-                        groupLabels = [...new Set(rawData.map(row => row.GROUP))].filter(Boolean);
-                        
-                        buildDynamicTableHeader();
-                    }
-                    processData();
-                    initFilters();
-                    updateDashboard();
-                    document.getElementById('loading').style.display = 'none';
-                },
-                error: function(err) {
-                    console.error("Error loading CSV:", err);
-                    alert(`Gagal memuat berkas file: ${targetFile.file}. Pastikan file tersimpan di folder yang sama.`);
-                    document.getElementById('loading').style.display = 'none';
+            // Hitung data periode aktif
+            activeData.forEach(item => {
+                const booking = parseFloat(item.Booking) || 0;
+                grandTotal += booking;
+
+                if (item.Segment === g1) groupTotals[g1] += booking;
+                if (item.Segment === g2) groupTotals[g2] += booking;
+
+                const prod = item.Produk || "-";
+                productTotals[prod] = (productTotals[prod] || 0) + booking;
+            });
+
+            // Cari Produk Dominan Teratas
+            let topProduct = "-";
+            let maxProdVal = -Infinity;
+            for (const [prod, val] of Object.entries(productTotals)) {
+                if (val > maxProdVal && prod !== "-") {
+                    maxProdVal = val;
+                    topProduct = prod;
                 }
-            });
-        }
+            }
 
-        function detectColumns(firstRow) {
-            const staticFields = ['CO-BRANCH', 'OFFICE', 'PRODUCT', 'GROUP', 'CO-BRANCH-CLEAN', 'OFFICE-CLEAN'];
-            monthColumns = Object.keys(firstRow).filter(key => !staticFields.includes(key));
-            lastMonth = monthColumns[monthColumns.length - 1];
-            prevMonth = monthColumns.length > 1 ? monthColumns[monthColumns.length - 2] : '';
+            // Render nilai nominal utama ke UI KPI
+            document.getElementById('kpi-total').textContent = formatNumber(grandTotal);
+            document.getElementById('kpi-segment1').textContent = formatNumber(groupTotals[g1]);
+            document.getElementById('kpi-segment2').textContent = formatNumber(groupTotals[g2]);
             
-            document.getElementById('current-date').innerText = lastMonth;
-            document.getElementById('kpi-latest-lbl').innerText = lastMonth;
-        }
+            const prodElement = document.getElementById('kpi-product');
+            prodElement.textContent = topProduct;
+            prodElement.title = topProduct;
 
-        function buildDynamicTableHeader() {
-            const headerRow = document.getElementById('dynamic-table-header-row');
-            let headerHtml = `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs font-bold bg-slate-50 sticky-column text-left truncate">Branch</th>`;
-            
-            distinctProducts.forEach(prod => {
-                let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
-                headerHtml += `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs text-right font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
-            });
-            
-            headerHtml += `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs text-right font-bold bg-slate-50 max-w-[90px] whitespace-normal break-words">Total Amount</th>`;
-            headerRow.innerHTML = headerHtml;
+            // HITUNG & UPDATE MTD GROWTH KHUSUS DANA.CSV (Dalam Miliar & %)
+            const growthTotalEl = document.getElementById('growth-total');
+            const growthSeg1El = document.getElementById('growth-segment1');
+            const growthSeg2El = document.getElementById('growth-segment2');
+            const growthProdEl = document.getElementById('growth-product');
 
-            const compSubLabels = document.getElementById('dynamic-group-pct-labels');
-            if (compSubLabels) {
-                compSubLabels.innerHTML = groupLabels.map((grp, i) => `
-                    <div class="bg-slate-50 p-2 rounded">
-                        <span class="block font-bold text-slate-700 text-xs md:text-sm" id="comp-group-pct-${i}">0%</span>
-                        <span class="text-[10px] text-slate-400 block truncate">${grp}</span>
-                    </div>
-                `).join('');
-            }
-        }
+            if (currentFileName === "dana.csv" && prevData.length > 0) {
+                // Aggregasi data bulan sebelumnya
+                let grandTotalPrev = 0;
+                let groupTotalsPrev = { [g1]: 0, [g2]: 0 };
+                let productTotalsPrev = {};
 
-        function initSidebarToggle() {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebar-toggle');
-            const toggleIcon = document.getElementById('toggle-icon');
-            
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    isSidebarCollapsed = !isSidebarCollapsed;
-                    if (isSidebarCollapsed) {
-                        sidebar.classList.add('collapsed');
-                        sidebar.style.width = '70px';
-                        toggleIcon.classList.add('rotate-180');
-                    } else {
-                        sidebar.classList.remove('collapsed');
-                        sidebar.style.width = '16rem';
-                        toggleIcon.classList.remove('rotate-180');
-                    }
-                });
-            }
-        }
-
-        function initMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            const openBtn = document.getElementById('mobile-menu-btn');
-            const closeBtn = document.getElementById('sidebar-close-mobile');
-        
-            function openMobileNav() {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0'); 
-                backdrop.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-        
-            function closeMobileNav() {
-                sidebar.classList.remove('translate-x-0');
-                sidebar.classList.add('-translate-x-full'); 
-                backdrop.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            }
-        
-            if(openBtn) openBtn.addEventListener('click', openMobileNav);
-            if(closeBtn) closeBtn.addEventListener('click', closeMobileNav);
-            if(backdrop) backdrop.addEventListener('click', closeMobileNav);
-        }
-        
-        function cleanName(name) {
-            if (name && name.length > 6 && name.substring(3, 6) === ' - ') {
-                return name.substring(6).trim();
-            }
-            return name;
-        }
-
-        function processData() {
-            rawData.forEach(row => {
-                row['CO-BRANCH-CLEAN'] = cleanName(row['CO-BRANCH']);
-                row['OFFICE-CLEAN'] = cleanName(row['OFFICE']);
-
-                monthColumns.forEach(col => {
-                    let val = row[col];
-                    if (val) {
-                        if (typeof val === 'string') {
-                            val = val.replace(/\./g, '').replace(/,/g, '.'); 
-                        }
-                        row[col] = parseFloat(val) || 0;
-                    } else {
-                        row[col] = 0;
-                    }
-                });
-            });
-            filteredData = [...rawData];
-        }
-
-        function initFilters() {
-            const container = document.getElementById('filter-container');
-            container.innerHTML = '';
-
-            filterColumns.forEach(col => {
-                const wrapper = document.createElement('div');
-                wrapper.className = "mb-2";
-                
-                const label = document.createElement('label');
-                label.className = "block text-[10px] font-medium text-slate-400 mb-1 uppercase filter-label tracking-wider";
-                label.innerText = col === 'OFFICE' ? 'BRANCH (OFFICE)' : col;
-                
-                const select = document.createElement('select');
-                select.className = "w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg block p-2 focus:border-indigo-500 focus:outline-none";
-                select.id = `filter-${col}`;
-                
-                const defaultOpt = document.createElement('option');
-                defaultOpt.value = "ALL";
-                defaultOpt.innerText = col === 'OFFICE' ? 'All Branches' : `All ${col}s`;
-                select.appendChild(defaultOpt);
-
-                select.addEventListener('change', () => {
-                    handleFilterChange();
-                    if(window.innerWidth < 768) {
-                        document.getElementById('sidebar').classList.add('-translate-x-full');
-                        document.getElementById('sidebar-backdrop').classList.add('hidden');
-                    }
+                prevData.forEach(item => {
+                    const booking = parseFloat(item.Booking) || 0;
+                    grandTotalPrev += booking;
+                    if (item.Segment === g1) groupTotalsPrev[g1] += booking;
+                    if (item.Segment === g2) groupTotalsPrev[g2] += booking;
+                    const prod = item.Produk || "-";
+                    productTotalsPrev[prod] = (productTotalsPrev[prod] || 0) + booking;
                 });
 
-                wrapper.appendChild(label);
-                wrapper.appendChild(select);
-                container.appendChild(wrapper);
-            });
+                // Hitung selisih nominal nominal growth
+                let growthTotal = grandTotal - grandTotalPrev;
+                let growthG1 = groupTotals[g1] - groupTotalsPrev[g1];
+                let growthG2 = groupTotals[g2] - groupTotalsPrev[g2];
+                let growthTopProd = topProduct !== "-" ? (productTotals[topProduct] - (productTotalsPrev[topProduct] || 0)) : 0;
 
-            populateFilterOptions('CO-BRANCH', rawData);
-            populateFilterOptions('OFFICE', rawData);
-            populateFilterOptions('PRODUCT', rawData);
-            populateFilterOptions('GROUP', rawData);
-        }
-
-        function populateFilterOptions(column, dataSource) {
-            const select = document.getElementById(`filter-${column}`);
-            if(!select) return;
-            const currentValue = select.value;
-            
-            const displayColumn = column === 'CO-BRANCH' ? 'CO-BRANCH-CLEAN' : 
-                                  column === 'OFFICE' ? 'OFFICE-CLEAN' : column;
-                                  
-            const uniqueValues = [...new Set(dataSource.map(item => item[displayColumn]))].filter(Boolean).sort();
-            
-            while (select.options.length > 1) { select.remove(1); }
-
-            uniqueValues.forEach(val => {
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.innerText = val === "Sme" ? "SME" : val;
-                select.appendChild(opt);
-            });
-
-            if (uniqueValues.includes(currentValue)) { select.value = currentValue; } 
-            else { select.value = "ALL"; }
-        }
-
-        function handleFilterChange() {
-            const coBranchCleanVal = document.getElementById('filter-CO-BRANCH').value;
-            const officeCleanVal = document.getElementById('filter-OFFICE').value;
-
-            let dataForOffice = rawData;
-            if (coBranchCleanVal !== "ALL") {
-                dataForOffice = rawData.filter(row => row['CO-BRANCH-CLEAN'] === coBranchCleanVal);
+                // Format & Tampilkan Teks Growth (Satuan Miliar + Persentase)
+                formatGrowthText(growthTotalEl, growthTotal, grandTotalPrev);
+                formatGrowthText(growthSeg1El, growthG1, groupTotalsPrev[g1]);
+                formatGrowthText(growthSeg2El, growthG2, groupTotalsPrev[g2]);
+                formatGrowthText(growthProdEl, growthTopProd, productTotalsPrev[topProduct]);
+            } else {
+                // Sembunyikan container indikator growth jika bukan dana.csv atau data pembanding tidak ada
+                growthTotalEl.classList.add('hidden');
+                growthSeg1El.classList.add('hidden');
+                growthSeg2El.classList.add('hidden');
+                growthProdEl.classList.add('hidden');
             }
-            populateFilterOptions('OFFICE', dataForOffice);
-
-            let dataForProduct = dataForOffice;
-            if (officeCleanVal !== "ALL") {
-                dataForProduct = dataForOffice.filter(row => row['OFFICE-CLEAN'] === officeCleanVal);
-            }
-            populateFilterOptions('PRODUCT', dataForProduct);
-            populateFilterOptions('GROUP', dataForProduct);
-
-            applyFilters();
         }
 
-        window.filterByBranchLink = function(branchCleanName) {
-            document.getElementById('filter-OFFICE').value = branchCleanName;
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const activeFilters = {};
-            filterColumns.forEach(col => {
-                const val = document.getElementById(`filter-${col}`).value;
-                if (val !== "ALL") activeFilters[col] = val;
-            });
-
-            filteredData = rawData.filter(row => {
-                let match = true;
-                if (activeFilters['CO-BRANCH']) match = match && row['CO-BRANCH-CLEAN'] === activeFilters['CO-BRANCH'];
-                if (activeFilters['OFFICE']) match = match && row['OFFICE-CLEAN'] === activeFilters['OFFICE'];
-                if (activeFilters['PRODUCT']) match = match && row['PRODUCT'] === activeFilters['PRODUCT'];
-                if (activeFilters['GROUP']) match = match && row['GROUP'] === activeFilters['GROUP'];
-                return match;
-            });
-
-            updateDashboard();
-        }
-
-        window.changeTimeline = function(months) {
-            activeTimelineMonths = months;
-            const ids = {0: 'btn-time-all', 3: 'btn-time-3', 6: 'btn-time-6', 12: 'btn-time-12'};
-            Object.entries(ids).forEach(([m, id]) => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    if(parseInt(m) === months) {
-                        btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-white bg-indigo-600 rounded-md transition-all";
-                    } else {
-                        btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all";
-                    }
-                }
-            });
-            updateTrendChart();
-        }
-
-        window.resetFilters = function() {
-            filterColumns.forEach(col => {
-                const select = document.getElementById(`filter-${col}`);
-                if (select) select.value = "ALL";
-            });
-            populateFilterOptions('CO-BRANCH', rawData);
-            populateFilterOptions('OFFICE', rawData);
-            populateFilterOptions('PRODUCT', rawData);
-            populateFilterOptions('GROUP', rawData);
-            filteredData = [...rawData];
-            activeTimelineMonths = 0;
-            
-            const ids = {0: 'btn-time-all', 3: 'btn-time-3', 6: 'btn-time-6', 12: 'btn-time-12'};
-            Object.entries(ids).forEach(([m, id]) => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    if(parseInt(m) === 0) btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-white bg-indigo-600 rounded-md transition-all";
-                    else btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all";
-                }
-            });
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            if(!lastMonth) return;
-            updateKPIs();
-            updateCharts();
-            updateTable();
-        }
-
-        function formatNumber(num) {
-            return new Intl.NumberFormat('id-ID').format(Math.round(num));
-        }
-
-        function formatGrowthText(element, growthValue) {
+        // Format Growth Text into Billion (M) and append Percentage (%)
+        function formatGrowthText(element, growthValue, prevValue) {
             if(!element) return;
             element.classList.remove('hidden');
+            
+            // Konversi nilai nominal ke satuan Miliar (dibagi 1 Miliar)
+            // Jika data mentah di database Anda sudah berbentuk Jutaan, ubah pembagi menjadi 1000
+            const divisor = 1000000000; 
+            const growthInBillion = growthValue / divisor;
+            
+            // Hitung persentase pertumbuhan terhadap bulan sebelumnya
+            let growthPctText = "";
+            if (prevValue && prevValue !== 0) {
+                const pct = (growthValue / Math.abs(prevValue)) * 100;
+                growthPctText = ` (${pct > 0 ? '+' : ''}${pct.toFixed(1)}%)`;
+            } else if (growthValue > 0 && (!prevValue || prevValue === 0)) {
+                growthPctText = " (+100%)";
+            }
+
+            // Tampilkan data dengan styling warna & indikator panah (Font ukuran besar)
             if (growthValue > 0) {
-                element.className = "font-bold text-xs md:text-base tracking-tight mt-0.5 text-emerald-600";
-                element.innerHTML = `<i class="fa-solid fa-arrow-up text-[10px] md:text-xs mr-0.5"></i>+${formatNumber(growthValue)}`;
+                element.className = "font-bold text-base md:text-lg tracking-tight mt-1 text-emerald-600";
+                element.innerHTML = `<i class="fa-solid fa-arrow-up text-xs mr-0.5"></i>${growthInBillion.toFixed(1)} M${growthPctText}`;
             } else if (growthValue < 0) {
-                element.className = "font-bold text-xs md:text-base tracking-tight mt-0.5 text-rose-600";
-                element.innerHTML = `<i class="fa-solid fa-arrow-down text-[10px] md:text-xs mr-0.5"></i>${formatNumber(growthValue)}`;
+                element.className = "font-bold text-base md:text-lg tracking-tight mt-1 text-rose-600";
+                element.innerHTML = `<i class="fa-solid fa-arrow-down text-xs mr-0.5"></i>${growthInBillion.toFixed(1)} M${growthPctText}`;
             } else {
-                element.className = "font-bold text-xs md:text-base tracking-tight mt-0.5 text-slate-400";
-                element.innerHTML = `0`;
+                element.className = "font-bold text-base md:text-lg tracking-tight mt-1 text-slate-400";
+                element.innerHTML = `0 M (0.0%)`;
             }
         }
 
-        function toProperCase(str) {
-            if (!str) return "-";
-            if (str.toLowerCase() === "sme") return "SME";
-            return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-        }
-        
-        function updateKPIs() {
-            let groupTotals = {};
-            let productTotals = {};
-            let grandTotal = 0;
+        // Process, Sort, and Render Top 10 Leaders into HTML Table
+        function renderTable(activeData, g1, g2) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = "";
 
-            // Variabel untuk menyimpan data bulan lalu demi perhitungan growth MTD
-            let groupTotalsPrev = {};
-            let productTotalsPrev = {};
-            let grandTotalPrev = 0;
-
-            groupLabels.forEach(grp => {
-                groupTotals[grp] = 0;
-                groupTotalsPrev[grp] = 0;
+            // Aggregasi booking per Leader
+            let leaderMap = {};
+            activeData.forEach(item => {
+                const leader = item.Leader || "Unknown Leader";
+                const booking = parseFloat(item.Booking) || 0;
+                
+                if (!leaderMap[leader]) {
+                    leaderMap[leader] = { name: leader, [g1]: 0, [g2]: 0, total: 0 };
+                }
+                
+                if (item.Segment === g1) leaderMap[leader][g1] += booking;
+                if (item.Segment === g2) leaderMap[leader][g2] += booking;
+                leaderMap[leader].total += booking;
             });
 
-            filteredData.forEach(row => {
-                const val = row[lastMonth] || 0;
-                const valPrev = prevMonth ? (row[prevMonth] || 0) : 0;
-                
-                const grp = row.GROUP; 
-                const product = row.PRODUCT;
-                
-                if(grp && groupTotals[grp] !== undefined) groupTotals[grp] += val;
-                if(grp && groupTotalsPrev[grp] !== undefined) groupTotalsPrev[grp] += valPrev;
-                
-                grandTotal += val;
-                grandTotalPrev += valPrev;
+            // Aturan Kustom: Diurutkan descending & batasi hanya Top 10 Booking
+            const sortedLeaders = Object.values(leaderMap)
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 10);
 
-                if (!productTotals[product]) productTotals[product] = 0;
-                productTotals[product] += val;
-
-                if (!productTotalsPrev[product]) productTotalsPrev[product] = 0;
-                productTotalsPrev[product] += valPrev;
-            });
-
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
-            const subLabelEl = document.getElementById('kpi-top-product-sublabel');
-
-            // Sembunyikan semua kontainer growth terlebih dahulu secara default
-            document.getElementById('growth-total').classList.add('hidden');
-            document.getElementById('growth-segment1').classList.add('hidden');
-            document.getElementById('growth-segment2').classList.add('hidden');
-            document.getElementById('growth-product').classList.add('hidden');
-
-            if (currentFileName === "mdin.csv") {
-                const totalMonths = monthColumns.length;
-                const m1 = monthColumns[totalMonths - 1] || '-';
-                const m2 = monthColumns[totalMonths - 2] || '-';
-                const m3 = monthColumns[totalMonths - 3] || '-';
-                const m4 = monthColumns[totalMonths - 4] || '-';
-
-                let totalM1 = 0, totalM2 = 0, totalM3 = 0, totalM4 = 0;
-                filteredData.forEach(row => {
-                    if (m1 !== '-') totalM1 += (row[m1] || 0);
-                    if (m2 !== '-') totalM2 += (row[m2] || 0);
-                    if (m3 !== '-') totalM3 += (row[m3] || 0);
-                    if (m4 !== '-') totalM4 += (row[m4] || 0);
-                });
-
-                document.getElementById('kpi-total-label').innerText = `Total Akusisi (${m1})`;
-                animateNumber(document.getElementById('kpi-total'), totalM1);
-                
-                document.getElementById('kpi-segment1-label').innerText = `Total Akusisi (${m2})`;
-                animateNumber(document.getElementById('kpi-segment1'), totalM2);
-                if (document.getElementById('kpi-segment1-pct')) {
-                    document.getElementById('kpi-segment1-pct').innerHTML = `<span class="text-slate-400 font-normal text-[9px]">Posisi 2 Bulan Terakhir</span>`;
-                }
-
-                document.getElementById('kpi-segment2-label').innerText = `Total Akusisi (${m3})`;
-                animateNumber(document.getElementById('kpi-segment2'), totalM3);
-                if (document.getElementById('kpi-segment2-pct')) {
-                    document.getElementById('kpi-segment2-pct').innerHTML = `<span class="text-slate-400 font-normal text-[9px]">Posisi 3 Bulan Terakhir</span>`;
-                }
-
-                const topProductEl = document.getElementById('kpi-top-product');
-                const topProductCard = topProductEl.parentElement;
-                const topProductLabelEl = topProductCard.querySelector('p');
-                if (topProductLabelEl) topProductLabelEl.innerText = `Total Akusisi (${m4})`;
-                
-                topProductEl.innerText = formatNumber(totalM4);
-
-                if (subLabelEl) {
-                    subLabelEl.className = "text-slate-400 not-italic truncate";
-                    subLabelEl.innerText = "Posisi 4 bulan terakhir";
-                }
-
-                document.getElementById('mix-chart-title').innerText = "Acquisition Trend (4 Months)";
-            } else {
-                const topProductEl = document.getElementById('kpi-top-product');
-                const topProductCard = topProductEl.parentElement;
-                const topProductLabelEl = topProductCard.querySelector('p');
-                if (topProductLabelEl) topProductLabelEl.innerText = `Top Dominant Product`;
-                
-                if (subLabelEl) {
-                    subLabelEl.className = "text-slate-400 italic truncate";
-                    subLabelEl.innerText = "By Volume Month";
-                }
-
-                let totalLabelText = "Total Outstanding"; 
-                if (currentFileName === "pembiayaan.csv") {
-                    totalLabelText = "Total Booking";
-                } else if (currentFileName === "haji.csv") {
-                    totalLabelText = "Total Porsi";
-                } else if (currentFileName === "qris.csv") {
-                    totalLabelText = "Total Akusisi";
-                }
-
-                const kpiTotalLabelEl = document.getElementById('kpi-total-label');
-                if (kpiTotalLabelEl) kpiTotalLabelEl.innerText = totalLabelText;
-
-                animateNumber(document.getElementById('kpi-total'), grandTotal);
-
-                const g1 = groupLabels[0];
-                const g2 = groupLabels[1];
-
-                const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
-                const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
-
-                document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
-                animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
-                if (document.getElementById('kpi-segment1-pct')) {
-                    document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
-                    animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
-                }
-
-                document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
-                animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
-                if (document.getElementById('kpi-segment2-pct')) {
-                    document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
-                    animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
-                }
-
-                let topProduct = "-";
-                let maxVal = 0;
-                for (const [prod, total] of Object.entries(productTotals)) {
-                    if (total > maxVal) { 
-                        maxVal = total; 
-                        topProduct = prod; 
-                    }
-                }
-                topProductEl.innerText = toProperCase(topProduct);
-
-                // PENAMBAHAN SPESIFIK: HITUNG & TAMPILKAN MTD GROWTH KHUSUS UNTUK DANA.CSV
-                if (currentFileName === "dana.csv" && prevMonth) {
-                    // 1. MTD Growth Total
-                    let growthTotal = grandTotal - grandTotalPrev;
-                    formatGrowthText(document.getElementById('growth-total'), growthTotal);
-
-                    // 2. MTD Growth Segment 1
-                    if(g1) {
-                        let growthG1 = groupTotals[g1] - groupTotalsPrev[g1];
-                        formatGrowthText(document.getElementById('growth-segment1'), growthG1);
-                    }
-
-                    // 3. MTD Growth Segment 2
-                    if(g2) {
-                        let growthG2 = groupTotals[g2] - groupTotalsPrev[g2];
-                        formatGrowthText(document.getElementById('growth-segment2'), growthG2);
-                    }
-
-                    // 4. MTD Growth Top Dominant Product
-                    if(topProduct !== "-") {
-                        let growthTopProd = productTotals[topProduct] - (productTotalsPrev[topProduct] || 0);
-                        formatGrowthText(document.getElementById('growth-product'), growthTopProd);
-                    }
-                }
-
-                document.getElementById('mix-chart-title').innerText = "Product Mix (Latest Month)";
+            if (sortedLeaders.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-400 font-medium bg-slate-50/50">
+                            <i class="fa-solid fa-folder-open text-xl block mb-2 text-slate-300"></i> Tidak ada data pada periode ini
+                        </td>
+                    </tr>`;
+                return;
             }
 
-            groupLabels.forEach((grp, idx) => {
-                const element = document.getElementById(`comp-group-pct-${idx}`);
-                if(element) {
-                    let pct = 0;
-                    if (currentFileName === "mdin.csv") {
-                        const totalMonths = monthColumns.length;
-                        const last4Months = monthColumns.slice(-4);
-                        let grp4MTotal = 0;
-                        let all4MTotal = 0;
-                        filteredData.forEach(row => {
-                            last4Months.forEach(m => {
-                                const val = row[m] || 0;
-                                if(row.GROUP === grp) grp4MTotal += val;
-                                all4MTotal += val;
-                            });
-                        });
-                        pct = all4MTotal ? ((grp4MTotal / all4MTotal) * 100) : 0;
-                    } else {
-                        pct = grandTotal ? ((groupTotals[grp] / grandTotal) * 100) : 0;
-                    }
-                    animateNumber(element, pct, true);
-                }
-            });
-
-            let officeTotals = {};
-            filteredData.forEach(row => {
-                const office = row['OFFICE-CLEAN'];
-                if (office) {
-                    officeTotals[office] = (officeTotals[office] || 0) + (row[lastMonth] || 0);
-                }
-            });
-        
-            let topOffice = "-";
-            let maxOfficeVal = 0;
-            for (const [off, total] of Object.entries(officeTotals)) {
-                if (total > maxOfficeVal) {
-                    maxOfficeVal = total;
-                    topOffice = off;
-                }
-            }
-        
-            const selectedGroup = document.getElementById('filter-GROUP')?.value || 'ALL';
-            const selectedOffice = document.getElementById('filter-OFFICE')?.value || 'ALL';
-        
-            let summaryText = "";
-            if (grandTotal === 0) {
-                summaryText = "Tidak ada data yang tersedia untuk kombinasi filter yang Anda pilih saat ini.";
-            } else {
-                let currentLabelTitle = (currentFileName === "mdin.csv") ? "Total Akusisi" : document.getElementById('kpi-total-label').innerText;
-                summaryText = `Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${currentLabelTitle}</b> secara keseluruhan mencapai <b>${formatNumber(grandTotal)}</b>. `;
+            // Render baris tabel data
+            sortedLeaders.forEach((leader, index) => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors duration-150";
                 
-                if (currentFileName !== "mdin.csv") {
-                    const g1 = groupLabels[0];
-                    const g2 = groupLabels[1];
-                    const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
-                    const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
-                    
-                    if (selectedGroup !== 'ALL') {
-                        summaryText += `Pada segmen portofolio <b>${selectedGroup}</b>, `;
-                    } else {
-                        summaryText += `Secara keseluruhan, kontribusi didominasi oleh segmen <b>${g1}</b> (${g1Pct.toFixed(1)}%) diikuti oleh <b>${g2}</b> (${g2Pct.toFixed(1)}%). `;
-                    }
-                    
-                    summaryText += `Produk yang mencatat volume tertinggi adalah <b>${toProperCase(document.getElementById('kpi-top-product').innerText)}</b>. `;
-                }
-        
-                if (selectedOffice === 'ALL') {
-                    summaryText += `Adapun pusat aktivitas bisnis dengan performa kontribusi paling masif berada di bawah kelolaan cabang <b>${topOffice}</b> dengan nominal sebesar <b>${formatNumber(maxOfficeVal)}</b>.`;
-                } else {
-                    summaryText += `Khusus untuk wilayah unit kerja <b>${selectedOffice}</b>, performa berjalan stabil disokong oleh lini produk andalannya.`;
-                }
-            }
-        
-            const summaryElement = document.getElementById('analytics-text-summary');
-            if (summaryElement) {
-                summaryElement.innerHTML = summaryText;
-            }
-        }
+                // Styling kustom badge untuk peringkat Top 3
+                let rankBadge = `<span class="font-bold text-slate-500">${index + 1}</span>`;
+                if (index === 0) rankBadge = `<span class="flex items-center justify-center bg-amber-100 text-amber-700 h-6 w-6 rounded-full font-bold text-xs shadow-xs"><i class="fa-solid fa-crown text-[10px]"></i></span>`;
+                if (index === 1) rankBadge = `<span class="flex items-center justify-center bg-slate-200 text-slate-800 h-6 w-6 rounded-full font-bold text-xs shadow-xs">2</span>`;
+                if (index === 2) rankBadge = `<span class="flex items-center justify-center bg-orange-100 text-orange-800 h-6 w-6 rounded-full font-bold text-xs shadow-xs">3</span>`;
 
-        function updateCharts() {
-            updateTrendChart();
-            updateCompositionChart();
-            updateCoBranchChart(); 
-            updateBranchChart();   
-        }
-
-        function updateTrendChart() {
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            let labels = [...monthColumns];
-            if (activeTimelineMonths > 0) { labels = labels.slice(-activeTimelineMonths); }
-            
-            document.getElementById('trend-title').innerText = `Trend Analysis (${labels[0]} to ${labels[labels.length - 1]})`;
-
-            const getTransparentColor = (hex) => {
-                if (!hex || !hex.startsWith('#')) return 'rgba(0,0,0,0.15)';
-                const r = parseInt(hex.slice(1, 3), 16);
-                const g = parseInt(hex.slice(3, 5), 16);
-                const b = parseInt(hex.slice(5, 7), 16);
-                return `rgba(${r}, ${g}, ${b}, 0.15)`;
-            };
-
-            const datasets = distinctProducts.map(prod => {
-                const dataPoints = labels.map(month => {
-                    let sum = 0;
-                    filteredData.forEach(row => { if (row.PRODUCT === prod) sum += (row[month] || 0); });
-                    return sum;
-                });
-                return {
-                    label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
-                    data: dataPoints,
-                    borderColor: productColors[prod],
-                    backgroundColor: getTransparentColor(productColors[prod]), 
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: window.innerWidth < 768 ? 2 : 4, 
-                    pointBackgroundColor: '#ffffff', 
-                    pointBorderColor: productColors[prod],
-                    pointBorderWidth: 1.5
-                };
-            });
-
-            const totalDataPoints = labels.map(month => {
-                let sum = 0;
-                filteredData.forEach(row => { sum += (row[month] || 0); });
-                return sum;
-            });
-            
-            datasets.push({
-                label: 'TOTAL',
-                data: totalDataPoints,
-                borderColor: '#1e293b', 
-                backgroundColor: 'rgba(30, 41, 59, 0.15)', 
-                borderWidth: 2.5,
-                borderDash: [5, 5],
-                tension: 0.3,
-                pointRadius: window.innerWidth < 768 ? 2 : 4,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#1e293b',
-                pointBorderWidth: 1.5
-            });
-
-            if (charts.trend) charts.trend.destroy();
-
-            charts.trend = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { 
-                                usePointStyle: true, 
-                                pointStyle: 'circle',
-                                boxWidth: 8, 
-                                padding: window.innerWidth < 768 ? 10 : 20,
-                                font: { size: window.innerWidth < 768 ? 9 : 11 },
-                                generateLabels: function(chart) {
-                                    return chart.data.datasets.map((dataset, i) => {
-                                        return {
-                                            text: dataset.label,
-                                            datasetIndex: i,
-                                            pointStyle: 'circle',
-                                            fillStyle: dataset.backgroundColor,
-                                            strokeStyle: dataset.borderColor,
-                                            lineWidth: 2,
-                                            hidden: !chart.isDatasetVisible(i)
-                                        };
-                                    });
-                                }
-                            } 
-                        },
-                        tooltip: {
-                            callbacks: { label: function(context) { return context.dataset.label + ': ' + formatNumber(context.raw); } }
-                        }
-                    },
-                    scales: {
-                        y: { grid: { display: false }, ticks: { font: { size: 9 }, callback: (val) => val / 1000 + 'k'} },
-                        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
-                    }
-                }
+                row.innerHTML = `
+                    <td class="py-3.5 px-4 text-center flex justify-center">${rankBadge}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-900">${leader.name}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${formatNumber(leader[g1])}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${formatNumber(leader[g2])}</td>
+                    <td class="py-3.5 px-4 text-right font-bold text-blue-600">${formatNumber(leader.total)}</td>
+                </td>`;
+                tableBody.appendChild(row);
             });
         }
 
-        function updateCompositionChart() {
-            const ctx = document.getElementById('compositionChart').getContext('2d');
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
-            
-            const getTransparentColor = (hex) => {
-                if (!hex || !hex.startsWith('#')) return 'rgba(0,0,0,0.15)';
-                const r = parseInt(hex.slice(1, 3), 16);
-                const g = parseInt(hex.slice(3, 5), 16);
-                const b = parseInt(hex.slice(5, 7), 16);
-                return `rgba(${r}, ${g}, ${b}, 0.15)`;
-            };
-
-            if (currentFileName === "mdin.csv") {
-                const last4Months = monthColumns.slice(-4).reverse(); 
-                
-                const dataValues = last4Months.map(month => {
-                    let sum = 0;
-                    filteredData.forEach(row => { sum += (row[month] || 0); });
-                    return sum;
-                });
-
-                if (charts.comp) charts.comp.destroy();
-
-                const mdinMonthColors = ['#4f46e5', '#10b981', '#f59e0b', '#3b82f6'];
-
-                charts.comp = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: last4Months,
-                        datasets: [{
-                            data: dataValues,
-                            backgroundColor: mdinMonthColors,
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: {
-                            legend: { 
-                                position: 'bottom', 
-                                labels: { 
-                                    usePointStyle: true, 
-                                    padding: window.innerWidth < 768 ? 10 : 15, 
-                                    boxWidth: 8,
-                                    font: { size: window.innerWidth < 768 ? 9 : 11 },
-                                    generateLabels: function(chart) {
-                                        const data = chart.data;
-                                        if (data.labels.length && data.datasets.length) {
-                                            const dataset = data.datasets[0];
-                                            return data.labels.map((label, i) => {
-                                                const baseColor = dataset.backgroundColor[i];
-                                                return {
-                                                    text: label, 
-                                                    index: i,
-                                                    pointStyle: 'circle',
-                                                    fillStyle: getTransparentColor(baseColor),
-                                                    strokeStyle: baseColor,
-                                                    lineWidth: 2,
-                                                    hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden
-                                                };
-                                            });
-                                        }
-                                        return [];
-                                    }
-                                } 
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        let percentage = total ? ((context.raw / total) * 100).toFixed(1) + '%' : '0%';
-                                        return context.label + ': ' + formatNumber(context.raw) + ' (' + percentage + ')';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            } else {
-                const dataValues = distinctProducts.map(prod => {
-                    let sum = 0;
-                    filteredData.forEach(row => { if (row.PRODUCT === prod) sum += (row[lastMonth] || 0); });
-                    return sum;
-                });
-
-                if (charts.comp) charts.comp.destroy();
-
-                charts.comp = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: distinctProducts.map(p => p === "Sme" ? "SME" : p.replace(/_/g, ' ')),
-                        datasets: [{
-                            data: dataValues,
-                            backgroundColor: distinctProducts.map(p => productColors[p]),
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: {
-                            legend: { 
-                                position: 'bottom', 
-                                labels: { 
-                                    usePointStyle: true, 
-                                    padding: window.innerWidth < 768 ? 10 : 20, 
-                                    boxWidth: 8,
-                                    font: { size: window.innerWidth < 768 ? 9 : 11 },
-                                    generateLabels: function(chart) {
-                                        const data = chart.data;
-                                        if (data.labels.length && data.datasets.length) {
-                                            const dataset = data.datasets[0];
-                                            return data.labels.map((label, i) => {
-                                                const baseColor = dataset.backgroundColor[i];
-                                                return {
-                                                    text: label,
-                                                    index: i,
-                                                    pointStyle: 'circle',
-                                                    fillStyle: getTransparentColor(baseColor),
-                                                    strokeStyle: baseColor,
-                                                    lineWidth: 2,
-                                                    hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden
-                                                };
-                                            });
-                                        }
-                                        return [];
-                                    }
-                                } 
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function updateCoBranchChart() {
-            const ctx = document.getElementById('coBranchChart').getContext('2d');
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
-            const totalCoBranchMap = {};
-
-            filteredData.forEach(row => {
-                const coBranch = row['CO-BRANCH-CLEAN']; 
-                if (coBranch) {
-                    if (!totalCoBranchMap[coBranch]) totalCoBranchMap[coBranch] = 0;
-                    totalCoBranchMap[coBranch] += (row[lastMonth] || 0);
-                }
-            });
-
-            const top5CoBranchNames = Object.entries(totalCoBranchMap)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(entry => entry[0]);
-
-            const datasetBreakdown = distinctProducts.map(prod => {
-                return {
-                    label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
-                    data: top5CoBranchNames.map(coName => {
-                        let totalProd = 0;
-                        filteredData.forEach(row => {
-                            if(row['CO-BRANCH-CLEAN'] === coName && row.PRODUCT === prod) { totalProd += (row[lastMonth] || 0); }
-                        });
-                        return totalProd;
-                    }),
-                    backgroundColor: productColors[prod],
-                    barThickness: window.innerWidth < 768 ? 12 : 16
-                };
-            });
-
-            if (charts.coBranch) charts.coBranch.destroy();
-
-            charts.coBranch = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: top5CoBranchNames, datasets: datasetBreakdown },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false, 
-                    plugins: {
-                        legend: { 
-                            display: true, 
-                            position: 'bottom',
-                            labels: { usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 9 } }
-                        }
-                    },
-                    scales: {
-                        x: { stacked: true, display: false, grid: { display: false } },
-                        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } } }
-                    }
-                },
-                plugins: [{
-                    id: 'internal_bar_labels_instant',
-                    afterDatasetsDraw(chart) {
-                        const { ctx } = chart;
-                        ctx.save();
-                        ctx.font = 'bold 9px Inter, sans-serif';
-                        ctx.fillStyle = '#ffffff'; 
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-
-                        const labelsCount = chart.data.labels.length;
-                        
-                        for (let i = 0; i < labelsCount; i++) {
-                            let totalBarValue = 0;
-                            chart.data.datasets.forEach((dataset, datasetIdx) => {
-                                if (chart.isDatasetVisible(datasetIdx)) {
-                                    totalBarValue += dataset.data[i];
-                                }
-                            });
-
-                            if (totalBarValue === 0) continue;
-
-                            chart.data.datasets.forEach((dataset, datasetIdx) => {
-                                if (chart.isDatasetVisible(datasetIdx)) {
-                                    const element = chart.getDatasetMeta(datasetIdx).data[i];
-                                    const val = dataset.data[i];
-                                    
-                                    if (element && val > 0) {
-                                        let displayText = '';
-                                        if (currentFileName === "mdin.csv") {
-                                            displayText = formatNumber(val);
-                                        } else {
-                                            displayText = ((val / totalBarValue) * 100).toFixed(0) + '%';
-                                        }
-                                        const width = Math.abs(element.x - element.base);
-                                        const centerX = element.base + ((element.x - element.base) / 2);
-                                        const centerY = element.y;
-
-                                        if (width > 12) {
-                                            ctx.fillText(displayText, centerX, centerY);
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                        ctx.restore();
-                    }
-                }]
-            });
-        }
-
-        function updateBranchChart() {
-            const ctx = document.getElementById('branchChart').getContext('2d');
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
-            const totalOfficeMap = {};
-
-            filteredData.forEach(row => {
-                const office = row['OFFICE-CLEAN'];
-                if (office) {
-                    if(!totalOfficeMap[office]) totalOfficeMap[office] = 0;
-                    totalOfficeMap[office] += (row[lastMonth] || 0);
-                }
-            });
-
-            const top5OfficeNames = Object.entries(totalOfficeMap)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(entry => entry[0]);
-
-            const datasetBreakdown = distinctProducts.map(prod => {
-                return {
-                    label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
-                    data: top5OfficeNames.map(officeName => {
-                        let totalProd = 0;
-                        filteredData.forEach(row => {
-                            if(row['OFFICE-CLEAN'] === officeName && row.PRODUCT === prod) { totalProd += (row[lastMonth] || 0); }
-                        });
-                        return totalProd;
-                    }),
-                    backgroundColor: productColors[prod],
-                    barThickness: window.innerWidth < 768 ? 12 : 16
-                };
-            });
-
-            if (charts.branch) charts.branch.destroy();
-
-            charts.branch = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: top5OfficeNames, datasets: datasetBreakdown },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false, 
-                    plugins: {
-                        legend: { 
-                            display: true, 
-                            position: 'bottom',
-                            labels: { usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 9 } }
-                        }
-                    },
-                    scales: {
-                        x: { stacked: true, display: false, grid: { display: false } },
-                        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } } }
-                    }
-                },
-                plugins: [{
-                    id: 'internal_bar_labels_instant',
-                    afterDatasetsDraw(chart) {
-                        const { ctx } = chart;
-                        ctx.save();
-                        ctx.font = 'bold 9px Inter, sans-serif';
-                        ctx.fillStyle = '#ffffff'; 
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-
-                        const labelsCount = chart.data.labels.length;
-                        
-                        for (let i = 0; i < labelsCount; i++) {
-                            let totalBarValue = 0;
-                            chart.data.datasets.forEach((dataset, datasetIdx) => {
-                                if (chart.isDatasetVisible(datasetIdx)) {
-                                    totalBarValue += dataset.data[i];
-                                }
-                            });
-
-                            if (totalBarValue === 0) continue;
-
-                            chart.data.datasets.forEach((dataset, datasetIdx) => {
-                                if (chart.isDatasetVisible(datasetIdx)) {
-                                    const element = chart.getDatasetMeta(datasetIdx).data[i];
-                                    const val = dataset.data[i];
-                                    
-                                    if (element && val > 0) {
-                                        let displayText = '';
-                                        if (currentFileName === "mdin.csv") {
-                                            displayText = formatNumber(val);
-                                        } else {
-                                            displayText = ((val / totalBarValue) * 100).toFixed(0) + '%';
-                                        }
-                                        const width = Math.abs(element.x - element.base);
-                                        const centerX = element.base + ((element.x - element.base) / 2);
-                                        const centerY = element.y;
-
-                                        if (width > 12) {
-                                            ctx.fillText(displayText, centerX, centerY);
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                        ctx.restore();
-                    }
-                }]
-            });
-        }
-
-        function updateTable() {
-            const tbody = document.getElementById('data-table-body');
-            tbody.innerHTML = '';
-            
-            const officeMap = {};
-            filteredData.forEach(row => {
-                const office = row['OFFICE-CLEAN']; 
-                if(!office) return;
-                
-                if (!officeMap[office]) {
-                    officeMap[office] = { total: 0 };
-                    distinctProducts.forEach(p => officeMap[office][p] = 0);
-                }
-                const val = row[lastMonth] || 0;
-                const prod = row.PRODUCT;
-                
-                if (officeMap[office][prod] !== undefined) { officeMap[office][prod] += val; }
-                officeMap[office].total += val;
-            });
-
-            const sortedOffices = Object.entries(officeMap)
-                .map(([name, vals]) => ({ name, ...vals }))
-                .sort((a, b) => b.total - a.total);
-
-            const fragment = document.createDocumentFragment();
-
-            sortedOffices.forEach((item) => {
-                const tr = document.createElement('tr');
-                tr.className = "bg-white border-b hover:bg-slate-50 transition-colors";
-                
-                let productCellsHtml = '';
-                distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
-                });
-
-                tr.innerHTML = `
-                    <td class="px-3 py-2.5 font-medium sticky-column">
-                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs">
-                            <i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}
-                        </a>
-                    </td>
-                    ${productCellsHtml}
-                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${formatNumber(item.total)}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-
-            tbody.appendChild(fragment);
-        }
-
-        function animateNumber(element, targetValue, isPercentage = false) {
-            if (!element) return;
-            
-            const startValue = 0;
-            const duration = 600; 
-            let startTime = null;
-
-            function animation(currentTime) {
-                if (!startTime) startTime = currentTime;
-                const progress = Math.min((currentTime - startTime) / duration, 1);
-                const easeProgress = progress * (2 - progress);
-                const currentValue = startValue + easeProgress * (targetValue - startValue);
-
-                if (isPercentage) {
-                    element.innerText = currentValue.toFixed(1) + '%';
-                } else {
-                    element.innerText = formatNumber(currentValue);
-                }
-
-                if (progress < 1) {
-                    requestAnimationFrame(animation);
-                } else {
-                    if (isPercentage) {
-                        element.innerText = targetValue.toFixed(1) + '%';
-                    } else {
-                        element.innerText = formatNumber(targetValue);
-                    }
-                }
-            }
-            requestAnimationFrame(animation);
+        // Helper: Format angka standar akuntansi (Ribuan dengan titik '.')
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID', {
+                maximumFractionDigits: 0
+            }).format(num);
         }
     </script>
 </body>
