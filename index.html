@@ -45,18 +45,20 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* Kunci kolom pertama tabel saat digeser horizontal (Lebih Lebar & Proporsional) */
-        .sticky-column {
-            position: sticky;
-            left: 0;
-            background-color: #ffffff !important;
-            z-index: 10;
-            box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
-            min-width: 140px;   /* Diperlebar agar nama branch terbaca jelas di mobile */
-            white-space: nowrap !important;
-        }
-        th.sticky-column {
-            background-color: #f8fafc !important;
+        @media (max-width: 768px) {
+            .sticky-column {
+                position: sticky;
+                left: 0;
+                background-color: #ffffff;
+                z-index: 10;
+                box-shadow: 3px 0 6px -3px rgba(0,0,0,0.15);
+                /* Tambahkan dua baris di bawah ini */
+                min-w: 120px !important; 
+                max-w: 140px !important;
+            }
+            th.sticky-column {
+                background-color: #f8fafc !important;
+            }
         }
     </style>
 </head>
@@ -405,27 +407,31 @@
             }
         }
 
+        // Handler Khusus Drawer Navigasi Mobile
         function initMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
             const openBtn = document.getElementById('mobile-menu-btn');
             const closeBtn = document.getElementById('sidebar-close-mobile');
-
+        
             function openMobileNav() {
                 sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0'); // Pastikan kelas ini ditambahkan
                 backdrop.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
             }
-
+        
             function closeMobileNav() {
+                sidebar.classList.remove('translate-x-0'); // Hapus saat ditutup
                 sidebar.classList.add('-translate-x-full');
                 backdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
             }
-
+        
             if(openBtn) openBtn.addEventListener('click', openMobileNav);
             if(closeBtn) closeBtn.addEventListener('click', closeMobileNav);
             if(backdrop) backdrop.addEventListener('click', closeMobileNav);
         }
-
         function cleanName(name) {
             if (name && name.length > 6 && name.substring(3, 6) === ' - ') {
                 return name.substring(6).trim();
@@ -1071,14 +1077,15 @@
                     productCellsHtml += `<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
                 });
 
+                // Cari baris ini di dalam fungsi updateTable():
                 tr.innerHTML = `
-                    <td class="px-2 py-2 font-medium sticky-column text-left truncate" title="${item.name}">
-                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold block text-[11px] truncate header-link">
-                            <i class="fa-solid fa-filter text-[8px] opacity-40 mr-0.5"></i><span>${item.name}</span>
+                    <td class="px-3 py-2.5 font-medium sticky-column">
+                        <a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs">
+                            <i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}
                         </a>
                     </td>
                     ${productCellsHtml}
-                    <td class="px-2 py-2 text-right font-mono font-bold text-slate-800 text-[11px] max-w-[90px] truncate">${formatNumber(item.total)}</td>
+                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${formatNumber(item.total)}</td>
                 `;
                 fragment.appendChild(tr);
             });
