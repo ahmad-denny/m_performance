@@ -738,124 +738,150 @@ function updateKPIs() {
                 productTotals[product] += val;
             });
 
-            // 1. Logika Dinamis Nama Label KPI Pertama berdasarkan File Config yang Aktif
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
-            let totalLabelText = "Total Outstanding"; // Default
-
-            if (currentFileName === "pembiayaan.csv") {
-                totalLabelText = "Total Booking";
-            } else if (currentFileName === "haji.csv") {
-                totalLabelText = "Total Porsi";
-            } else if (currentFileName === "qris.csv" || currentFileName === "mdin.csv") {
-                totalLabelText = "Total Akusisi";
-            }
-
-            // Terapkan teks label ke elemen HTML
-            const kpiTotalLabelEl = document.getElementById('kpi-total-label');
-            if (kpiTotalLabelEl) {
-                kpiTotalLabelEl.innerText = totalLabelText;
-            }
-
-            // Animasi angka untuk total nilai kelolaan
-            animateNumber(document.getElementById('kpi-total'), grandTotal);
-
-            const g1 = groupLabels[0];
-            const g2 = groupLabels[1];
-
-            const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
-            const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
-
-            // --- SEGMENT 1 CARD ---
-            document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
-            animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
-            if (document.getElementById('kpi-segment1-pct')) {
-                document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
-            }
-
-            // --- SEGMENT 2 CARD (LOGIKA SEMBUNYI JIKA MDIN.CSV) ---
-            // Cari element wrapper / card KPI Segment 2. Biasanya berupa tag div pembungkus terdekat.
-            const segment2Card = document.getElementById('kpi-segment2')?.closest('.bg-white, .card, div'); 
             
+            // =========================================================================
+            // LINI LOGIKA 1: DYNAMIC KPI UNTUK MDIN.CSV (BERDASARKAN TREN BULANAN)
+            // =========================================================================
             if (currentFileName === "mdin.csv") {
-                if (segment2Card) segment2Card.style.display = 'none';
-            } else {
-                if (segment2Card) segment2Card.style.display = 'block'; // Tampilkan kembali untuk file lain
+                // Ambil 4 bulan terakhir yang tersedia dari array monthColumns
+                const totalMonths = monthColumns.length;
+                const m1 = monthColumns[totalMonths - 1] || '-'; // Bulan Terakhir
+                const m2 = monthColumns[totalMonths - 2] || '-'; // 2 Bulan Lalu
+                const m3 = monthColumns[totalMonths - 3] || '-'; // 3 Bulan Lalu
+                const m4 = monthColumns[totalMonths - 4] || '-'; // 4 Bulan Lalu
+
+                // Hitung total untuk masing-masing bulan historis tersebut
+                let totalM1 = 0, totalM2 = 0, totalM3 = 0, totalM4 = 0;
+                filteredData.forEach(row => {
+                    if (m1 !== '-') totalM1 += (row[m1] || 0);
+                    if (m2 !== '-') totalM2 += (row[m2] || 0);
+                    if (m3 !== '-') totalM3 += (row[m3] || 0);
+                    if (m4 !== '-') totalM4 += (row[m4] || 0);
+                });
+
+                // Kartu 1: Bulan Terakhir
+                document.getElementById('kpi-total-label').innerText = `Total Akusisi (${m1})`;
+                animateNumber(document.getElementById('kpi-total'), totalM1);
                 
+                // Kartu 2: 2 Bulan Lalu
+                document.getElementById('kpi-segment1-label').innerText = `Total Akusisi (${m2})`;
+                animateNumber(document.getElementById('kpi-segment1'), totalM2);
+                if (document.getElementById('kpi-segment1-pct')) {
+                    document.getElementById('kpi-segment1-pct').innerHTML = `<span class="text-slate-400 font-normal text-[9px]">Posisi 2 Bulan Terakhir</span>`;
+                }
+
+                // Kartu 3: 3 Bulan Lalu
+                document.getElementById('kpi-segment2-label').innerText = `Total Akusisi (${m3})`;
+                animateNumber(document.getElementById('kpi-segment2'), totalM3);
+                if (document.getElementById('kpi-segment2-pct')) {
+                    document.getElementById('kpi-segment2-pct').innerHTML = `<span class="text-slate-400 font-normal text-[9px]">Posisi 3 Bulan Terakhir</span>`;
+                }
+
+                // Kartu 4 (Top Product diubah sementara menjadi data 4 bulan lalu)
+                const topProductLabelEl = document.getElementById('kpi-top-product').parentElement.querySelector('p');
+                if (topProductLabelEl) topProductLabelEl.innerText = `Total Akusisi (${m4})`;
+                
+                // Karena animateNumber butuh ID, kita animasikan konten h3 kartu ke-4 secara manual/instant atau format teks
+                document.getElementById('kpi-top-product').innerText = formatNumber(totalM4);
+
+                // Sembunyikan kontainer MoM growth khusus mdin karena strukturnya sudah berubah menjadi tren tunggal
+                document.getElementById('kpi-total-mtd').className = "hidden";
+                document.getElementById('kpi-segment1-mtd').className = "hidden";
+                document.getElementById('kpi-segment2-mtd').className = "hidden";
+
+            } else {
+                // =========================================================================
+                // KONDISI DEFAULT UNTUK FILE LAINNYA (Financing, Funding, Haji, Qris, NPF)
+                // =========================================================================
+                // Kembalikan nama label bawaan untuk Kartu Ke-4 (Top Dominan Product)
+                const topProductLabelEl = document.getElementById('kpi-top-product').parentElement.querySelector('p');
+                if (topProductLabelEl) topProductLabelEl.innerText = `Top Dominant Product`;
+
+                let totalLabelText = "Total Outstanding"; 
+                if (currentFileName === "pembiayaan.csv") {
+                    totalLabelText = "Total Booking";
+                } else if (currentFileName === "haji.csv") {
+                    totalLabelText = "Total Porsi";
+                } else if (currentFileName === "qris.csv") {
+                    totalLabelText = "Total Akusisi";
+                }
+
+                const kpiTotalLabelEl = document.getElementById('kpi-total-label');
+                if (kpiTotalLabelEl) kpiTotalLabelEl.innerText = totalLabelText;
+
+                animateNumber(document.getElementById('kpi-total'), grandTotal);
+
+                const g1 = groupLabels[0];
+                const g2 = groupLabels[1];
+
+                const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
+                const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
+
+                document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
+                animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
+                if (document.getElementById('kpi-segment1-pct')) {
+                    document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
+                    animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
+                }
+
                 document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
                 animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
                 if (document.getElementById('kpi-segment2-pct')) {
                     document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                     animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
                 }
-            }
 
-            // Target elemen MTD Growth
-            const mtdTotalElement = document.getElementById('kpi-total-mtd');
-            const mtdG1Element = document.getElementById('kpi-segment1-mtd');
-            const mtdG2Element = document.getElementById('kpi-segment2-mtd');
+                // Logika MoM Growth MTD untuk tab non-Mdin
+                const mtdTotalElement = document.getElementById('kpi-total-mtd');
+                const mtdG1Element = document.getElementById('kpi-segment1-mtd');
+                const mtdG2Element = document.getElementById('kpi-segment2-mtd');
 
-            if (currentActiveFileIndex === 1 && prevMonth) {
-                // Hitung MTD Total
-                let totalGrowth = 0;
-                if (grandPrevTotal > 0) {
-                    totalGrowth = ((grandTotal - grandPrevTotal) / grandPrevTotal) * 100;
-                }
-                const totalColor = totalGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-                const totalIcon = totalGrowth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
-                mtdTotalElement.className = `block ${totalColor} font-bold mt-1 flex items-baseline gap-0.5`;
-                mtdTotalElement.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${totalIcon} text-xs"></i>${totalGrowth >= 0 ? '+' : ''}${totalGrowth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
+                if (currentActiveFileIndex === 1 && prevMonth) {
+                    let totalGrowth = grandPrevTotal > 0 ? ((grandTotal - grandPrevTotal) / grandPrevTotal) * 100 : 0;
+                    const totalColor = totalGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                    const totalIcon = totalGrowth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+                    mtdTotalElement.className = `block ${totalColor} font-bold mt-1 flex items-baseline gap-0.5`;
+                    mtdTotalElement.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${totalIcon} text-xs"></i>${totalGrowth >= 0 ? '+' : ''}${totalGrowth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
 
-                // Hitung MTD Segment 1
-                let g1Growth = 0;
-                if (groupPrevTotals[g1] > 0) {
-                    g1Growth = ((groupTotals[g1] - groupPrevTotals[g1]) / groupPrevTotals[g1]) * 100;
-                }
-                const g1Color = g1Growth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-                const g1Icon = g1Growth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
-                mtdG1Element.className = `block ${g1Color} font-bold mt-1 flex items-baseline gap-0.5`;
-                mtdG1Element.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${g1Icon} text-xs"></i>${g1Growth >= 0 ? '+' : ''}${g1Growth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
+                    let g1Growth = groupPrevTotals[g1] > 0 ? ((groupTotals[g1] - groupPrevTotals[g1]) / groupPrevTotals[g1]) * 100 : 0;
+                    const g1Color = g1Growth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                    const g1Icon = g1Growth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+                    mtdG1Element.className = `block ${g1Color} font-bold mt-1 flex items-baseline gap-0.5`;
+                    mtdG1Element.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${g1Icon} text-xs"></i>${g1Growth >= 0 ? '+' : ''}${g1Growth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
 
-                // Hitung MTD Segment 2 (Hanya diproses jika bukan mdin.csv)
-                if (currentFileName !== "mdin.csv") {
-                    let g2Growth = 0;
-                    if (groupPrevTotals[g2] > 0) {
-                        g2Growth = ((groupTotals[g2] - groupPrevTotals[g2]) / groupPrevTotals[g2]) * 100;
-                    }
+                    let g2Growth = groupPrevTotals[g2] > 0 ? ((groupTotals[g2] - groupPrevTotals[g2]) / groupPrevTotals[g2]) * 100 : 0;
                     const g2Color = g2Growth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
                     const g2Icon = g2Growth >= 0 ? 'fa-caret-up' : 'fa-caret-down';
                     mtdG2Element.className = `block ${g2Color} font-bold mt-1 flex items-baseline gap-0.5`;
                     mtdG2Element.innerHTML = `<span class="text-base flex items-center gap-0.5"><i class="fa-solid ${g2Icon} text-xs"></i>${g2Growth >= 0 ? '+' : ''}${g2Growth.toFixed(2)}%</span><span class="text-slate-400 font-normal text-[9px] ml-0.5">MoM</span>`;
                 } else {
+                    mtdTotalElement.className = "hidden";
+                    mtdG1Element.className = "hidden";
                     mtdG2Element.className = "hidden";
                 }
-            } else {
-                mtdTotalElement.className = "hidden";
-                mtdG1Element.className = "hidden";
-                mtdG2Element.className = "hidden";
-            }
 
-            // --- LOGIKA TOP PRODUCT & HANDLING "Sme" -> "SME" ---
-            let topProduct = "-";
-            let maxVal = 0;
-            for (const [prod, total] of Object.entries(productTotals)) {
-                if (total > maxVal) { 
-                    maxVal = total; 
-                    topProduct = prod; 
+                // =========================================================================
+                // LINI LOGIKA 2: KOREKSI STR_REPLACE "Sme" MENJADI "SME" (KAPITAL)
+                // =========================================================================
+                let topProduct = "-";
+                let maxVal = 0;
+                for (const [prod, total] of Object.entries(productTotals)) {
+                    if (total > maxVal) { 
+                        maxVal = total; 
+                        topProduct = prod; 
+                    }
                 }
+                
+                // Ubah ke format teks rapih, lalu replace case "Sme" -> "SME"
+                let cleanTopProductText = toProperCase(topProduct);
+                if (cleanTopProductText.includes("Sme")) {
+                    cleanTopProductText = cleanTopProductText.replace(/Sme/g, "SME");
+                }
+                document.getElementById('kpi-top-product').innerText = cleanTopProductText;
             }
-            
-            // Konversi nama product ke proper case dasar
-            let displayProduct = toProperCase(topProduct);
-            // Cek jika hasilnya adalah "Sme" atau "Sme ...", paksa ubah menjadi "SME"
-            if (displayProduct === "Sme") {
-                displayProduct = "SME";
-            } else if (displayProduct.startsWith("Sme ")) {
-                displayProduct = "SME" + displayProduct.substring(3);
-            }
-            
-            document.getElementById('kpi-top-product').innerText = displayProduct;
 
+            // Bagian update persentase label grup sub-komposisi ringkasan bawah donut chart
             groupLabels.forEach((grp, idx) => {
                 const element = document.getElementById(`comp-group-pct-${idx}`);
                 if(element) {
@@ -864,7 +890,7 @@ function updateKPIs() {
                 }
             });
 
-            // === LOGIKA UNTUK ANALYTIC SUMMARY ===
+            // Penulisan teks otomatis pada Analytic Summary
             let officeTotals = {};
             filteredData.forEach(row => {
                 const office = row['OFFICE-CLEAN'];
@@ -889,20 +915,24 @@ function updateKPIs() {
             if (grandTotal === 0) {
                 summaryText = "Tidak ada data yang tersedia untuk kombinasi filter yang Anda pilih saat ini.";
             } else {
-                summaryText = `Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${totalLabelText}</b> secara keseluruhan mencapai <b>${formatNumber(grandTotal)}</b>. `;
+                let currentLabelTitle = (currentFileName === "mdin.csv") ? "Total Akusisi" : document.getElementById('kpi-total-label').innerText;
+                summaryText = `Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${currentLabelTitle}</b> secara keseluruhan mencapai <b>${formatNumber(grandTotal)}</b>. `;
                 
-                if (selectedGroup !== 'ALL') {
-                    summaryText += `Pada segmen portofolio <b>${selectedGroup}</b>, `;
-                } else {
-                    // Penyesuaian narasi summary jika Segment 2 disembunyikan (mdin.csv)
-                    if (currentFileName === "mdin.csv") {
-                        summaryText += `Secara keseluruhan, kontribusi didominasi penuh oleh segmen <b>${g1}</b> (${g1Pct.toFixed(1)}%). `;
+                if (currentFileName !== "mdin.csv") {
+                    const g1 = groupLabels[0];
+                    const g2 = groupLabels[1];
+                    const g1Pct = grandTotal ? ((groupTotals[g1] / grandTotal) * 100) : 0;
+                    const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
+                    
+                    if (selectedGroup !== 'ALL') {
+                        summaryText += `Pada segmen portofolio <b>${selectedGroup}</b>, `;
                     } else {
                         summaryText += `Secara keseluruhan, kontribusi didominasi oleh segmen <b>${g1}</b> (${g1Pct.toFixed(1)}%) diikuti oleh <b>${g2}</b> (${g2Pct.toFixed(1)}%). `;
                     }
+                    
+                    let finalProdName = toProperCase(document.getElementById('kpi-top-product').innerText);
+                    summaryText += `Produk yang mencatat volume tertinggi adalah <b>${finalProdName.replace(/Sme/g, "SME")}</b>. `;
                 }
-        
-                summaryText += `Produk yang mencatat volume tertinggi adalah <b>${displayProduct}</b>. `;
         
                 if (selectedOffice === 'ALL') {
                     summaryText += `Adapun pusat aktivitas bisnis dengan performa kontribusi paling masif berada di bawah kelolaan cabang <b>${topOffice}</b> dengan nominal sebesar <b>${formatNumber(maxOfficeVal)}</b>.`;
@@ -916,7 +946,6 @@ function updateKPIs() {
                 summaryElement.innerHTML = summaryText;
             }
         }
-
         function updateCharts() {
             updateTrendChart();
             updateCompositionChart();
