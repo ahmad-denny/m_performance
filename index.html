@@ -82,10 +82,20 @@
             <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Dashboard</span></h1>
         </div>
 
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
+        <nav class="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
             <div id="filter-container" class="space-y-4"></div>
+            
+            <!-- Tempat Keterangan Ringkasan Analisis -->
+            <div id="sidebar-summary-container" class="border-t border-slate-700/60 pt-4 mt-2 nav-text">
+                <label class="block text-[10px] font-medium text-indigo-400 mb-2 uppercase tracking-wider">
+                    <i class="fa-solid fa-brain mr-1"></i> Analytic Summary
+                </label>
+                <div id="analytics-text-summary" class="text-[11px] text-slate-300 leading-relaxed bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/40 text-justify">
+                    Memilih filter untuk melihat ringkasan performa wilayah...
+                </div>
+            </div>
         </nav>
-
+        
         <div class="p-4 border-t border-slate-700 bg-slate-800 user-info">
             <div class="flex items-center gap-3">
                 <img src="https://ui-avatars.com/api/?name=AD&background=4f46e5&color=fff" alt="User" class="w-9 h-9 rounded-full border-2 border-slate-600 shrink-0">
@@ -681,6 +691,56 @@
                     animateNumber(element, pct, true);
                 }
             });
+            // === TAMBAHAN LOGIKA UNTUK ANALYTIC SUMMARY ===
+            // 1. Cari Cabang (OFFICE) Terbesar berdasarkan data yang sedang terfilter
+            let officeTotals = {};
+            filteredData.forEach(row => {
+                const office = row['OFFICE-CLEAN'];
+                if (office) {
+                    officeTotals[office] = (officeTotals[office] || 0) + (row[lastMonth] || 0);
+                }
+            });
+        
+            let topOffice = "-";
+            let maxOfficeVal = 0;
+            for (const [off, total] of Object.entries(officeTotals)) {
+                if (total > maxOfficeVal) {
+                    maxOfficeVal = total;
+                    topOffice = off;
+                }
+            }
+        
+            // 2. Ambil nilai filter aktif untuk kebutuhan dinamika teks
+            const selectedGroup = document.getElementById('filter-GROUP')?.value || 'ALL';
+            const selectedOffice = document.getElementById('filter-OFFICE')?.value || 'ALL';
+        
+            // 3. Rakit kalimat summary naratif otomatis
+            let summaryText = "";
+            if (grandTotal === 0) {
+                summaryText = "Tidak ada data yang tersedia untuk kombinasi filter yang Anda pilih saat ini.";
+            } else {
+                summaryText = `Hingga posisi data posisi <b>${lastMonth}</b>, total volume kelolaan mencapai <b>${formatNumber(grandTotal)}</b>. `;
+                
+                if (selectedGroup !== 'ALL') {
+                    summaryText += `Pada segmen portofolio <b>${selectedGroup}</b>, `;
+                } else {
+                    summaryText += `Secara keseluruhan, kontribusi didominasi oleh segmen <b>${g1}</b> (${g1Pct.toFixed(1)}%) diikuti oleh <b>${g2}</b> (${g2Pct.toFixed(1)}%). `;
+                }
+        
+                summaryText += `Produk yang mencatat volume tertinggi adalah <b>${toProperCase(topProduct)}</b>. `;
+        
+                if (selectedOffice === 'ALL') {
+                    summaryText += `Adapun pusat aktivitas bisnis dengan performa kontribusi paling masif berada di bawah kelolaan cabang <b>${topOffice}</b> dengan nominal sebesar <b>${formatNumber(maxOfficeVal)}</b>.`;
+                } else {
+                    summaryText += `Khusus untuk wilayah unit kerja <b>${selectedOffice}</b>, performa berjalan stabil disokong oleh lini produk andalannya.`;
+                }
+            }
+        
+            // 4. Cetak ke elemen HTML di bawah filter
+            const summaryElement = document.getElementById('analytics-text-summary');
+            if (summaryElement) {
+                summaryElement.innerHTML = summaryText;
+            }
         }
 
         function updateCharts() {
