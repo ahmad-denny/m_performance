@@ -616,16 +616,15 @@
             return new Intl.NumberFormat('id-ID').format(Math.round(num));
         }
 
-       
+        function toProperCase(str) {
+            if (!str) return "-";
+                return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+        }
+        
         function updateKPIs() {
             let groupTotals = {};
             let productTotals = {};
             let grandTotal = 0;
-
-            function toProperCase(str) {
-                if (!str) return "-";
-                return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-            }
 
             groupLabels.forEach(grp => groupTotals[grp] = 0);
 
@@ -671,7 +670,7 @@
                     topProduct = prod; 
                 }
             }
-            document.getElementById('kpi-top-product').innerText = topProduct.replace(/_/g, ' ');
+            document.getElementById('kpi-top-product').innerText = toProperCase(topProduct);
 
             groupLabels.forEach((grp, idx) => {
                 const element = document.getElementById(`comp-group-pct-${idx}`);
