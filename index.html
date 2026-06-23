@@ -616,6 +616,11 @@
             return new Intl.NumberFormat('id-ID').format(Math.round(num));
         }
 
+        function toProperCase(str) {
+            if (!str) return "-";
+            return str.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+        }
+        
         function updateKPIs() {
             let groupTotals = {};
             let productTotals = {};
@@ -660,7 +665,10 @@
             let topProduct = "-";
             let maxVal = 0;
             for (const [prod, total] of Object.entries(productTotals)) {
-                if (total > maxVal) { maxVal = total; topProduct = prod; }
+                if (total > maxVal) { 
+                    maxVal = total; 
+                    topProduct = prod; 
+                }
             }
             document.getElementById('kpi-top-product').innerText = topProduct.replace(/_/g, ' ');
 
