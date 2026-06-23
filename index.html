@@ -633,7 +633,7 @@
             return formatted.replace(/Sme/g, "SME"); 
         }
         
-        function updateKPIs() {
+function updateKPIs() {
             let groupTotals = {};
             let productTotals = {};
             let grandTotal = 0;
@@ -684,28 +684,39 @@
                     document.getElementById('kpi-segment2-pct').innerHTML = `<span class="text-slate-400 font-normal text-[9px]">Posisi 3 Bulan Terakhir</span>`;
                 }
 
-                const topProductCard = document.getElementById('kpi-top-product').parentElement;
+                // --- PERBAIKAN TARGET ELEMENT KARTU KEEPAT ---
+                const topProductEl = document.getElementById('kpi-top-product');
+                const topProductCard = topProductEl.parentElement;
                 const topProductLabelEl = topProductCard.querySelector('p');
                 if (topProductLabelEl) topProductLabelEl.innerText = `Total Akusisi (${m4})`;
                 
-                document.getElementById('kpi-top-product').innerText = formatNumber(totalM4);
+                topProductEl.innerText = formatNumber(totalM4);
 
-                const subLabelEl = topProductCard.nextElementSibling?.querySelector('span');
-                if (subLabelEl) {
-                    subLabelEl.className = "text-slate-400 not-italic truncate";
-                    subLabelEl.innerText = "Posisi 4 bulan terakhir";
+                // Target langsung ke container pembungkus di bawahnya untuk mengubah "By Volume Month"
+                const footerContainer = topProductCard.parentElement.querySelector('.mt-1.flex.items-center');
+                if (footerContainer) {
+                    const subLabelEl = footerContainer.querySelector('span');
+                    if (subLabelEl) {
+                        subLabelEl.className = "text-slate-400 not-italic truncate";
+                        subLabelEl.innerText = "Posisi 4 bulan terakhir";
+                    }
                 }
 
                 document.getElementById('mix-chart-title').innerText = "Acquisition Trend (4 Months)";
             } else {
-                const topProductCard = document.getElementById('kpi-top-product').parentElement;
+                const topProductEl = document.getElementById('kpi-top-product');
+                const topProductCard = topProductEl.parentElement;
                 const topProductLabelEl = topProductCard.querySelector('p');
                 if (topProductLabelEl) topProductLabelEl.innerText = `Top Dominant Product`;
                 
-                const subLabelEl = topProductCard.nextElementSibling?.querySelector('span');
-                if (subLabelEl) {
-                    subLabelEl.className = "text-slate-400 italic truncate";
-                    subLabelEl.innerText = "By Volume Month";
+                // Kembalikan ke teks default jika berpindah tab dari mdin ke file lain
+                const footerContainer = topProductCard.parentElement.querySelector('.mt-1.flex.items-center');
+                if (footerContainer) {
+                    const subLabelEl = footerContainer.querySelector('span');
+                    if (subLabelEl) {
+                        subLabelEl.className = "text-slate-400 italic truncate";
+                        subLabelEl.innerText = "By Volume Month";
+                    }
                 }
 
                 let totalLabelText = "Total Outstanding"; 
@@ -750,7 +761,7 @@
                         topProduct = prod; 
                     }
                 }
-                document.getElementById('kpi-top-product').innerText = toProperCase(topProduct);
+                topProductEl.innerText = toProperCase(topProduct);
                 document.getElementById('mix-chart-title').innerText = "Product Mix (Latest Month)";
             }
 
@@ -816,7 +827,6 @@
                 summaryElement.innerHTML = summaryText;
             }
         }
-
         function updateCharts() {
             updateTrendChart();
             updateCompositionChart();
