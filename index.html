@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
@@ -634,6 +634,12 @@
             return new Intl.NumberFormat('id-ID').format(Math.round(num));
         }
 
+        // FUNGSI BARU: Format ke Milyar
+        function formatToBillion(num) {
+            if (!num && num !== 0) return "0";
+            return (num / 1000000000).toFixed(2) + " M";
+        }
+
         function formatGrowthText(element, growthValue) {
             if(!element) return;
             element.classList.remove('hidden');
@@ -692,6 +698,9 @@
 
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             const subLabelEl = document.getElementById('kpi-top-product-sublabel');
+
+            // Cek apakah file saat ini menggunakan format Milyar
+            const isBillionFormat = ['financing.csv', 'funding.csv', 'coll.csv'].includes(currentFileName);
 
             // Sembunyikan semua kontainer growth terlebih dahulu secara default
             document.getElementById('growth-total').classList.add('hidden');
@@ -765,7 +774,12 @@
                 const kpiTotalLabelEl = document.getElementById('kpi-total-label');
                 if (kpiTotalLabelEl) kpiTotalLabelEl.innerText = totalLabelText;
 
-                animateNumber(document.getElementById('kpi-total'), grandTotal);
+                // UPDATE LOGIKA FORMAT KPI TOTAL
+                if (isBillionFormat) {
+                    document.getElementById('kpi-total').innerText = formatToBillion(grandTotal);
+                } else {
+                    animateNumber(document.getElementById('kpi-total'), grandTotal);
+                }
 
                 const g1 = groupLabels[0];
                 const g2 = groupLabels[1];
@@ -774,14 +788,28 @@
                 const g2Pct = grandTotal ? ((groupTotals[g2] / grandTotal) * 100) : 0;
 
                 document.getElementById('kpi-segment1-label').innerText = g1 ? `Total ${g1}` : 'Segment 1';
-                animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
+                
+                // UPDATE LOGIKA FORMAT KPI SEGMENT 1
+                if (isBillionFormat) {
+                    document.getElementById('kpi-segment1').innerText = g1 ? formatToBillion(groupTotals[g1]) : "0";
+                } else {
+                    animateNumber(document.getElementById('kpi-segment1'), g1 ? groupTotals[g1] : 0);
+                }
+
                 if (document.getElementById('kpi-segment1-pct')) {
                     document.getElementById('kpi-segment1-pct').innerHTML = `<span id="anim-g1-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                     animateNumber(document.getElementById('anim-g1-pct'), g1Pct, true);
                 }
 
                 document.getElementById('kpi-segment2-label').innerText = g2 ? `Total ${g2}` : 'Segment 2';
-                animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
+                
+                // UPDATE LOGIKA FORMAT KPI SEGMENT 2
+                if (isBillionFormat) {
+                    document.getElementById('kpi-segment2').innerText = g2 ? formatToBillion(groupTotals[g2]) : "0";
+                } else {
+                    animateNumber(document.getElementById('kpi-segment2'), g2 ? groupTotals[g2] : 0);
+                }
+
                 if (document.getElementById('kpi-segment2-pct')) {
                     document.getElementById('kpi-segment2-pct').innerHTML = `<span id="anim-g2-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                     animateNumber(document.getElementById('anim-g2-pct'), g2Pct, true);
@@ -874,7 +902,7 @@
                 summaryText = "Tidak ada data yang tersedia untuk kombinasi filter yang Anda pilih saat ini.";
             } else {
                 let currentLabelTitle = (currentFileName === "mdin.csv") ? "Total Akusisi" : document.getElementById('kpi-total-label').innerText;
-                summaryText = `Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${currentLabelTitle}</b> secara keseluruhan mencapai <b>${formatNumber(grandTotal)}</b>. `;
+                summaryText = `Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${currentLabelTitle}</b> secara keseluruhan mencapai <b>${isBillionFormat ? formatToBillion(grandTotal) : formatNumber(grandTotal)}</b>. `;
                 
                 if (currentFileName !== "mdin.csv") {
                     const g1 = groupLabels[0];
@@ -892,7 +920,7 @@
                 }
         
                 if (selectedOffice === 'ALL') {
-                    summaryText += `Adapun pusat aktivitas bisnis dengan performa kontribusi paling masif berada di bawah kelolaan cabang <b>${topOffice}</b> dengan nominal sebesar <b>${formatNumber(maxOfficeVal)}</b>.`;
+                    summaryText += `Adapun pusat aktivitas bisnis dengan performa kontribusi paling masif berada di bawah kelolaan cabang <b>${topOffice}</b> dengan nominal sebesar <b>${isBillionFormat ? formatToBillion(maxOfficeVal) : formatNumber(maxOfficeVal)}</b>.`;
                 } else {
                     summaryText += `Khusus untuk wilayah unit kerja <b>${selectedOffice}</b>, performa berjalan stabil disokong oleh lini produk andalannya.`;
                 }
@@ -1388,6 +1416,8 @@
                 .sort((a, b) => b.total - a.total);
 
             const fragment = document.createDocumentFragment();
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isBillionFormat = ['financing.csv', 'funding.csv', 'coll.csv'].includes(currentFileName);
 
             sortedOffices.forEach((item) => {
                 const tr = document.createElement('tr');
@@ -1395,8 +1425,21 @@
                 
                 let productCellsHtml = '';
                 distinctProducts.forEach(prod => {
-                    productCellsHtml += `<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${formatNumber(item[prod] || 0)}</td>`;
+                    let displayVal = item[prod] || 0;
+                    if (isBillionFormat) {
+                        displayVal = formatToBillion(displayVal);
+                    } else {
+                        displayVal = formatNumber(displayVal);
+                    }
+                    productCellsHtml += `<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;
                 });
+
+                let totalDisplay = item.total;
+                if (isBillionFormat) {
+                    totalDisplay = formatToBillion(totalDisplay);
+                } else {
+                    totalDisplay = formatNumber(totalDisplay);
+                }
 
                 tr.innerHTML = `
                     <td class="px-3 py-2.5 font-medium sticky-column">
@@ -1405,7 +1448,7 @@
                         </a>
                     </td>
                     ${productCellsHtml}
-                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${formatNumber(item.total)}</td>
+                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${totalDisplay}</td>
                 `;
                 fragment.appendChild(tr);
             });
