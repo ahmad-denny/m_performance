@@ -523,7 +523,7 @@
 
         function formatToBillion(num) {
             if (!num && num !== 0) return "0";
-            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(num/1000000000)+" M";
+            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1}).format(num/1000000000)+" M";
         }
 
         // Fungsi Helper untuk Render MoM dalam ANGKA (Nominal)
