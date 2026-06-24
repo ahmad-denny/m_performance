@@ -810,16 +810,6 @@
                 // Bukan maxVal (produk terbesar)
                 
                 // Update Card ke-4 khusus Financing
-
-                let topProduct = "-";
-                let maxVal = 0;
-                for (const [prod, total] of Object.entries(productTotals)) {
-                    if (total > maxVal) { 
-                        maxVal = total; 
-                        topProduct = prod; 
-                    }
-                }        
-                
                 kpiFourthLabel.innerText = "Last Month Booking";
                 kpiFourthValue.innerText = isBillionFormat ? formatToBillion(grandTotal) : formatNumber(grandTotal);
                 kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
