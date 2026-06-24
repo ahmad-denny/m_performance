@@ -282,6 +282,7 @@
         let monthColumns = [];
         let lastMonth = '';
         let prevMonth = '';
+        let prevPrevMonth = ''; // Bulan ke-3 dari belakang (untuk growth Last Month Booking)
         let activeTimelineMonths = 0; 
 
         const filterColumns = ['CO-BRANCH', 'OFFICE', 'PRODUCT', 'GROUP'];
@@ -365,6 +366,7 @@
             monthColumns = Object.keys(firstRow).filter(key => !staticFields.includes(key));
             lastMonth = monthColumns[monthColumns.length - 1];
             prevMonth = monthColumns.length > 1 ? monthColumns[monthColumns.length - 2] : '';
+            prevPrevMonth = monthColumns.length > 2 ? monthColumns[monthColumns.length - 3] : ''; // Ambil bulan ke-3 dari belakang
             document.getElementById('current-date').innerText = lastMonth;
             document.getElementById('kpi-latest-lbl').innerText = lastMonth;
         }
@@ -523,7 +525,7 @@
 
         function formatToBillion(num) {
             if (!num && num !== 0) return "0";
-            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1}).format(num/1000000000)+" M";
+            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(num/1000000000)+" M";
         }
 
         // Fungsi Helper untuk Render MoM dalam ANGKA (Nominal)
@@ -531,7 +533,7 @@
             const el = document.getElementById(elementId);
             if (!el) return;
             
-            if (!prevMonth || prevVal === undefined || prevVal === null) {
+            if (prevVal === undefined || prevVal === null) {
                 el.innerHTML = '';
                 return;
             }
@@ -666,9 +668,17 @@
                 if(!productTotalsPrev[product]) productTotalsPrev[product]=0; productTotalsPrev[product]+=valPrev;
             });
 
+            // Hitung total untuk bulan lalu (prevMonth) dan 2 bulan lalu (prevPrevMonth)
             let prevMonthGrandTotal = 0;
+            let prevPrevMonthGrandTotal = 0;
+            
             if (prevMonth) {
                 filteredData.forEach(row => { prevMonthGrandTotal += (row[prevMonth] || 0); });
+            }
+            
+            // Khusus untuk Last Month Booking Growth (Mei vs April)
+            if (prevPrevMonth) {
+                filteredData.forEach(row => { prevPrevMonthGrandTotal += (row[prevPrevMonth] || 0); });
             }
 
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
@@ -718,12 +728,15 @@
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-g2-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                 animateNumber(document.getElementById('anim-g2-pct'),g2Pct,true);
 
+                // PERBAIKAN: Last Month Booking Growth = Mei (prevMonth) vs April (prevPrevMonth)
                 kpiFourthLabel.innerText = "Last Month Booking";
                 kpiFourthValue.innerText = isBillionFormat ? formatToBillion(prevMonthGrandTotal) : formatNumber(prevMonthGrandTotal);
                 kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
                 kpiFourthSublabel.innerText = prevMonth || '-';
                 kpiFourthIcon.className = "fa-solid fa-book-open";
-                renderMoM('mom-fourth', prevMonthGrandTotal, 0, isBillionFormat, isNPF);
+                
+                // Render MoM menggunakan prevPrevMonth sebagai pembanding
+                renderMoM('mom-fourth', prevMonthGrandTotal, prevPrevMonthGrandTotal, isBillionFormat, isNPF);
 
             } else if (currentFileName === "funding.csv") {
                 // KHUSUS TAB FUNDING
@@ -747,10 +760,9 @@
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-sa-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                 animateNumber(document.getElementById('anim-sa-pct'),saPct,true);
 
-                // Card 4: TOTAL TD (Menggantikan Top Dominant Product)
+                // Card 4: TOTAL TD
                 kpiFourthLabel.innerText = "Total TD";
                 kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
-                kpiFourthSublabel.innerText = `${tdPct.toFixed(1)}% dari total`; // Placeholder, akan diupdate setelah hitung pct
                 
                 if(isBillionFormat){
                     kpiFourthValue.innerText = formatToBillion(tdTotal);
