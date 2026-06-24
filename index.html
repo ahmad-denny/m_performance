@@ -520,26 +520,30 @@
 
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-        // FUNGSI UNIFIED LEGEND YANG DIPAKSAKAN UNTUK SELALU MENGGUNAKAN CIRCLE
+        // PERBAIKAN DEFINITIF LEGEND
         function getUnifiedLegendConfig() {
             return {
                 position: 'bottom',
                 labels: {
-                    usePointStyle: true,
-                    pointStyle: 'circle', // Memaksa bentuk bulat
+                    usePointStyle: true, // Wajib true di root
+                    pointStyle: 'circle', // Wajib circle di root
                     boxWidth: 8,
                     padding: window.innerWidth < 768 ? 10 : 20,
                     font: { size: window.innerWidth < 768 ? 9 : 11 },
+                    // Hard override generateLabels untuk memastikan bentuk lingkaran
                     generateLabels: function(chart) {
-                        // Hard reset logic untuk mencegah caching legend lama
-                        const originalGenerate = Chart.defaults.plugins.legend.labels.generateLabels;
-                        const labels = originalGenerate.call(this, chart);
-                        
-                        return labels.map(label => {
-                            label.pointStyle = 'circle';
-                            label.usePointStyle = true;
-                            return label;
-                        });
+                        const datasets = chart.data.datasets;
+                        return datasets.map((ds, i) => ({
+                            text: ds.label,
+                            fillStyle: ds.backgroundColor,
+                            strokeStyle: ds.borderColor || ds.backgroundColor,
+                            lineWidth: 2,
+                            hidden: !chart.isDatasetVisible(i),
+                            datasetIndex: i,
+                            // Paksa properti ini agar tidak ter-cache sebagai kotak
+                            pointStyle: 'circle',
+                            usePointStyle: true
+                        }));
                     }
                 }
             };
