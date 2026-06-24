@@ -618,9 +618,9 @@
             groupLabels.forEach(grp=>{groupTotals[grp]=0;groupTotalsPrev[grp]=0;});
 
             // Variabel khusus Funding (Inisialisasi di awal agar aman)
-            let caTotal = 0, saTotal = 0;
-            let caTotalPrev = 0, saTotalPrev = 0;
-            let caPct = 0, saPct = 0;
+            let caTotal = 0, saTotal = 0, tdTotal = 0;
+            let caTotalPrev = 0, saTotalPrev = 0, tdTotalPrev = 0;
+            let caPct = 0, saPct = 0, tdPct = 0;
 
             filteredData.forEach(row=>{
                 const val=row[lastMonth]||0;
@@ -632,20 +632,25 @@
                 
                 grandTotal+=val; grandTotalPrev+=valPrev;
                 
-                // --- LOGIKA PENCARIAN CA & SA YANG LEBIH KUAT ---
-                // 1. Cek berdasarkan Nama Produk Langsung
+                // --- LOGIKA PENCARIAN CA, SA & TD YANG LEBIH KUAT ---
                 let isCA = (product === 'CA' || product === 'GIRO');
                 let isSA = (product === 'SA' || product === 'TABUNGAN');
+                let isTD = (product === 'TD' || product === 'DEPO' || product === 'DEPOSITO');
 
-                // 2. Fallback: Jika tidak ketemu, cek berdasarkan Group CASA
-                if (!isCA && !isSA && grp === 'CASA') {
-                    // Asumsi: Jika ada kata 'Giro' atau 'CA' di nama produk -> CA
-                    if (product.toUpperCase().includes('GIRO') || product.toUpperCase().includes('CA')) {
-                        isCA = true;
-                    } 
-                    // Asumsi: Sisanya adalah Tabungan/SA
-                    else {
-                        isSA = true;
+                // Fallback: Jika tidak ketemu berdasarkan nama produk, cek berdasarkan Group
+                if (!isCA && !isSA && !isTD) {
+                    if (grp === 'CASA') {
+                        // Asumsi: Jika ada kata 'Giro' atau 'CA' di nama produk -> CA
+                        if (product.toUpperCase().includes('GIRO') || product.toUpperCase().includes('CA')) {
+                            isCA = true;
+                        } 
+                        // Asumsi: Sisanya adalah Tabungan/SA
+                        else {
+                            isSA = true;
+                        }
+                    } else if (grp === 'TD') {
+                        // Jika group TD tapi nama produk tidak dikenali, anggap sebagai TD
+                        isTD = true;
                     }
                 }
 
@@ -653,6 +658,8 @@
                     caTotal += val; caTotalPrev += valPrev;
                 } else if (isSA) {
                     saTotal += val; saTotalPrev += valPrev;
+                } else if (isTD) {
+                    tdTotal += val; tdTotalPrev += valPrev;
                 }
 
                 if(!productTotals[product]) productTotals[product]=0; productTotals[product]+=val;
@@ -740,16 +747,24 @@
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-sa-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                 animateNumber(document.getElementById('anim-sa-pct'),saPct,true);
 
-                // Card 4: Top Product
-                kpiFourthLabel.innerText = "Top Dominant Product";
-                kpiFourthSublabel.className = "text-slate-400 italic truncate";
-                kpiFourthSublabel.innerText = "By Volume Month";
-                kpiFourthIcon.className = "fa-solid fa-trophy";
+                // Card 4: TOTAL TD (Menggantikan Top Dominant Product)
+                kpiFourthLabel.innerText = "Total TD";
+                kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
+                kpiFourthSublabel.innerText = `${tdPct.toFixed(1)}% dari total`; // Placeholder, akan diupdate setelah hitung pct
                 
-                let topProduct="-"; let maxVal=0;
-                for(const[prod,total]of Object.entries(productTotals)){if(total>maxVal){maxVal=total;topProduct=prod;}}
-                kpiFourthValue.innerText = toProperCase(topProduct);
-                renderMoM('mom-fourth', maxVal, productTotalsPrev[topProduct]||0, isBillionFormat, isNPF);
+                if(isBillionFormat){
+                    kpiFourthValue.innerText = formatToBillion(tdTotal);
+                } else {
+                    animateNumber(kpiFourthValue, tdTotal);
+                }
+                renderMoM('mom-fourth', tdTotal, tdTotalPrev, isBillionFormat, isNPF);
+                
+                // Update sublabel dengan persentase yang benar
+                tdPct = grandTotal ? ((tdTotal/grandTotal)*100) : 0;
+                kpiFourthSublabel.innerText = `${tdPct.toFixed(1)}% dari total`;
+                
+                // Ganti ikon trophy menjadi ikon deposito/stack
+                kpiFourthIcon.className = "fa-solid fa-coins";
 
             } else {
                 // DEFAULT UNTUK TAB LAINNYA
@@ -817,7 +832,7 @@
                 summaryText=`Hingga posisi data <b>${lastMonth}</b>, nilai dari <b>${currentLabelTitle}</b> secara keseluruhan mencapai <b>${isBillionFormat?formatToBillion(grandTotal):formatNumber(grandTotal)}</b>. `;
                 if(currentFileName!=="mdin.csv"){
                     if (currentFileName === "funding.csv") {
-                         summaryText += `Komposisi dana didominasi oleh <b>SA (Tabungan)</b> sebesar <b>${saPct.toFixed(1)}%</b> dan <b>CA (Giro)</b> sebesar <b>${caPct.toFixed(1)}%</b>. `;
+                         summaryText += `Komposisi dana didominasi oleh <b>SA (Tabungan)</b> sebesar <b>${saPct.toFixed(1)}%</b>, <b>TD</b> sebesar <b>${tdPct.toFixed(1)}%</b>, dan <b>CA (Giro)</b> sebesar <b>${caPct.toFixed(1)}%</b>. `;
                     } else {
                         const g1=groupLabels[0]; const g2=groupLabels[1];
                         const g1Pct=grandTotal?((groupTotals[g1]/grandTotal)*100):0;
