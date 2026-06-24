@@ -131,13 +131,12 @@
         <div class="sticky top-[84px] md:top-[97px] z-20 bg-[#f8fafc] px-4 md:px-6 pt-3 pb-3 border-b border-slate-200/60 shadow-sm">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 
-                <!-- Card 1: Total Outstanding / Funding -->
+                <!-- Card 1: Total Funding -->
                 <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-indigo-500 min-w-0">
                     <div class="flex justify-between items-start gap-1">
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
                             <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-total">0</h3>
-                            <!-- MoM Indicator for Total -->
                             <div id="mom-total" class="mt-1 text-[calc((0.875rem+1.125vw)*0.5)] font-medium leading-none"></div>
                         </div>                        
                         <div class="p-1 bg-indigo-50 rounded text-indigo-600 text-xs shrink-0">
@@ -149,13 +148,12 @@
                     </div>                    
                 </div>
 
-                <!-- Card 2: Segment 1 / CA (Giro) -->
+                <!-- Card 2: CA (Giro) -->
                 <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-emerald-500 min-w-0">
                     <div class="flex justify-between items-start gap-1">
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
                             <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment1">0</h3>
-                            <!-- MoM Indicator for Seg 1 -->
                             <div id="mom-seg1" class="mt-1 text-[calc((0.875rem+1.125vw)*0.5)] font-medium leading-none"></div>
                         </div>
                         <div class="p-1 bg-emerald-50 rounded text-emerald-600 text-xs shrink-0">
@@ -167,13 +165,12 @@
                     </div>
                 </div>
 
-                <!-- Card 3: Segment 2 / SA (Tabungan) -->
+                <!-- Card 3: SA (Tabungan) -->
                 <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-amber-500 min-w-0">
                     <div class="flex justify-between items-start gap-1">
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
                             <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-segment2">0</h3>
-                            <!-- MoM Indicator for Seg 2 -->
                             <div id="mom-seg2" class="mt-1 text-[calc((0.875rem+1.125vw)*0.5)] font-medium leading-none"></div>
                         </div>
                         <div class="p-1 bg-amber-50 rounded text-amber-600 text-xs shrink-0">
@@ -185,13 +182,12 @@
                     </div>
                 </div>
 
-                <!-- Card 4: Dinamis (Last Month Booking / Top Product / Total SA) -->
+                <!-- Card 4: Dinamis -->
                 <div class="bg-white rounded-xl p-3 md:p-4 card-shadow border-l-4 border-blue-500 min-w-0">
                     <div class="flex justify-between items-start gap-1">
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate" id="kpi-fourth-label">Top Dominant Product</p>
                             <h3 class="text-sm md:text-xl font-bold text-slate-800 mt-0.5 truncate" id="kpi-fourth-value">-</h3>
-                            <!-- MoM Indicator for Card 4 -->
                             <div id="mom-fourth" class="mt-1 text-[calc((0.875rem+1.125vw)*0.5)] font-medium leading-none"></div>
                         </div>
                         <div class="p-1 bg-blue-50 rounded text-blue-600 text-xs shrink-0">
@@ -337,18 +333,24 @@
             Papa.parse(targetFile.file, {
                 download: true, header: true, skipEmptyLines: true, delimiter: "", 
                 complete: function(results) {
-                    rawData = results.data;
-                    if(rawData.length > 0) {
-                        detectColumns(rawData[0]);
-                        distinctProducts = [...new Set(rawData.map(row => row.PRODUCT))].filter(Boolean);
-                        productColors = generateColorsForProducts(distinctProducts);
-                        groupLabels = [...new Set(rawData.map(row => row.GROUP))].filter(Boolean);
-                        buildDynamicTableHeader();
+                    try {
+                        rawData = results.data;
+                        if(rawData.length > 0) {
+                            detectColumns(rawData[0]);
+                            distinctProducts = [...new Set(rawData.map(row => row.PRODUCT))].filter(Boolean);
+                            productColors = generateColorsForProducts(distinctProducts);
+                            groupLabels = [...new Set(rawData.map(row => row.GROUP))].filter(Boolean);
+                            buildDynamicTableHeader();
+                        }
+                        processData();
+                        initFilters();
+                        updateDashboard();
+                    } catch (e) {
+                        console.error("Error processing data:", e);
+                        alert("Terjadi kesalahan saat memproses data. Cek console untuk detail.");
+                    } finally {
+                        document.getElementById('loading').style.display = 'none';
                     }
-                    processData();
-                    initFilters();
-                    updateDashboard();
-                    document.getElementById('loading').style.display = 'none';
                 },
                 error: function(err) {
                     console.error("Error loading CSV:", err);
@@ -527,8 +529,11 @@
         // Fungsi Helper untuk Render MoM
         function renderMoM(elementId, currentVal, prevVal, isBillion = false) {
             const el = document.getElementById(elementId);
-            if (!el || !prevMonth) {
-                if(el) el.innerHTML = '';
+            if (!el) return;
+            
+            // Jika tidak ada data bulan lalu, kosongkan
+            if (!prevMonth || prevVal === undefined) {
+                el.innerHTML = '';
                 return;
             }
             
@@ -573,10 +578,8 @@
                             lineWidth: 2,
                             hidden: !chart.isDatasetVisible(i),
                             datasetIndex: i,
-                            // Hard override properties
                             pointStyle: 'circle',
                             usePointStyle: true,
-                            // Hapus boxWidth agar tidak bentrok dengan pointStyle
                             boxWidth: 0 
                         }));
                     }
@@ -589,9 +592,10 @@
             let groupTotalsPrev={}, productTotalsPrev={}, grandTotalPrev=0;
             groupLabels.forEach(grp=>{groupTotals[grp]=0;groupTotalsPrev[grp]=0;});
 
-            // Variabel khusus Funding
+            // Variabel khusus Funding (Inisialisasi di awal agar aman)
             let caTotal = 0, saTotal = 0;
             let caTotalPrev = 0, saTotalPrev = 0;
+            let caPct = 0, saPct = 0;
 
             filteredData.forEach(row=>{
                 const val=row[lastMonth]||0;
@@ -604,9 +608,12 @@
                 grandTotal+=val; grandTotalPrev+=valPrev;
                 
                 // Hitung CA dan SA secara terpisah untuk Funding
+                // Fallback: jika produk bernama 'CA' atau 'GIRO'
                 if (product === 'CA' || product === 'GIRO') {
                     caTotal += val; caTotalPrev += valPrev;
-                } else if (product === 'SA' || product === 'TABUNGAN') {
+                } 
+                // Fallback: jika produk bernama 'SA' atau 'TABUNGAN'
+                else if (product === 'SA' || product === 'TABUNGAN') {
                     saTotal += val; saTotalPrev += valPrev;
                 }
 
@@ -642,7 +649,6 @@
                 kpiFourthSublabel.className="text-slate-400 not-italic truncate"; kpiFourthSublabel.innerText="Posisi 4 bulan terakhir";
                 kpiFourthIcon.className="fa-solid fa-calendar-check";
                 document.getElementById('mix-chart-title').innerText="Acquisition Trend (4 Months)";
-                // Clear MoM for MDIN
                 ['mom-total','mom-seg1','mom-seg2','mom-fourth'].forEach(id => document.getElementById(id).innerHTML='');
 
             } else if (currentFileName === "financing.csv") {
@@ -671,7 +677,7 @@
                 kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
                 kpiFourthSublabel.innerText = prevMonth || '-';
                 kpiFourthIcon.className = "fa-solid fa-book-open";
-                renderMoM('mom-fourth', prevMonthGrandTotal, 0, isBillionFormat); // No MoM for prev month itself usually, or compare to prev-prev
+                renderMoM('mom-fourth', prevMonthGrandTotal, 0, isBillionFormat);
 
             } else if (currentFileName === "funding.csv") {
                 // KHUSUS TAB FUNDING
@@ -683,19 +689,19 @@
                 document.getElementById('kpi-segment1-label').innerText = "Total CA (Giro)";
                 if(isBillionFormat){document.getElementById('kpi-segment1').innerText=formatToBillion(caTotal);}else{animateNumber(document.getElementById('kpi-segment1'),caTotal);}
                 renderMoM('mom-seg1', caTotal, caTotalPrev, isBillionFormat);
-                const caPct = grandTotal ? ((caTotal/grandTotal)*100) : 0;
+                caPct = grandTotal ? ((caTotal/grandTotal)*100) : 0;
                 document.getElementById('kpi-segment1-pct').innerHTML=`<span id="anim-ca-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                 animateNumber(document.getElementById('anim-ca-pct'),caPct,true);
 
-                // Card 3: SA (Tabungan) - Mengambil alih posisi Segment 2
+                // Card 3: SA (Tabungan)
                 document.getElementById('kpi-segment2-label').innerText = "Total SA (Tabungan)";
                 if(isBillionFormat){document.getElementById('kpi-segment2').innerText=formatToBillion(saTotal);}else{animateNumber(document.getElementById('kpi-segment2'),saTotal);}
                 renderMoM('mom-seg2', saTotal, saTotalPrev, isBillionFormat);
-                const saPct = grandTotal ? ((saTotal/grandTotal)*100) : 0;
+                saPct = grandTotal ? ((saTotal/grandTotal)*100) : 0;
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-sa-pct">0%</span> <span class="text-[9px] text-slate-400 font-normal">dari total</span>`;
                 animateNumber(document.getElementById('anim-sa-pct'),saPct,true);
 
-                // Card 4: Tetap menampilkan Top Product atau bisa disesuaikan
+                // Card 4: Top Product
                 kpiFourthLabel.innerText = "Top Dominant Product";
                 kpiFourthSublabel.className = "text-slate-400 italic truncate";
                 kpiFourthSublabel.innerText = "By Volume Month";
@@ -707,7 +713,7 @@
                 renderMoM('mom-fourth', maxVal, productTotalsPrev[topProduct]||0, isBillionFormat);
 
             } else {
-                // DEFAULT UNTUK TAB LAINNYA (Hajj, Qris, NPF)
+                // DEFAULT UNTUK TAB LAINNYA
                 kpiFourthLabel.innerText = "Top Dominant Product";
                 kpiFourthSublabel.className = "text-slate-400 italic truncate";
                 kpiFourthSublabel.innerText = "By Volume Month";
@@ -830,8 +836,6 @@
             const top5CoBranchNames=Object.entries(totalCoBranchMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?12:16};});
             if(charts.coBranch)charts.coBranch.destroy();
-            
-            // PERUBAHAN DEFINITIF: Menggunakan getUnifiedLegendConfig() + Tooltip seragam
             charts.coBranch=new Chart(ctx,{type:'bar',data:{labels:top5CoBranchNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getUnifiedLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatNumber(context.raw);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9}}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
         }
 
@@ -843,8 +847,6 @@
             const top5OfficeNames=Object.entries(totalOfficeMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?12:16};});
             if(charts.branch)charts.branch.destroy();
-            
-            // PERUBAHAN DEFINITIF: Menggunakan getUnifiedLegendConfig() + Tooltip seragam
             charts.branch=new Chart(ctx,{type:'bar',data:{labels:top5OfficeNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getUnifiedLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatNumber(context.raw);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9}}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
         }
 
