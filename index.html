@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Performance Dashboard Region Sumatera</title>
+    <title>Performance Region Sumatera</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -105,7 +105,7 @@
             <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-chart-line text-white text-sm"></i>
             </div>
-            <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Dashboard</span></h1>
+            <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Region Sumatera</span></h1>
         </div>
 
         <nav class="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
@@ -124,8 +124,8 @@
             <div class="flex items-center gap-3">
                 <img src="https://ui-avatars.com/api/?name=AD&background=4f46e5&color=fff" alt="User" class="w-9 h-9 rounded-full border-2 border-slate-600 shrink-0">
                 <div>
-                    <p class="text-xs font-medium">Region Sumatera</p>
-                    <p class="text-[10px] text-slate-400">Made by Love - RBPM</p>
+                    <p class="text-xs font-medium">RBPM - Region Sumatera</p>
+                    <p class="text-[10px] text-slate-400">Typing, Create, Update, Repeat</p>
                 </div>
             </div>
         </div>
@@ -297,7 +297,7 @@
         // KONFIGURASI PASSWORD
         // Ganti 'admin123' dengan password yang Anda inginkan
         // ==========================================
-        const DASHBOARD_PASSWORD = 'admin123'; 
+        const DASHBOARD_PASSWORD = 'rbpm'; 
 
         // Cek apakah sudah login sebelumnya (session based)
         if (sessionStorage.getItem('isLoggedIn') === 'true') {
@@ -603,7 +603,7 @@
 
         function formatToBillion(num) {
             if (!num && num !== 0) return "0";
-            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(num/1000000000)+" M";
+            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1}).format(num/1000000000)+" M";
         }
 
         // FUNGSI BARU: Format Chart Tooltip & Label (Milyar 1 Desimal)
