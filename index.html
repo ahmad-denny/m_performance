@@ -1112,8 +1112,13 @@
                 const dataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[month]||0);});return sum;});
                 return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:dataPoints,borderColor:productColors[prod],backgroundColor:getTransparentColor(productColors[prod]),borderWidth:2,tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor:'#ffffff',pointBorderColor:productColors[prod],pointBorderWidth:1.5};
             });
-            const totalDataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
-            datasets.push({label:'TOTAL',data:totalDataPoints,borderColor:'#1e293b',backgroundColor:'rgba(30,41,59,0.15)',borderWidth:2.5,borderDash:[5,5],tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor:'#ffffff',pointBorderColor:'#1e293b',pointBorderWidth:1.5});
+
+            // PERUBAHAN: Hanya tambahkan dataset TOTAL jika BUKAN tab MDin
+            if (currentFileName !== "mdin.csv") {
+                const totalDataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
+                datasets.push({label:'TOTAL',data:totalDataPoints,borderColor:'#1e293b',backgroundColor:'rgba(30,41,59,0.15)',borderWidth:2.5,borderDash:[5,5],tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor:'#ffffff',pointBorderColor:'#1e293b',pointBorderWidth:1.5});
+            }
+
             if(charts.trend)charts.trend.destroy();
             charts.trend=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:getUnifiedLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{y:{grid:{display:false},ticks:{font:{size:9},callback:(val)=>formatChartValue(val, currentFileName)}},x:{grid:{display:false},ticks:{font:{size:9}}}}}});
         }
