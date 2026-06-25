@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Performance Region Sumatera</title>
+    <title>Performance Dashboard Region Sumatera</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -65,7 +65,7 @@
                     <i class="fa-solid fa-lock text-2xl text-indigo-600"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800">Dashboard Login</h2>
-                <p class="text-slate-500 mt-2 text-sm">Masukkan password untuk mengakses Performance Region Sumatera</p>
+                <p class="text-slate-500 mt-2 text-sm">Masukkan password untuk mengakses Performance Dashboard</p>
             </div>
             
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
@@ -105,7 +105,7 @@
             <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-chart-line text-white text-sm"></i>
             </div>
-            <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Region Sumatera</span></h1>
+            <h1 class="font-bold text-base tracking-wide logo-text">Performance<br><span class="text-indigo-400">Dashboard</span></h1>
         </div>
 
         <nav class="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
@@ -124,8 +124,8 @@
             <div class="flex items-center gap-3">
                 <img src="https://ui-avatars.com/api/?name=AD&background=4f46e5&color=fff" alt="User" class="w-9 h-9 rounded-full border-2 border-slate-600 shrink-0">
                 <div>
-                    <p class="text-xs font-medium">RBPM - Region Sumatera</p>
-                    <p class="text-[10px] text-slate-400"><i>Everything's possible, try it !!!</i></p>
+                    <p class="text-xs font-medium">Region Sumatera</p>
+                    <p class="text-[10px] text-slate-400">Made by Love - RBPM</p>
                 </div>
             </div>
         </div>
@@ -296,7 +296,7 @@
         // KONFIGURASI PASSWORD
         // Ganti 'admin123' dengan password yang Anda inginkan
         // ==========================================
-        const DASHBOARD_PASSWORD = 'rbpm'; 
+        const DASHBOARD_PASSWORD = 'admin123'; 
 
         // Cek apakah sudah login sebelumnya (session based)
         if (sessionStorage.getItem('isLoggedIn') === 'true') {
@@ -602,7 +602,7 @@
 
         function formatToBillion(num) {
             if (!num && num !== 0) return "0";
-            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1}).format(num/1000000000)+" M";
+            return new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(num/1000000000)+" M";
         }
 
         // FUNGSI BARU: Format Chart Tooltip & Label (Milyar 1 Desimal)
@@ -886,7 +886,7 @@
                 animateNumber(document.getElementById('anim-sa-pct'),saPct,true);
 
                 // Card 4: TOTAL TD
-                kpiFourthLabel.innerText = "Total TD (Deposito)";
+                kpiFourthLabel.innerText = "Total TD";
                 kpiFourthSublabel.className = "text-slate-400 not-italic truncate";
                 
                 if(isBillionFormat){
@@ -1121,15 +1121,62 @@
             const ctx=document.getElementById('compositionChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const getTransparentColor=(hex)=>{if(!hex||!hex.startsWith('#'))return'rgba(0,0,0,0.15)';const r=parseInt(hex.slice(1,3),16);const g=parseInt(hex.slice(3,5),16);const b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},0.15)`;};
+            
+            // Konfigurasi Legend Strikethrough
+            const mixLegendConfig = {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    padding: window.innerWidth < 768 ? 10 : 20,
+                    boxWidth: 8,
+                    font: { size: window.innerWidth < 768 ? 9 : 11 },
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        if (data.labels.length && data.datasets.length) {
+                            const dataset = data.datasets[0];
+                            return data.labels.map((label, i) => {
+                                const meta = chart.getDatasetMeta(0);
+                                const baseColor = dataset.backgroundColor[i];
+                                return {
+                                    text: label,
+                                    index: i,
+                                    pointStyle: 'circle',
+                                    fillStyle: getTransparentColor(baseColor),
+                                    strokeStyle: baseColor,
+                                    lineWidth: 2,
+                                    hidden: isNaN(dataset.data[i]) || meta.data[i].hidden,
+                                    // Tambahkan properti strikethrough jika hidden
+                                    textDecoration: meta.data[i].hidden ? 'line-through' : 'none'
+                                };
+                            });
+                        }
+                        return [];
+                    }
+                },
+                // PERBAIKAN: Menambahkan onClick handler untuk strikethrough
+                onClick: function(e, legendItem, legend) {
+                    const index = legendItem.index;
+                    const ci = legend.chart;
+                    const meta = ci.getDatasetMeta(0);
+                    
+                    // Toggle visibility
+                    meta.data[index].hidden = !meta.data[index].hidden;
+                    
+                    // Update chart
+                    ci.update();
+                }
+            };
+
             if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){
                 const last4Months=monthColumns.slice(-4).reverse();
                 const dataValues=last4Months.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
                 if(charts.comp)charts.comp.destroy();
-                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:last4Months,datasets:[{data:dataValues,backgroundColor:['#4f46e5','#10b981','#f59e0b','#3b82f6'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:window.innerWidth<768?10:15,boxWidth:8,font:{size:window.innerWidth<768?9:11},generateLabels:function(chart){const data=chart.data;if(data.labels.length&&data.datasets.length){const dataset=data.datasets[0];return data.labels.map((label,i)=>{const baseColor=dataset.backgroundColor[i];return{text:label,index:i,pointStyle:'circle',fillStyle:getTransparentColor(baseColor),strokeStyle:baseColor,lineWidth:2,hidden:isNaN(dataset.data[i])||chart.getDatasetMeta(0).data[i].hidden};});}return[];}}},tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
+                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:last4Months,datasets:[{data:dataValues,backgroundColor:['#4f46e5','#10b981','#f59e0b','#3b82f6'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             } else {
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
                 if(charts.comp)charts.comp.destroy();
-                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:window.innerWidth<768?10:20,boxWidth:8,font:{size:window.innerWidth<768?9:11},generateLabels:function(chart){const data=chart.data;if(data.labels.length&&data.datasets.length){const dataset=data.datasets[0];return data.labels.map((label,i)=>{const baseColor=dataset.backgroundColor[i];return{text:label,index:i,pointStyle:'circle',fillStyle:getTransparentColor(baseColor),strokeStyle:baseColor,lineWidth:2,hidden:isNaN(dataset.data[i])||chart.getDatasetMeta(0).data[i].hidden};});}return[];}}},tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
+                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
         }
 
