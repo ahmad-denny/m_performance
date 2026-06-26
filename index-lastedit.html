@@ -42,12 +42,11 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* Style khusus untuk sticky header sel <th> */
         .sticky-th {
             position: sticky !important;
-            top: 240px; /* Nilai fallback awal sebelum dihitung ulang oleh JS */
+            top: 240px; 
             z-index: 15;
-            background-color: #f8fafc !important; /* Warna solid agar data tabel di bawahnya tidak tembus */
+            background-color: #f8fafc !important; 
             border-bottom: 2px solid #e2e8f0;
         }
 
@@ -59,7 +58,7 @@
             }
             th.sticky-column { 
                 background-color: #f8fafc !important;
-                z-index: 30 !important; /* Lebih tinggi agar perempatan pojok kiri atas tidak tertimpa */
+                z-index: 30 !important; 
             }
         }
     </style>
@@ -334,7 +333,6 @@
             }
         }
 
-        // FUNGSI PERBAIKAN: Menghitung letak top presisi untuk diaplikasikan ke seluruh class `.sticky-th`
         function updateTableHeaderStickyPosition() {
             const kpiContainer = document.getElementById('sticky-kpi-container');
             if (!kpiContainer) return;
@@ -344,7 +342,6 @@
             const kpiHeight = kpiContainer.offsetHeight;
             const finalTopValue = kpiStickyTop + kpiHeight; 
             
-            // Terapkan kalkulasi top konstan ke seluruh sel head agar rata
             const thElements = document.querySelectorAll('.sticky-th');
             thElements.forEach(th => {
                 th.style.top = `${finalTopValue}px`;
@@ -464,7 +461,6 @@
 
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
-            // Menambahkan class .sticky-th pada setiap elemen sel th
             let headerHtml = `<th scope="col" class="sticky-th px-2 py-2 text-[10px] md:text-xs font-bold bg-slate-50 sticky-column text-left truncate">Branch</th>`;
             distinctProducts.forEach(prod => {
                 let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
@@ -473,7 +469,6 @@
             headerHtml += `<th scope="col" class="sticky-th px-2 py-2 text-[10px] md:text-xs text-right font-bold bg-slate-50 max-w-[90px] whitespace-normal break-words">Total Amount</th>`;
             headerRow.innerHTML = headerHtml;
             
-            // Panggil ulang fungsi set penyesuaian posisi atas setelah elemen dibuat dinamis
             updateTableHeaderStickyPosition();
 
             const compSubLabels = document.getElementById('dynamic-group-pct-labels');
@@ -681,6 +676,273 @@
         }
 
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+        // =========================================================================
+        // SCRIPT INTI PEMROSESAN UTUH (KPI, CHARTS, & TABLE RENDERING)
+        // =========================================================================
+
+        function updateKPIs() {
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isBillion = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
+            const isNPF = currentFileName === 'coll.csv';
+
+            let totalCurrent = 0, totalPrev = 0, totalPrevPrev = 0;
+            let seg1Current = 0, seg1Prev = 0;
+            let seg2Current = 0, seg2Prev = 0;
+            let productVolumes = {};
+
+            filteredData.forEach(row => {
+                totalCurrent += row[lastMonth] || 0;
+                if(prevMonth) totalPrev += row[prevMonth] || 0;
+                if(prevPrevMonth) totalPrevPrev += row[prevPrevMonth] || 0;
+
+                if (row.GROUP === groupLabels[0]) {
+                    seg1Current += row[lastMonth] || 0;
+                    if(prevMonth) seg1Prev += row[prevMonth] || 0;
+                } else if (row.GROUP === groupLabels[1]) {
+                    seg2Current += row[lastMonth] || 0;
+                    if(prevMonth) seg2Prev += row[prevMonth] || 0;
+                }
+
+                if(row.PRODUCT) {
+                    productVolumes[row.PRODUCT] = (productVolumes[row.PRODUCT] || 0) + (row[lastMonth] || 0);
+                }
+            });
+
+            // Tampilkan Judul & Animasi Nilai KPI Utama
+            document.getElementById('kpi-total-label').innerText = isNPF ? "Total Nominal NPF" : "Total Outstanding";
+            animateNumber(document.getElementById('kpi-total'), totalCurrent, false, isBillion);
+            renderMoM('mom-total', totalCurrent, totalPrev, isBillion, isNPF);
+
+            // Tampilkan Segment 1 & Segment 2
+            document.getElementById('kpi-segment1-label').innerText = groupLabels[0] ? toProperCase(groupLabels[0]) : "Segment 1";
+            animateNumber(document.getElementById('kpi-segment1'), seg1Current, false, isBillion);
+            renderMoM('mom-seg1', seg1Current, seg1Prev, isBillion, isNPF);
+            let pct1 = totalCurrent > 0 ? (seg1Current / totalCurrent) * 100 : 0;
+            document.getElementById('kpi-segment1-pct').innerText = `${pct1.toFixed(1)}% Kontribusi dari Total`;
+
+            document.getElementById('kpi-segment2-label').innerText = groupLabels[1] ? toProperCase(groupLabels[1]) : "Segment 2";
+            animateNumber(document.getElementById('kpi-segment2'), seg2Current, false, isBillion);
+            renderMoM('mom-seg2', seg2Current, seg2Prev, isBillion, isNPF);
+            let pct2 = totalCurrent > 0 ? (seg2Current / totalCurrent) * 100 : 0;
+            document.getElementById('kpi-segment2-pct').innerText = `${pct2.toFixed(1)}% Kontribusi dari Total`;
+
+            // Tampilkan Dominant Product / NPF Rasio
+            if (isNPF) {
+                document.getElementById('kpi-fourth-label').innerText = "Rasio NPF Rata-Rata";
+                document.getElementById('kpi-fourth-sublabel').innerText = "Total NPF Berbanding Outstanding";
+                document.getElementById('kpi-fourth-icon').className = "fa-solid fa-gauge-high";
+                let avgNPF = filteredData.length > 0 ? (totalCurrent / filteredData.length) : 0;
+                document.getElementById('kpi-fourth-value').innerText = avgNPF.toFixed(2) + "%";
+                renderMoM('mom-fourth', totalCurrent, totalPrev, isBillion, isNPF);
+            } else {
+                document.getElementById('kpi-fourth-label').innerText = "Top Dominant Product";
+                document.getElementById('kpi-fourth-sublabel').innerText = "Berdasarkan Volume Bulan Ini";
+                document.getElementById('kpi-fourth-icon').className = "fa-solid fa-trophy";
+                let topProd = "-", maxVol = -1;
+                Object.entries(productVolumes).forEach(([p, v]) => { if (v > maxVol) { maxVol = v; topProd = p; } });
+                document.getElementById('kpi-fourth-value').innerText = toProperCase(topProd);
+                if (prevMonth) {
+                    let prevTopVol = 0;
+                    filteredData.forEach(row => { if(row.PRODUCT === topProd) prevTopVol += row[prevMonth] || 0; });
+                    renderMoM('mom-fourth', maxVol, prevTopVol, isBillion, false, `Vol ${prevMonth}`);
+                }
+            }
+
+            // Atur Label Dinamis di Product Mix Box
+            groupLabels.forEach((grp, i) => {
+                const lbl = document.getElementById(`comp-group-pct-${i}`);
+                if (lbl) {
+                    let grpVol = filteredData.filter(r => r.GROUP === grp).reduce((sum, r) => sum + (r[lastMonth] || 0), 0);
+                    let grpPct = totalCurrent > 0 ? (grpVol / totalCurrent) * 100 : 0;
+                    lbl.innerText = `${grpPct.toFixed(1)}%`;
+                }
+            });
+
+            generateAnalyticSummary(totalCurrent, totalPrev, isNPF, isBillion);
+        }
+
+        function updateCharts() {
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            updateTrendChart();
+
+            // 1. Composition / Product Mix Chart
+            let productMap = {};
+            filteredData.forEach(row => { if(row.PRODUCT) productMap[row.PRODUCT] = (productMap[row.PRODUCT] || 0) + (row[lastMonth] || 0); });
+            let labels = Object.keys(productMap);
+            let data = Object.values(productMap);
+            let bgColors = labels.map(p => productColors[p] || '#cbd5e1');
+
+            if(charts.composition) charts.composition.destroy();
+            const ctxComp = document.getElementById('compositionChart').getContext('2d');
+            charts.composition = new Chart(ctxComp, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(l => toProperCase(l)),
+                    datasets: [{ data: data, backgroundColor: bgColors, borderHex: '#ffffff', borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+                        tooltip: { callbacks: { label: (ctx) => ` Vol: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // 2. Bar Charts (CO-Branch & Office)
+            updateBarChart('coBranchChart', 'CO-BRANCH-CLEAN', 'coBranch');
+            updateBarChart('branchChart', 'OFFICE-CLEAN', 'branch');
+        }
+
+        function updateTrendChart() {
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            let targetMonths = [...monthColumns];
+            if (activeTimelineMonths > 0) targetMonths = targetMonths.slice(-activeTimelineMonths);
+
+            let trendData = targetMonths.map(m => {
+                return filteredData.reduce((sum, row) => sum + (row[m] || 0), 0);
+            });
+
+            if(charts.trend) charts.trend.destroy();
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            charts.trend = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: targetMonths,
+                    datasets: [{
+                        label: 'Volume Performa', data: trendData,
+                        borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                        borderWidth: 2.5, fill: true, tension: 0.15, pointRadius: 3, pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ` Total: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                    },
+                    scales: {
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
+                        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function updateBarChart(canvasId, propertyName, chartKey) {
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            let summaryMap = {};
+            filteredData.forEach(row => {
+                let name = row[propertyName];
+                if(name) summaryMap[name] = (summaryMap[name] || 0) + (row[lastMonth] || 0);
+            });
+
+            let sorted = Object.entries(summaryMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            let labels = sorted.map(x => x[0]);
+            let data = sorted.map(x => x[1]);
+
+            if(charts[chartKey]) charts[chartKey].destroy();
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            charts[chartKey] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 15 }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ` Volume: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
+                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function updateTable() {
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isBillion = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
+            
+            let branchSummary = {};
+            filteredData.forEach(row => {
+                let br = row['OFFICE-CLEAN']; if(!br) return;
+                if(!branchSummary[br]) {
+                    branchSummary[br] = { name: br, total: 0 };
+                    distinctProducts.forEach(p => branchSummary[br][p] = 0);
+                }
+                branchSummary[br][row.PRODUCT] += row[lastMonth] || 0;
+                branchSummary[br].total += row[lastMonth] || 0;
+            });
+
+            let sortedBranches = Object.values(branchSummary).sort((a,b) => b.total - a.total);
+            const tbody = document.getElementById('data-table-body');
+            tbody.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            sortedBranches.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                
+                let productCellsHtml = '';
+                distinctProducts.forEach(prod => {
+                    let val = item[prod] || 0;
+                    let displayVal = isBillion ? formatToBillion(val) : formatNumber(val);
+                    if(val === 0) displayVal = "-";
+                    productCellsHtml += `<td class="px-2 py-2.5 text-right font-mono text-[11px] text-slate-600 truncate">${displayVal}</td>`;
+                });
+
+                let totalDisplay = isBillion ? formatToBillion(item.total) : formatNumber(item.total);
+                tr.innerHTML = `<td class="px-2 py-2.5 font-medium sticky-column"><a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs"><i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}</a></td>${productCellsHtml}<td class="px-2 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${totalDisplay}</td>`;
+                fragment.appendChild(tr);
+            });
+            tbody.appendChild(fragment);
+        }
+
+        function animateNumber(element, targetValue, isPercentage = false, isBillion = false) {
+            if(!element) return;
+            const startValue = 0; const duration = 400; let startTime = null;
+            function animation(currentTime){
+                if(!startTime) startTime = currentTime;
+                const progress = Math.min((currentTime - startTime) / duration, 1);
+                const easeProgress = progress * (2 - progress);
+                const currentValue = startValue + easeProgress * (targetValue - startValue);
+                
+                if (isPercentage) {
+                    element.innerText = currentValue.toFixed(1) + '%';
+                } else {
+                    element.innerText = isBillion ? formatToBillion(currentValue) : formatNumber(currentValue);
+                }
+                if(progress < 1) { requestAnimationFrame(animation); } else {
+                    if (isPercentage) { element.innerText = targetValue.toFixed(1) + '%'; } 
+                    else { element.innerText = isBillion ? formatToBillion(targetValue) : formatNumber(targetValue); }
+                }
+            }
+            requestAnimationFrame(animation);
+        }
+
+        function generateAnalyticSummary(currentTotal, prevTotal, isNPF, isBillion) {
+            const summaryBox = document.getElementById('analytics-text-summary');
+            if(!summaryBox) return;
+            let diff = currentTotal - prevTotal;
+            let percentChange = prevTotal > 0 ? (diff / prevTotal) * 100 : 0;
+            let directionText = diff >= 0 ? "peningkatan" : "penurunan";
+            
+            if(isNPF) {
+                directionText = diff >= 0 ? "kenaikan risiko" : "perbaikan kualitas";
+            }
+
+            let text = `Pada bulan <b>${lastMonth}</b>, total volume tercatat sebesar <b>${isBillion ? formatToBillion(currentTotal) : formatNumber(currentTotal)}</b>. `;
+            if(prevMonth) {
+                text += `Mengalami ${directionText} sebesar <b>${isBillion ? formatToBillion(Math.abs(diff)) : formatNumber(Math.abs(diff))}</b> (${percentChange.toFixed(1)}% MoM) dibandingkan bulan ${prevMonth}.`;
+            }
+            summaryBox.innerHTML = text;
+        }
     </script>
 </body>
 </html>
