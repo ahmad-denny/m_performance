@@ -378,7 +378,7 @@
                 loadSelectedCSV(currentActiveFileIndex); 
                 initSidebarToggle();
                 initMobileSidebar(); 
-                setTimeout(setDynamicTableHeaderTop, 200);
+                updateTableHeaderStickyPosition()
             }
         });
 
@@ -480,6 +480,7 @@
                         processData();
                         initFilters();
                         updateDashboard();
+                        updateTableHeaderStickyPosition();
                         // Update posisi header setelah data dimuat
                         setTimeout(setDynamicTableHeaderTop, 100);
                     } catch (e) {
@@ -634,6 +635,7 @@
                 return match;
             });
             updateDashboard();
+            updateTableHeaderStickyPosition();
             setTimeout(setDynamicTableHeaderTop, 50);
         }
 
