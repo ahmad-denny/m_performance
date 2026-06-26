@@ -687,6 +687,7 @@
             // 7. Update dashboard lainnya (KPI, Tabel, Chart lain)
             updateDashboard();
             updateTableHeaderStickyPosition();
+            setTimeout(setDynamicTableHeaderTop, 50);
         }
         
         function updateDashboard() { if(!lastMonth) return; updateKPIs(); updateCharts(); updateTable(); setTimeout(updateTableHeaderStickyPosition, 50); }
