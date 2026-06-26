@@ -42,10 +42,9 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
-        /* Sticky header tabel presisi */
+        /* Sticky header tabel breakdown */
         .sticky-th {
             position: sticky !important;
-            top: 240px; 
             z-index: 15;
             background-color: #f8fafc !important; 
             border-bottom: 2px solid #e2e8f0;
@@ -669,18 +668,7 @@
             el.innerHTML = `<i class="fa-solid ${arrow} text-[0.8em] mr-1"></i>${sign}${formattedDiff} vs ${labelText}`;
         }
 
-        function formatGrowthText(element,growthValue) {
-            if(!element) return; element.classList.remove('hidden');
-            if(growthValue>0){element.className="font-bold text-xs md:text-base tracking-tight mt-0.5 text-emerald-600";element.innerHTML=`<i class="fa-solid fa-arrow-up text-[10px] md:text-xs mr-0.5"></i>+${formatNumber(growthValue)}`;}
-            else if(growthValue<0){element.className="font-bold text-xs md:text-base tracking-tight mt-0.5 text-rose-600";element.innerHTML=`<i class="fa-solid fa-arrow-down text-[10px] md:text-xs mr-0.5"></i>${formatNumber(growthValue)}`;}
-            else{element.className="font-bold text-xs md:text-base tracking-tight mt-0.5 text-slate-400";element.innerHTML=`0`;}
-        }
-
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
-
-        // =========================================================================
-        // SCRIPTS PEMROSESAN KPI, CHARTS, & TABLE UTUH DAN VALID
-        // =========================================================================
 
         function updateKPIs() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
@@ -710,7 +698,6 @@
                 }
             });
 
-            // Jalankan animasi numerik dengan parameter fix yang aman
             document.getElementById('kpi-total-label').innerText = isNPF ? "Total Nominal NPF" : "Total Outstanding";
             animateNumber(document.getElementById('kpi-total'), totalCurrent, false, isBillion);
             renderMoM('mom-total', totalCurrent, totalPrev, isBillion, isNPF);
@@ -760,7 +747,6 @@
             generateAnalyticSummary(totalCurrent, totalPrev, isNPF, isBillion);
         }
 
-        // FUNGSI ANIMASI YANG SUDAH DIPERBAIKI TOTAL AGAR TIDAK NaN
         function animateNumber(element, targetValue, isPercentage = false, isBillion = false) {
             if (!element) return;
             const startValue = 0; 
@@ -824,11 +810,13 @@
             updateBarChart('branchChart', 'OFFICE-CLEAN', 'branch');
         }
 
+        // PERBAIKAN POIN 1: Trend Chart Dinamis Akumulasi Berdasarkan filteredData
         function updateTrendChart() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             let targetMonths = [...monthColumns];
             if (activeTimelineMonths > 0) targetMonths = targetMonths.slice(-activeTimelineMonths);
 
+            // Menghitung tren kumulatif dari filteredData agar ikut berubah saat filter aktif
             let trendData = targetMonths.map(m => {
                 return filteredData.reduce((sum, row) => sum + (row[m] || 0), 0);
             });
@@ -859,9 +847,12 @@
             });
         }
 
+        // PERBAIKAN POIN 2: Top 5 Bar Chart Akumulasi Berdasarkan filteredData Berjalan Akurat
         function updateBarChart(canvasId, propertyName, chartKey) {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             let summaryMap = {};
+            
+            // Ambil dari filteredData agar nilainya dinamis mengikuti filter produk/wilayah
             filteredData.forEach(row => {
                 let name = row[propertyName];
                 if(name) summaryMap[name] = (summaryMap[name] || 0) + (row[lastMonth] || 0);
