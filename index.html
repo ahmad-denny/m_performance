@@ -589,11 +589,43 @@
         }
 
         window.resetFilters = function() {
-            filterColumns.forEach(col => { const s=document.getElementById(`filter-${col}`); if(s) s.value="ALL"; });
-            populateFilterOptions('CO-BRANCH',rawData); populateFilterOptions('OFFICE',rawData); populateFilterOptions('PRODUCT',rawData); populateFilterOptions('GROUP',rawData);
-            filteredData=[...rawData]; activeTimelineMonths=0;
-            const ids={0:'btn-time-all',3:'btn-time-3',6:'btn-time-6',12:'btn-time-12'};
-            Object.entries(ids).forEach(([m,id])=>{const btn=document.getElementById(id);if(btn){if(parseInt(m)===0)btn.className="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-white bg-indigo-600 rounded-md transition-all";else btn.className="flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all";}});
+            // 1. Reset semua filter dropdown ke "ALL"
+            filterColumns.forEach(col => { 
+                const s = document.getElementById(`filter-${col}`); 
+                if(s) s.value = "ALL"; 
+            });
+        
+            // 2. Populate ulang opsi filter berdasarkan data mentah
+            populateFilterOptions('CO-BRANCH', rawData); 
+            populateFilterOptions('OFFICE', rawData); 
+            populateFilterOptions('PRODUCT', rawData); 
+            populateFilterOptions('GROUP', rawData);
+        
+            // 3. Reset data yang difilter menjadi data mentah
+            filteredData = [...rawData]; 
+            
+            // 4. Reset timeline ke 0 (All)
+            activeTimelineMonths = 0;
+        
+            // 5. PERBAIKAN: Update tampilan tombol timeline agar "All" terlihat aktif
+            const ids = {0:'btn-time-all', 3:'btn-time-3', 6:'btn-time-6', 12:'btn-time-12'};
+            Object.entries(ids).forEach(([m, id]) => {
+                const btn = document.getElementById(id);
+                if(btn) {
+                    if(parseInt(m) === 0) {
+                        // Set tombol All jadi aktif (biru)
+                        btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-white bg-indigo-600 rounded-md transition-all";
+                    } else {
+                        // Set tombol lain jadi pasif (abu-abu)
+                        btn.className = "flex-1 sm:flex-none px-2.5 py-1 text-[11px] font-medium text-slate-700 rounded-md hover:bg-white transition-all";
+                    }
+                }
+            });
+        
+            // 6. PERBAIKAN UTAMA: Panggil updateTrendChart() agar grafik berubah kembali ke "All"
+            updateTrendChart();
+        
+            // 7. Update dashboard lainnya (KPI, Tabel, Chart lain)
             updateDashboard();
         }
 
