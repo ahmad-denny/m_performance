@@ -778,81 +778,95 @@
             requestAnimationFrame(animation);
         }
 
-        function updateCharts() {
+function updateCharts() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             updateTrendChart();
 
+            // PASTIKAN: Menggunakan filteredData agar komposisi produk ikut berubah saat di-filter
             let productMap = {};
-            filteredData.forEach(row => { if(row.PRODUCT) productMap[row.PRODUCT] = (productMap[row.PRODUCT] || 0) + (row[lastMonth] || 0); });
+            filteredData.forEach(row => { 
+                if(row.PRODUCT) productMap[row.PRODUCT] = (productMap[row.PRODUCT] || 0) + (row[lastMonth] || 0); 
+            });
             let labels = Object.keys(productMap);
             let data = Object.values(productMap);
             let bgColors = labels.map(p => productColors[p] || '#cbd5e1');
 
-            if(charts.composition) charts.composition.destroy();
-            const ctxComp = document.getElementById('compositionChart').getContext('2d');
-            charts.composition = new Chart(ctxComp, {
-                type: 'doughnut',
-                data: {
-                    labels: labels.map(l => toProperCase(l)),
-                    datasets: [{ data: data, backgroundColor: bgColors, borderHex: '#ffffff', borderWidth: 2 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
-                        tooltip: { callbacks: { label: (ctx) => ` Vol: ${formatChartValue(ctx.raw, currentFileName)}` } }
+            if(charts.composition) {
+                charts.composition.data.labels = labels.map(l => toProperCase(l));
+                charts.composition.data.datasets[0].data = data;
+                charts.composition.data.datasets[0].backgroundColor = bgColors;
+                charts.composition.update(); // Paksa Chart.js untuk re-render grafisnya
+            } else {
+                const ctxComp = document.getElementById('compositionChart').getContext('2d');
+                charts.composition = new Chart(ctxComp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels.map(l => toProperCase(l)),
+                        datasets: [{ data: data, backgroundColor: bgColors, borderColor: '#ffffff', borderWidth: 2 }]
                     },
-                    cutout: '65%'
-                }
-            });
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+                            tooltip: { callbacks: { label: (ctx) => ` Vol: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
 
             updateBarChart('coBranchChart', 'CO-BRANCH-CLEAN', 'coBranch');
             updateBarChart('branchChart', 'OFFICE-CLEAN', 'branch');
         }
 
-        // PERBAIKAN POIN 1: Trend Chart Dinamis Akumulasi Berdasarkan filteredData
+        // PERBAIKAN TOTAL POIN 1: Trend Chart Wajib Akumulasi filteredData & Re-render Instan
         function updateTrendChart() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             let targetMonths = [...monthColumns];
             if (activeTimelineMonths > 0) targetMonths = targetMonths.slice(-activeTimelineMonths);
 
-            // Menghitung tren kumulatif dari filteredData agar ikut berubah saat filter aktif
+            // Menghitung tren kumulatif HANYA dari filteredData yang sedang aktif
             let trendData = targetMonths.map(m => {
                 return filteredData.reduce((sum, row) => sum + (row[m] || 0), 0);
             });
 
-            if(charts.trend) charts.trend.destroy();
-            const ctxTrend = document.getElementById('trendChart').getContext('2d');
-            charts.trend = new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: targetMonths,
-                    datasets: [{
-                        label: 'Volume Performa', data: trendData,
-                        borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.05)',
-                        borderWidth: 2.5, fill: true, tension: 0.15, pointRadius: 3, pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ` Total: ${formatChartValue(ctx.raw, currentFileName)}` } }
+            if(charts.trend) {
+                charts.trend.data.labels = targetMonths;
+                charts.trend.data.datasets[0].data = trendData;
+                charts.trend.update(); // Memicu transisi perubahan data secara real-time
+            } else {
+                const ctxTrend = document.getElementById('trendChart').getContext('2d');
+                charts.trend = new Chart(ctxTrend, {
+                    type: 'line',
+                    data: {
+                        labels: targetMonths,
+                        datasets: [{
+                            label: 'Volume Performa', data: trendData,
+                            borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                            borderWidth: 2.5, fill: true, tension: 0.15, pointRadius: 3, pointHoverRadius: 6
+                        }]
                     },
-                    scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
-                        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: (ctx) => ` Total: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                        },
+                        scales: {
+                            y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
+                            x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
-        // PERBAIKAN POIN 2: Top 5 Bar Chart Akumulasi Berdasarkan filteredData Berjalan Akurat
+        // PERBAIKAN TOTAL POIN 2: Top 5 Bar Chart Mengikuti Filter Secara Dinamis & Agile
         function updateBarChart(canvasId, propertyName, chartKey) {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             let summaryMap = {};
             
-            // Ambil dari filteredData agar nilainya dinamis mengikuti filter produk/wilayah
+            // Loop data dari filteredData (bukan rawData)
             filteredData.forEach(row => {
                 let name = row[propertyName];
                 if(name) summaryMap[name] = (summaryMap[name] || 0) + (row[lastMonth] || 0);
@@ -862,28 +876,32 @@
             let labels = sorted.map(x => x[0]);
             let data = sorted.map(x => x[1]);
 
-            if(charts[chartKey]) charts[chartKey].destroy();
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            charts[chartKey] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ data: data, backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 15 }]
-                },
-                options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ` Volume: ${formatChartValue(ctx.raw, currentFileName)}` } }
+            if(charts[chartKey]) {
+                charts[chartKey].data.labels = labels;
+                charts[chartKey].data.datasets[0].data = data;
+                charts[chartKey].update(); // Mengubah grafik batang secara dinamis tanpa kedip/hancur
+            } else {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                charts[chartKey] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ data: data, backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 15 }]
                     },
-                    scales: {
-                        x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
-                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: (ctx) => ` Volume: ${formatChartValue(ctx.raw, currentFileName)}` } }
+                        },
+                        scales: {
+                            x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, callback: (v) => formatChartValue(v, currentFileName) } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        }
                     }
-                }
-            });
+                });
+            }
         }
-
         function updateTable() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             const isBillion = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
