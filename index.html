@@ -54,14 +54,14 @@
         /* Style khusus untuk sticky header tabel */
         #dynamic-table-header {
             position: sticky;
-            /* Nilai top akan diatur sepenuhnya oleh JS agar presisi */
-            top: 0; 
-            z-index: 15; 
-            background-color: #f8fafc; 
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
-            transition: top 0.1s linear;
+            /* Nilai awal, akan dioverride oleh JS */
+            top: 300px; 
+            z-index: 15; /* Di bawah header utama & filter, tapi di atas baris tabel */
+            transition: top 0.2s ease-out; /* Agar pergerakan tidak patah-patah */
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05); /* Bayangan tipis saat nempel */
         }
         
+        /* Pastikan background sel header solid agar tidak transparan saat scroll */
         #dynamic-table-header th {
             background-color: #f8fafc; 
         }
@@ -288,9 +288,10 @@
                 <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
                 <div class="overflow-x-auto w-full border border-slate-100 rounded-lg">
                     <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] border-collapse table-fixed">
+                        <!-- Cari bagian tabel Detailed Breakdown by Product -->
                         <thead id="dynamic-table-header" class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50">
                             <tr id="dynamic-table-header-row"></tr>
-                        </thead>                        
+                        </thead>
                         <tbody id="data-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -363,9 +364,11 @@
             tableHeader.style.top = `${newTopValue}px`;
         }
 
-        // Event Listeners untuk update posisi
-        window.addEventListener('resize', setDynamicTableHeaderTop);
-        document.getElementById('main-content').addEventListener('scroll', setDynamicTableHeaderTop);
+        // Panggil saat window resize (layar diubah ukurannya)
+        window.addEventListener('resize', updateTableHeaderStickyPosition);
+        
+        // Panggil saat container utama discroll
+        document.getElementById('main-content').addEventListener('scroll', updateTableHeaderStickyPosition);
 
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -413,6 +416,29 @@
             return colors;
         }
 
+        function updateTableHeaderStickyPosition() {
+            const header = document.getElementById('dynamic-table-header');
+            if (!header) return;
+        
+            // Ambil elemen kartu KPI terakhir (Card 4)
+            const lastKpiCard = document.getElementById('kpi-fourth-label')?.closest('.bg-white.rounded-xl');
+            
+            if (lastKpiCard) {
+                // Hitung posisi bawah kartu KPI terakhir relatif terhadap viewport
+                const rect = lastKpiCard.getBoundingClientRect();
+                const bottomOfKpi = rect.bottom;
+                
+                // Beri sedikit jarak (padding) agar tidak terlalu mepet, misal 8px
+                const newTopValue = bottomOfKpi + 8; 
+                
+                // Terapkan ke header tabel
+                header.style.top = `${newTopValue}px`;
+            } else {
+                // Fallback jika kartu KPI belum termuat
+                header.style.top = '250px';
+            }
+        }
+        
         function buildCSVTabs() {
             const container = document.getElementById('csv-tabs-container');
             container.innerHTML = '';
@@ -657,7 +683,7 @@
             updateKPIs(); 
             updateCharts(); 
             updateTable(); 
-            setTimeout(setDynamicTableHeaderTop, 50); 
+            setTimeout(updateTableHeaderStickyPosition, 50);
         }
 
         function formatNumber(num) { return new Intl.NumberFormat('id-ID').format(Math.round(num)); }
