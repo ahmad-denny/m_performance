@@ -53,15 +53,16 @@
             }
             th.sticky-column { background-color: #f8fafc !important; }
         }
-        /* Style khusus untuk sticky header tabel */
+        
+        * Style khusus untuk sticky header tabel */
         #dynamic-table-header {
             position: sticky;
-            /* Sesuaikan nilai ini dengan tinggi header 'Detailed Breakdown by Product' + sedikit jarak */
-            top: 65px; 
-            z-index: 15; /* Pastikan di atas baris tabel biasa */
-            background-color: #f8fafc; /* Warna background harus sama dengan body/card agar tidak transparan */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Bayangan tipis supaya terlihat batasnya */
-        }
+            /* Nilai top akan diatur via JS, beri default dulu */
+            top: 300px; 
+            z-index: 15; /* Di bawah header utama & filter, tapi di atas konten tabel */
+            transition: top 0.2s ease-out; /* Agar pergerakan halus */
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05); /* Opsional: bayangan tipis saat nempel */
+        }        
         
         /* Pastikan background sel header juga solid */
         #dynamic-table-header th {
