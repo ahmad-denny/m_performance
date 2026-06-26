@@ -234,11 +234,11 @@
             </div>
         </div>
 
-        <!-- UBAH space-y-6 MENJADI space-y-3 UNTUK MERAPATKAN JARAK ANTAR SECTION -->
-        <div class="p-4 md:p-6 space-y-3">
+        <!-- UBAH space-y-6 MENJADI space-y-0 UNTUK MERAPATKAN JARAK ANTAR SECTION SECARA GLOBAL -->
+        <div class="p-4 md:p-6 space-y-0">
             
             <!-- WRAPPER UNTUK SEMUA CHART -->
-            <div id="charts-wrapper" class="space-y-6">
+            <div id="charts-wrapper" class="space-y-6 mb-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     <div class="lg:col-span-2 bg-white rounded-xl p-4 md:p-6 card-shadow flex flex-col justify-between">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -282,7 +282,8 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl p-4 md:p-6 card-shadow">
+            <!-- TAMBAHKAN mt-6 AGAR JARAKNYA SAMA SEPERTI REFERENSI GAMBAR 1 -->
+            <div class="bg-white rounded-xl p-4 md:p-6 card-shadow mt-6">
                 <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
                 <div class="overflow-x-auto w-full border border-slate-100 rounded-lg">
                     <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] border-collapse table-fixed">
