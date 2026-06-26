@@ -54,21 +54,18 @@
             th.sticky-column { background-color: #f8fafc !important; }
         }
         
-        /* Style khusus untuk sticky header tabel */
+        /* Style khusus untuk sticky header tabel - HANYA position sticky, top diatur JS */
         #dynamic-table-header {
             position: sticky;
-            /* Sesuaikan nilai ini dengan tinggi header 'Detailed Breakdown by Product' + sedikit jarak */
-            top: 65px; 
-            z-index: 15; /* Pastikan di atas baris tabel biasa */
-            background-color: #f8fafc; /* Warna background harus sama dengan body/card agar tidak transparan */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Bayangan tipis supaya terlihat batasnya */
+            z-index: 15; 
+            background-color: #f8fafc; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
+            transition: top 0.1s linear; /* Transisi cepat agar tidak lag saat scroll */
         }
         
-        /* Pastikan background sel header juga solid */
         #dynamic-table-header th {
             background-color: #f8fafc; 
-        }
-    
+        }    
     </style>
 </head>
 <body class="text-slate-800 h-screen h-[100dvh] flex overflow-hidden relative">
@@ -354,51 +351,47 @@
             }
         }
 
-        function fixTableHeaderPosition() {
+        // FUNGSI BARU: Menghitung posisi absolut header tabel relatif terhadap container scroll
+        function setDynamicTableHeaderTop() {
             const tableHeader = document.getElementById('dynamic-table-header');
-            // Ambil elemen judul section tabel (h3)
-            const sectionTitle = document.querySelector('h3.text-slate-700.mb-3'); 
+            const mainContent = document.getElementById('main-content');
+            const lastKpiCard = document.getElementById('kpi-fourth-label')?.closest('.bg-white.rounded-xl');
             
-            if (tableHeader && sectionTitle) {
-                // Hitung tinggi judul + margin bottom-nya
-                const titleHeight = sectionTitle.offsetHeight + 12; // 12px adalah margin-bottom (mb-3)
-                
-                // Set posisi sticky header tabel tepat di bawah judul
-                tableHeader.style.top = `${titleHeight}px`;
-            }
+            if (!tableHeader || !mainContent || !lastKpiCard) return;
+        
+            // 1. Hitung jarak absolut KPI terakhir dari ATAS container scroll (#main-content)
+            // Offset Top elemen relatif terhadap parent offset-nya
+            let absoluteTopOfKpiBottom = lastKpiCard.offsetTop + lastKpiCard.offsetHeight;
+            
+            // 2. Tambahkan padding/jarak agar tidak terlalu mepet (misal 12px)
+            const newTopValue = absoluteTopOfKpiBottom + 12; 
+            
+            // 3. Terapkan ke header tabel
+            tableHeader.style.top = `${newTopValue}px`;
         }
-
-// Panggil fungsi ini setiap kali window di-resize atau setelah data dimuat
-// window.addEventListener('resize', fixTableHeaderPosition);
-// Panggil juga di dalam fungsi updateDashboard() atau loadSelectedCSV() setelah render selesai
-// setTimeout(fixTableHeaderPosition, 100);         
+        
+        // Panggil fungsi ini setiap kali layout berubah
+        window.addEventListener('resize', setDynamicTableHeaderTop);
+        
+        // Panggil di dalam DOMContentLoaded setelah inisialisasi awal
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+                setTimeout(() => document.getElementById('password').focus(), 500);
+            } else {
+                buildCSVTabs(); 
+                loadSelectedCSV(currentActiveFileIndex); 
+                initSidebarToggle();
+                initMobileSidebar(); 
+                // Panggil sekali setelah load awal
+                setTimeout(setDynamicTableHeaderTop, 200);
+            }
+        });
+        
         // Panggil fungsi ini setiap kali window di-resize atau setelah data dimuat
         window.addEventListener('resize', fixTableHeaderPosition);
         // Panggil juga di dalam fungsi updateDashboard() atau loadSelectedCSV() setelah render selesai
         setTimeout(fixTableHeaderPosition, 100); 
         
-        function updateTableHeaderStickyPosition() {
-            const header = document.getElementById('dynamic-table-header');
-            if (!header) return;
-        
-            // Ambil elemen kartu KPI terakhir (Card 4)
-            const lastKpiCard = document.getElementById('kpi-fourth-label')?.closest('.bg-white.rounded-xl');
-            
-            if (lastKpiCard) {
-                // Hitung posisi bawah kartu KPI terakhir relatif terhadap viewport
-                const rect = lastKpiCard.getBoundingClientRect();
-                const bottomOfKpi = rect.bottom;
-                
-                // Beri sedikit jarak (padding) agar tidak terlalu mepet, misal 8px
-                const newTopValue = bottomOfKpi + 8; 
-                
-                // Terapkan ke header tabel
-                header.style.top = `${newTopValue}px`;
-            } else {
-                // Fallback jika kartu KPI belum termuat
-                header.style.top = '250px';
-            }
-        }
         // Fokus otomatis ke input password saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -487,6 +480,7 @@
                         initFilters();
                         updateDashboard();
                         updateTableHeaderStickyPosition();
+                        setTimeout(setDynamicTableHeaderTop, 100);
                     } catch (e) {
                         console.error("Error processing data:", e);
                         alert("Terjadi kesalahan saat memproses data. Cek console untuk detail.");
@@ -640,6 +634,7 @@
             });
             updateDashboard();
             updateTableHeaderStickyPosition();
+            setTimeout(setDynamicTableHeaderTop, 50);
         }
 
         window.changeTimeline = function(months) {
