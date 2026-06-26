@@ -42,6 +42,7 @@
         .collapsed .nav-header { justify-content: center; }
         .collapsed .logo-text { display: none; }
 
+        /* Sticky header tabel presisi */
         .sticky-th {
             position: sticky !important;
             top: 240px; 
@@ -678,7 +679,7 @@
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
         // =========================================================================
-        // SCRIPT INTI PEMROSESAN UTUH (KPI, CHARTS, & TABLE RENDERING)
+        // SCRIPTS PEMROSESAN KPI, CHARTS, & TABLE UTUH DAN VALID
         // =========================================================================
 
         function updateKPIs() {
@@ -709,12 +710,11 @@
                 }
             });
 
-            // Tampilkan Judul & Animasi Nilai KPI Utama
+            // Jalankan animasi numerik dengan parameter fix yang aman
             document.getElementById('kpi-total-label').innerText = isNPF ? "Total Nominal NPF" : "Total Outstanding";
             animateNumber(document.getElementById('kpi-total'), totalCurrent, false, isBillion);
             renderMoM('mom-total', totalCurrent, totalPrev, isBillion, isNPF);
 
-            // Tampilkan Segment 1 & Segment 2
             document.getElementById('kpi-segment1-label').innerText = groupLabels[0] ? toProperCase(groupLabels[0]) : "Segment 1";
             animateNumber(document.getElementById('kpi-segment1'), seg1Current, false, isBillion);
             renderMoM('mom-seg1', seg1Current, seg1Prev, isBillion, isNPF);
@@ -727,7 +727,6 @@
             let pct2 = totalCurrent > 0 ? (seg2Current / totalCurrent) * 100 : 0;
             document.getElementById('kpi-segment2-pct').innerText = `${pct2.toFixed(1)}% Kontribusi dari Total`;
 
-            // Tampilkan Dominant Product / NPF Rasio
             if (isNPF) {
                 document.getElementById('kpi-fourth-label').innerText = "Rasio NPF Rata-Rata";
                 document.getElementById('kpi-fourth-sublabel').innerText = "Total NPF Berbanding Outstanding";
@@ -749,7 +748,6 @@
                 }
             }
 
-            // Atur Label Dinamis di Product Mix Box
             groupLabels.forEach((grp, i) => {
                 const lbl = document.getElementById(`comp-group-pct-${i}`);
                 if (lbl) {
@@ -762,11 +760,42 @@
             generateAnalyticSummary(totalCurrent, totalPrev, isNPF, isBillion);
         }
 
+        // FUNGSI ANIMASI YANG SUDAH DIPERBAIKI TOTAL AGAR TIDAK NaN
+        function animateNumber(element, targetValue, isPercentage = false, isBillion = false) {
+            if (!element) return;
+            const startValue = 0; 
+            const duration = 400; 
+            let startTime = null;
+            
+            function animation(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const progress = Math.min((currentTime - startTime) / duration, 1);
+                const easeProgress = progress * (2 - progress);
+                const currentValue = startValue + easeProgress * (targetValue - startValue);
+                
+                if (isPercentage) {
+                    element.innerText = currentValue.toFixed(1) + '%';
+                } else {
+                    element.innerText = isBillion ? formatToBillion(currentValue) : formatNumber(currentValue);
+                }
+                
+                if (progress < 1) { 
+                    requestAnimationFrame(animation); 
+                } else {
+                    if (isPercentage) { 
+                        element.innerText = targetValue.toFixed(1) + '%'; 
+                    } else { 
+                        element.innerText = isBillion ? formatToBillion(targetValue) : formatNumber(targetValue); 
+                    }
+                }
+            }
+            requestAnimationFrame(animation);
+        }
+
         function updateCharts() {
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             updateTrendChart();
 
-            // 1. Composition / Product Mix Chart
             let productMap = {};
             filteredData.forEach(row => { if(row.PRODUCT) productMap[row.PRODUCT] = (productMap[row.PRODUCT] || 0) + (row[lastMonth] || 0); });
             let labels = Object.keys(productMap);
@@ -791,7 +820,6 @@
                 }
             });
 
-            // 2. Bar Charts (CO-Branch & Office)
             updateBarChart('coBranchChart', 'CO-BRANCH-CLEAN', 'coBranch');
             updateBarChart('branchChart', 'OFFICE-CLEAN', 'branch');
         }
@@ -902,28 +930,6 @@
                 fragment.appendChild(tr);
             });
             tbody.appendChild(fragment);
-        }
-
-        function animateNumber(element, targetValue, isPercentage = false, isBillion = false) {
-            if(!element) return;
-            const startValue = 0; const duration = 400; let startTime = null;
-            function animation(currentTime){
-                if(!startTime) startTime = currentTime;
-                const progress = Math.min((currentTime - startTime) / duration, 1);
-                const easeProgress = progress * (2 - progress);
-                const currentValue = startValue + easeProgress * (targetValue - startValue);
-                
-                if (isPercentage) {
-                    element.innerText = currentValue.toFixed(1) + '%';
-                } else {
-                    element.innerText = isBillion ? formatToBillion(currentValue) : formatNumber(currentValue);
-                }
-                if(progress < 1) { requestAnimationFrame(animation); } else {
-                    if (isPercentage) { element.innerText = targetValue.toFixed(1) + '%'; } 
-                    else { element.innerText = isBillion ? formatToBillion(targetValue) : formatNumber(targetValue); }
-                }
-            }
-            requestAnimationFrame(animation);
         }
 
         function generateAnalyticSummary(currentTotal, prevTotal, isNPF, isBillion) {
