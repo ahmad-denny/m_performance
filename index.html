@@ -53,6 +53,16 @@
             }
             th.sticky-column { background-color: #f8fafc !important; }
         }
+        /* Style khusus untuk sticky header tabel */
+        #dynamic-table-header {
+            position: sticky;
+            /* Nilai top akan diatur via JS, beri default dulu */
+            top: 300px; 
+            z-index: 15; /* Di bawah header utama & filter, tapi di atas konten tabel */
+            transition: top 0.2s ease-out; /* Agar pergerakan halus */
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05); /* Opsional: bayangan tipis saat nempel */
+        }
+
     </style>
 </head>
 <body class="text-slate-800 h-screen h-[100dvh] flex overflow-hidden relative">
@@ -277,7 +287,8 @@
                 <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
                 <div class="overflow-x-auto w-full border border-slate-100 rounded-lg">
                     <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] border-collapse table-fixed">
-                        <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0 z-20">
+                        <!-- Hapus class 'sticky top-0 z-20' dan tambahkan id="dynamic-table-header" -->
+                        <thead id="dynamic-table-header" class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50">
                             <tr id="dynamic-table-header-row"></tr>
                         </thead>
                         <tbody id="data-table-body" class="divide-y divide-slate-100"></tbody>
@@ -337,6 +348,28 @@
             }
         }
 
+        function updateTableHeaderStickyPosition() {
+            const header = document.getElementById('dynamic-table-header');
+            if (!header) return;
+        
+            // Ambil elemen kartu KPI terakhir (Card 4)
+            const lastKpiCard = document.getElementById('kpi-fourth-label')?.closest('.bg-white.rounded-xl');
+            
+            if (lastKpiCard) {
+                // Hitung posisi bawah kartu KPI terakhir relatif terhadap viewport
+                const rect = lastKpiCard.getBoundingClientRect();
+                const bottomOfKpi = rect.bottom;
+                
+                // Beri sedikit jarak (padding) agar tidak terlalu mepet, misal 8px
+                const newTopValue = bottomOfKpi + 8; 
+                
+                // Terapkan ke header tabel
+                header.style.top = `${newTopValue}px`;
+            } else {
+                // Fallback jika kartu KPI belum termuat
+                header.style.top = '250px';
+            }
+        }
         // Fokus otomatis ke input password saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -424,6 +457,7 @@
                         processData();
                         initFilters();
                         updateDashboard();
+                        updateTableHeaderStickyPosition();
                     } catch (e) {
                         console.error("Error processing data:", e);
                         alert("Terjadi kesalahan saat memproses data. Cek console untuk detail.");
@@ -576,6 +610,7 @@
                 return match;
             });
             updateDashboard();
+            updateTableHeaderStickyPosition();
         }
 
         window.changeTimeline = function(months) {
@@ -627,9 +662,13 @@
         
             // 7. Update dashboard lainnya (KPI, Tabel, Chart lain)
             updateDashboard();
+            updateTableHeaderStickyPosition();
         }
 
-        function updateDashboard() { if(!lastMonth) return; updateKPIs(); updateCharts(); updateTable(); }
+        window.addEventListener('resize', updateTableHeaderStickyPosition);
+        document.getElementById('main-content').addEventListener('scroll', updateTableHeaderStickyPosition);
+        
+        function updateDashboard() { if(!lastMonth) return; updateKPIs(); updateCharts(); updateTable(); setTimeout(updateTableHeaderStickyPosition, 50); }
 
         function formatNumber(num) { return new Intl.NumberFormat('id-ID').format(Math.round(num)); }
 
