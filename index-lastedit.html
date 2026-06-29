@@ -283,7 +283,7 @@
 
             <div class="bg-white rounded-xl p-4 md:p-6 card-shadow mt-6" id="table-card-container">
                 <h3 class="font-semibold text-sm md:text-base text-slate-700 mb-3">Detailed Breakdown by Product</h3>
-                <div class="overflow-x-auto w-full border border-slate-100 rounded-lg" id="table-scroll-container">
+                <div class="md:overflow-x-auto w-full border border-slate-100 rounded-lg" id="table-scroll-container">
                     <table class="w-full text-xs md:text-sm text-left text-slate-600 min-w-[500px] border-collapse table-fixed">
                         <thead class="text-[10px] md:text-xs text-slate-700 uppercase bg-slate-50 sticky top-0 z-20">
                             <tr id="dynamic-table-header-row"></tr>
@@ -450,25 +450,93 @@
             document.getElementById('kpi-latest-lbl').innerText = lastMonth;
         }
 
-        function buildDynamicTableHeader() {
-            const headerRow = document.getElementById('dynamic-table-header-row');
-            let headerHtml = `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs font-bold bg-slate-50 sticky-column text-left truncate">Branch</th>`;
-            distinctProducts.forEach(prod => {
-                let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
-                headerHtml += `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs text-right font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
+function buildDynamicTableHeader() {
+            const thead = document.getElementById('table-header');
+            thead.innerHTML = '';
+            
+            const tr = document.createElement('tr');
+            // MODIFIKASI: Sembunyikan header tabel di mobile agar tidak merusak layout list vertikal
+            tr.className = "bg-slate-100 text-slate-600 text-2xs uppercase tracking-wider hidden md:table-row";
+            
+            let productHeadersHtml = '';
+            currentProducts.forEach(p => {
+                productHeadersHtml += `<th class="px-3 py-3 text-right font-semibold">${p}</th>`;
             });
-            headerHtml += `<th scope="col" class="px-2 py-2 text-[10px] md:text-xs text-right font-bold bg-slate-50 max-w-[90px] whitespace-normal break-words">Total Amount</th>`;
-            headerRow.innerHTML = headerHtml;
-            const compSubLabels = document.getElementById('dynamic-group-pct-labels');
-            if (compSubLabels) {
-                compSubLabels.innerHTML = groupLabels.map((grp, i) => `
-                    <div class="bg-slate-50 p-2 rounded">
-                        <span class="block font-bold text-slate-700 text-xs md:text-sm" id="comp-group-pct-${i}">0%</span>
-                        <span class="text-[10px] text-slate-400 block truncate">${grp}</span>
-                    </div>`).join('');
-            }
+            
+            tr.innerHTML = `<th class="px-3 py-3 text-left font-semibold sticky-column bg-slate-100">Branch</th>${productHeadersHtml}<th class="px-3 py-3 text-right font-semibold">Total</th>`;
+            thead.appendChild(tr);
         }
 
+        function renderTable(data){
+            const thead = document.getElementById('table-header');
+            const tbody = document.getElementById('table-body');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            if(data.length === 0) return;
+
+            buildDynamicTableHeader();
+
+            const isBillionFormat = (currentModule === 'financing' || currentModule === 'funding' || currentModule === 'npf');
+            const fragment = document.createDocumentFragment();
+
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                // MODIFIKASI: Ubah baris horizontal (Desktop) menjadi bentuk list card vertikal (Mobile)
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors flex flex-col p-3.5 md:table-row md:p-0 bg-white";
+
+                let productCellsHtml = '';       // Untuk desktop
+                let mobileProductsHtml = '';     // Untuk mobile
+
+                currentProducts.forEach(p => {
+                    const val = item.products[p] || 0;
+                    const displayVal = isBillionFormat ? formatToBillion(val) : formatNumber(val);
+                    let displayProdName = p === "Sme" ? "SME" : p.replace(/_/g, ' ');
+                    
+                    // HTML untuk Desktop (Disembunyikan di Mobile)
+                    productCellsHtml += `<td class="px-3 py-2.5 text-right font-mono text-xs text-slate-600 hidden md:table-cell">${displayVal}</td>`;
+                    
+                    // HTML untuk Mobile (Hanya tampil jika nilainya tidak 0 supaya extra ringkas/compact)
+                    if (val !== 0) {
+                        mobileProductsHtml += `
+                            <div class="flex justify-between items-center text-2xs py-1 border-b border-dashed border-slate-100 last:border-0">
+                                <span class="text-slate-500">${displayProdName}</span>
+                                <span class="font-mono font-semibold text-slate-700">${displayVal}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                let totalDisplay = item.total;
+                if(isBillionFormat){
+                    totalDisplay = formatToBillion(totalDisplay);
+                } else {
+                    totalDisplay = formatNumber(totalDisplay);
+                }
+                
+                // MODIFIKASI: Struktur isi responsif gabungan Mobile & Desktop
+                tr.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 md:hidden">
+                        <span class="text-slate-800 font-bold text-xs bg-slate-100 px-2 py-0.5 rounded max-w-[65%] truncate">${item.name}</span>
+                        <span class="font-mono font-bold text-emerald-600 text-xs bg-emerald-50 px-2 py-0.5 rounded">${totalDisplay}</span>
+                    </div>
+                    
+                    <div class="space-y-0.5 mb-1 pl-1 md:hidden">
+                        ${mobileProductsHtml || '<div class="text-2xs text-slate-400 italic py-0.5">Tidak ada rincian data</div>'}
+                    </div>
+
+                    <td class="px-3 py-2.5 font-medium sticky-column hidden md:table-cell bg-white">
+                        <span class="text-slate-700 font-semibold text-xs">${item.name}</span>
+                    </td>
+                    ${productCellsHtml}
+                    <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs hidden md:table-cell">
+                        ${totalDisplay}
+                    </td>
+                `;
+                fragment.appendChild(tr);
+            });
+            tbody.appendChild(fragment);
+        }
+        
         function initSidebarToggle() {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebar-toggle');
