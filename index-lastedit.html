@@ -91,13 +91,16 @@
         </div>
     </div>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300"></div>
 
+    <!-- SIDEBAR MOBILE & DESKTOP -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:sticky w-64 bg-slate-900 text-white flex flex-col shadow-xl z-40 sidebar-transition h-[100dvh]">
         <button id="sidebar-toggle" class="hidden md:flex absolute -right-3 top-6 bg-indigo-500 text-white w-6 h-6 rounded-full items-center justify-center shadow-lg hover:bg-indigo-600 z-30 focus:outline-none">
             <i class="fa-solid fa-chevron-left text-xs transition-transform" id="toggle-icon"></i>
         </button>
-        <button id="sidebar-close-mobile" class="md:hidden absolute right-4 top-5 text-slate-400 hover:text-white text-lg">
+        
+        <!-- FIX: Tombol Close Mobile dihapus class 'hidden' agar muncul di layar kecil -->
+        <button id="sidebar-close-mobile" class="md:hidden absolute right-4 top-5 text-slate-400 hover:text-white text-lg p-2 focus:outline-none">
             <i class="fa-solid fa-xmark"></i>
         </button>
 
@@ -499,8 +502,23 @@
             const backdrop = document.getElementById('sidebar-backdrop');
             const openBtn = document.getElementById('mobile-menu-btn');
             const closeBtn = document.getElementById('sidebar-close-mobile');
-            function openMobileNav() { sidebar.classList.remove('-translate-x-full'); sidebar.classList.add('translate-x-0'); backdrop.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
-            function closeMobileNav() { sidebar.classList.remove('translate-x-0'); sidebar.classList.add('-translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
+            
+            function openMobileNav() { 
+                sidebar.classList.remove('-translate-x-full'); 
+                sidebar.classList.add('translate-x-0'); 
+                backdrop.classList.remove('hidden'); 
+                // Mencegah scroll pada body utama saat menu terbuka
+                document.body.classList.add('overflow-hidden'); 
+            }
+            
+            function closeMobileNav() { 
+                sidebar.classList.remove('translate-x-0'); 
+                sidebar.classList.add('-translate-x-full'); 
+                backdrop.classList.add('hidden'); 
+                // Mengembalikan scroll pada body utama
+                document.body.classList.remove('overflow-hidden'); 
+            }
+            
             if(openBtn) openBtn.addEventListener('click', openMobileNav);
             if(closeBtn) closeBtn.addEventListener('click', closeMobileNav);
             if(backdrop) backdrop.addEventListener('click', closeMobileNav);
