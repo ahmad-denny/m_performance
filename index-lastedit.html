@@ -431,7 +431,10 @@
                             detectColumns(rawData[0]);
                             distinctProducts = [...new Set(rawData.map(row => row.PRODUCT))].filter(Boolean);
                             productColors = generateColorsForProducts(distinctProducts);
-                            groupLabels = [...new Set(rawData.map(row => row.GROUP))].filter(Boolean);
+                            
+                            // FIX: Handle missing GROUP column safely for MDin/Qris tabs
+                            groupLabels = [...new Set(rawData.map(row => row.GROUP || 'General'))].filter(Boolean);
+                            
                             buildDynamicTableHeader();
                         }
                         processData();
@@ -533,6 +536,9 @@
             rawData.forEach(row => {
                 row['CO-BRANCH-CLEAN'] = cleanName(row['CO-BRANCH']);
                 row['OFFICE-CLEAN'] = cleanName(row['OFFICE']);
+                // FIX: Safe check for GROUP column
+                if (!row.GROUP) row.GROUP = 'General';
+                
                 monthColumns.forEach(col => {
                     let val = row[col];
                     if (val) {
@@ -1301,7 +1307,9 @@
                 let productCellsHtml='';
                 distinctProducts.forEach(prod=>{let displayVal=item[prod]||0;if(isBillionFormat){displayVal=formatToBillion(displayVal);}else{displayVal=formatNumber(displayVal);}productCellsHtml+=`<td class="px-2 py-2 text-right font-mono text-[11px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;});
                 let totalDisplay=item.total;if(isBillionFormat){totalDisplay=formatToBillion(totalDisplay);}else{totalDisplay=formatNumber(totalDisplay);}
-                tr.innerHTML=`<td class="px-3 py-2.5 font-medium sticky-column"><a href="#" onclick="filterByBranchLink('${item.name}'); return false;" class="text-indigo-600 hover:text-indigo-900 hover:underline font-semibold flex items-center gap-1 text-xs"><i class="fa-solid fa-filter text-[9px] opacity-40"></i> ${item.name}</a></td>${productCellsHtml}<td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${totalDisplay}</td>`;
+                
+                // FIX: Menghapus ikon filter pada kolom Branch
+                tr.innerHTML=`<td class="px-3 py-2.5 font-medium sticky-column"><span class="text-slate-700 font-semibold text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2.5 text-right font-mono font-bold text-slate-800 text-xs">${totalDisplay}</td>`;
                 fragment.appendChild(tr);
             });
             tbody.appendChild(fragment);
