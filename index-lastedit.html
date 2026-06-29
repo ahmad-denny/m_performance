@@ -52,6 +52,9 @@
                 min-width: 130px !important; max-width: 150px !important;
             }
             th.sticky-column { background-color: #f8fafc !important; }
+            
+            /* FIX: Pastikan main content bisa discroll penuh di mobile */
+            #main-content { overflow-y: auto !important; }
         }
     </style>
 </head>
@@ -134,6 +137,7 @@
         </div>
     </aside>
 
+    <!-- FIX: Main content sekarang menjadi container scroll utama di mobile saat charts hidden -->
     <main class="flex-1 flex flex-col h-full w-full relative overflow-y-auto bg-[#f8fafc]" id="main-content">
         
         <header class="bg-white border-b border-slate-200 flex flex-col justify-between px-4 md:px-6 shrink-0 pt-3 sticky top-0 z-30 shadow-sm w-full" id="main-header">
