@@ -354,6 +354,7 @@
             }
         }
 
+        // PERBAIKAN UTAMA: Toggle Theme dengan Re-render Chart Penuh
         window.toggleTheme = function() {
             const html = document.documentElement;
             const body = document.body;
@@ -369,7 +370,16 @@
                 body.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
             }
-            // Re-render charts to update colors immediately
+            
+            // Hapus semua chart instance lama
+            Object.keys(charts).forEach(key => {
+                if(charts[key]) {
+                    charts[key].destroy();
+                    charts[key] = null;
+                }
+            });
+            
+            // Render ulang semua chart dengan konfigurasi warna baru
             updateCharts();
         }
 
