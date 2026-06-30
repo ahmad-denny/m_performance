@@ -86,15 +86,6 @@
             /* Compact Mobile Styles */
             .mobile-compact-p { padding: 0.5rem !important; }
             .mobile-compact-text { font-size: 0.75rem !important; line-height: 1rem !important; }
-            
-            /* FIX TABLE HEADER MOBILE: Allow wrapping for multi-word headers */
-            #dynamic-table-header-row th:not(.sticky-column) {
-                white-space: normal !important;
-                line-height: 1.1 !important;
-                vertical-align: bottom !important;
-                padding-top: 0.5rem !important;
-                padding-bottom: 0.5rem !important;
-            }
         }
     </style>
 </head>
@@ -546,23 +537,19 @@
 
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
+            // Header Branch tetap rata kiri
             let headerHtml = `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs font-bold bg-slate-50 dark:bg-slate-800 sticky-column text-left truncate">Branch</th>`;
             
             distinctProducts.forEach(prod => {
                 let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
-                
-                // FIX: Jika nama produk lebih dari 1 kata, tambahkan <br> untuk mobile look yang lebih baik
-                // Contoh: "Pembiayaan Konsumer" -> "Pembiayaan<br>Konsumer"
-                if (displayProdName.includes(' ')) {
-                    displayProdName = displayProdName.replace(' ', '<br>');
-                }
-
-                headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-right font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
+                // PERUBAHAN: Menggunakan break-words, text-center, dan mengganti _ dengan <br> untuk mobile look
+                headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
             });
             
-            headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-right font-bold bg-slate-50 dark:bg-slate-800 max-w-[90px] whitespace-normal break-words">Total Amount</th>`;
-            headerRow.innerHTML = headerHtml;
+            // Header Total Amount diganti _ dengan <br> agar jadi 2 baris
+            headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold bg-slate-50 dark:bg-slate-800 max-w-[90px] whitespace-normal break-words">Total<br>Amount</th>`;
             
+            headerRow.innerHTML = headerHtml;
             const compSubLabels = document.getElementById('dynamic-group-pct-labels');
             if (compSubLabels) {
                 compSubLabels.innerHTML = groupLabels.map((grp, i) => `
