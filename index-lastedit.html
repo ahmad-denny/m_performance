@@ -326,9 +326,8 @@
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const isDark = savedTheme === 'dark' || (!savedTheme && systemDark);
             
-            if (isDark) {
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
                 document.documentElement.classList.add('dark');
                 document.body.classList.remove('light');
                 document.body.classList.add('dark');
@@ -337,37 +336,23 @@
                 document.body.classList.add('light');
                 document.body.classList.remove('dark');
             }
-
-            // Set default teks Chart.js saat pertama kali dimuat
-            if (window.Chart) {
-                Chart.defaults.color = isDark ? '#cbd5e1' : '#475569';
-            }
         }
 
         window.toggleTheme = function() {
             const html = document.documentElement;
             const body = document.body;
-            let isDark = false;
             
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 body.classList.remove('dark');
                 body.classList.add('light');
                 localStorage.setItem('theme', 'light');
-                isDark = false;
             } else {
                 html.classList.add('dark');
                 body.classList.remove('light');
                 body.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
-                isDark = true;
             }
-
-            // Set global Chart.js defaults text color secara dinamis saat tema diubah
-            if (window.Chart) {
-                Chart.defaults.color = isDark ? '#cbd5e1' : '#475569';
-            }
-
             // Re-render charts to update colors
             if(charts.trend) updateTrendChart();
             if(charts.comp) updateCompositionChart();
@@ -465,6 +450,7 @@
             csvFilesConfig.forEach((cfg, idx) => {
                 const btn = document.createElement('button');
                 btn.id = `tab-csv-${idx}`;
+                // Dark mode support for tabs
                 const activeClass = 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20';
                 const inactiveClass = 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600';
                 
@@ -487,7 +473,9 @@
             currentActiveFileIndex = index;
             document.getElementById('loading').style.display = 'flex';
             
+            // FIX: Reset Timeline saat ganti tab
             resetFilters(); 
+            
             loadSelectedCSV(index);
         }
 
@@ -495,147 +483,58 @@
             const targetFile = csvFilesConfig[index];
             document.getElementById('dashboard-main-title').innerText = `${targetFile.name.split(' / ')[0]} Dashboard`;
             Papa.parse(targetFile.file, {
-                download: true, header: true, skipEmptyLines: true, delimiter: "", 
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
-                    try {
-                        rawData = results.data;
-                        if(rawData.length > 0) {
-                            detectColumns(rawData[0]);
-                            distinctProducts = [...new Set(rawData.map(row => row.PRODUCT))].filter(Boolean);
-                            productColors = generateColorsForProducts(distinctProducts);
-                            groupLabels = [...new Set(rawData.map(row => row.GROUP || 'General'))].filter(Boolean);
-                            buildDynamicTableHeader();
-                        }
-                        processData();
-                        initFilters();
-                        updateDashboard();
-                    } catch (e) {
-                        console.error("Error processing data:", e);
-                        alert("Terjadi kesalahan saat memproses data.");
-                    } finally {
-                        document.getElementById('loading').style.display = 'none';
+                    rawData = results.data;
+                    
+                    if(rawData.length > 0) {
+                        const allKeys = Object.keys(rawData[0]);
+                        monthColumns = allKeys.filter(k => !filterColumns.includes(k) && k !== '');
+                        
+                        lastMonth = monthColumns[monthColumns.length - 1];
+                        prevMonth = monthColumns.length > 1 ? monthColumns[monthColumns.length - 2] : '';
+                        prevPrevMonth = monthColumns.length > 2 ? monthColumns[monthColumns.length - 3] : '';
+
+                        document.getElementById('current-date').innerText = lastMonth;
+
+                        distinctProducts = [...new Set(rawData.map(r => r.PRODUCT).filter(p => p))];
+                        productColors = generateColorsForProducts(distinctProducts);
+
+                        groupLabels = [...new Set(rawData.map(r => r.GROUP).filter(g => g))];
+
+                        buildSidebarFilters();
+                        applyFilters();
                     }
+                    document.getElementById('loading').style.display = 'none';
                 },
-                error: function(err) {
-                    console.error("Error loading CSV:", err);
-                    alert(`Gagal memuat berkas file: ${targetFile.file}.`);
+                error: function() {
+                    alert("Gagal memuat file CSV: " + targetFile.file);
                     document.getElementById('loading').style.display = 'none';
                 }
             });
         }
 
-        function detectColumns(firstRow) {
-            const staticFields = ['CO-BRANCH','OFFICE','PRODUCT','GROUP','CO-BRANCH-CLEAN','OFFICE-CLEAN'];
-            monthColumns = Object.keys(firstRow).filter(key => !staticFields.includes(key));
-            lastMonth = monthColumns[monthColumns.length - 1];
-            prevMonth = monthColumns.length > 1 ? monthColumns[monthColumns.length - 2] : '';
-            prevPrevMonth = monthColumns.length > 2 ? monthColumns[monthColumns.length - 3] : '';
-            document.getElementById('current-date').innerText = lastMonth;
-            document.getElementById('kpi-latest-lbl').innerText = lastMonth;
-        }
-
-        function buildDynamicTableHeader() {
-            const headerRow = document.getElementById('dynamic-table-header-row');
-            let headerHtml = `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs font-bold bg-slate-50 dark:bg-slate-800 sticky-column text-left truncate">Branch</th>`;
-            
-            distinctProducts.forEach(prod => {
-                let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
-                headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
-            });
-            
-            headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold bg-slate-50 dark:bg-slate-800 max-w-[90px] whitespace-normal break-words">Total<br>Amount</th>`;
-            
-            headerRow.innerHTML = headerHtml;
-            const compSubLabels = document.getElementById('dynamic-group-pct-labels');
-            if (compSubLabels) {
-                compSubLabels.innerHTML = groupLabels.map((grp, i) => `
-                    <div class="bg-slate-50 dark:bg-slate-700/50 p-1.5 rounded">
-                        <span class="block font-bold text-slate-700 dark:text-slate-200 text-[10px] md:text-xs" id="comp-group-pct-${i}">0%</span>
-                        <span class="text-[8px] text-slate-400 dark:text-slate-500 block truncate">${grp}</span>
-                    </div>`).join('');
-            }
-        }
-
-        function initSidebarToggle() {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebar-toggle');
-            const toggleIcon = document.getElementById('toggle-icon');
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    isSidebarCollapsed = !isSidebarCollapsed;
-                    if (isSidebarCollapsed) {
-                        sidebar.classList.add('collapsed'); sidebar.style.width = '70px'; toggleIcon.classList.add('rotate-180');
-                    } else {
-                        sidebar.classList.remove('collapsed'); sidebar.style.width = '16rem'; toggleIcon.classList.remove('rotate-180');
-                    }
-                });
-            }
-        }
-
-        function initMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            const openBtn = document.getElementById('mobile-menu-btn');
-            const closeBtn = document.getElementById('sidebar-close-mobile');
-            
-            function openMobileNav() { 
-                sidebar.classList.remove('-translate-x-full'); 
-                sidebar.classList.add('translate-x-0'); 
-                backdrop.classList.remove('hidden'); 
-                document.body.style.overflow = 'hidden'; 
-            }
-            
-            function closeMobileNav() { 
-                sidebar.classList.remove('translate-x-0'); 
-                sidebar.classList.add('-translate-x-full'); 
-                backdrop.classList.add('hidden'); 
-                document.body.style.overflow = ''; 
-            }
-            
-            if(openBtn) openBtn.addEventListener('click', openMobileNav);
-            if(closeBtn) closeBtn.addEventListener('click', closeMobileNav);
-            if(backdrop) backdrop.addEventListener('click', closeMobileNav);
-        }
-
-        function cleanName(name) {
-            if (name && name.length > 6 && name.substring(3, 6) === ' - ') return name.substring(6).trim();
-            return name;
-        }
-
-        function processData() {
-            rawData.forEach(row => {
-                row['CO-BRANCH-CLEAN'] = cleanName(row['CO-BRANCH']);
-                row['OFFICE-CLEAN'] = cleanName(row['OFFICE']);
-                if (!row.GROUP) row.GROUP = 'General';
-                monthColumns.forEach(col => {
-                    let val = row[col];
-                    if (val) {
-                        if (typeof val === 'string') val = val.replace(/\./g, '').replace(/,/g, '.');
-                        row[col] = parseFloat(val) || 0;
-                    } else {
-                        row[col] = 0;
-                    }
-                });
-            });
-            filteredData = [...rawData];
-        }
-
-        function initFilters() {
+        function buildSidebarFilters() {
             const container = document.getElementById('filter-container');
             container.innerHTML = '';
+
             filterColumns.forEach(col => {
                 const wrapper = document.createElement('div');
-                wrapper.className = "mb-1";
+                wrapper.className = "space-y-1";
+
                 const label = document.createElement('label');
                 label.className = "block text-[9px] font-medium text-slate-400 dark:text-slate-500 mb-0.5 uppercase filter-label tracking-wider";
                 label.innerText = col === 'OFFICE' ? 'BRANCH' : col;
+
                 const select = document.createElement('select');
                 select.className = "w-full bg-slate-800 dark:bg-slate-700 border border-slate-700 dark:border-slate-600 text-slate-200 text-xs rounded-lg block p-1.5 focus:border-indigo-500 focus:outline-none";
                 select.id = `filter-${col}`;
+
                 const defaultOpt = document.createElement('option');
                 defaultOpt.value = "ALL";
                 defaultOpt.innerText = col === 'OFFICE' ? 'All Branches' : `All ${col}s`;
                 select.appendChild(defaultOpt);
+
                 select.addEventListener('change', () => {
                     handleFilterChange();
                     if(window.innerWidth < 768) {
@@ -644,98 +543,88 @@
                         document.body.style.overflow = '';
                     }
                 });
+
                 wrapper.appendChild(label);
                 wrapper.appendChild(select);
                 container.appendChild(wrapper);
             });
+
             populateFilterOptions('CO-BRANCH', rawData);
             populateFilterOptions('OFFICE', rawData);
             populateFilterOptions('PRODUCT', rawData);
             populateFilterOptions('GROUP', rawData);
         }
 
-        function populateFilterOptions(column, dataSource) {
+        function populateFilterOptions(column, data) {
             const select = document.getElementById(`filter-${column}`);
             if(!select) return;
-            const currentValue = select.value;
-            const displayColumn = column === 'CO-BRANCH' ? 'CO-BRANCH-CLEAN' : column === 'OFFICE' ? 'OFFICE-CLEAN' : column;
-            const uniqueValues = [...new Set(dataSource.map(item => item[displayColumn]))].filter(Boolean).sort();
-            while (select.options.length > 1) {
-                select.remove(1);
-            }
+
+            const savedVal = select.value;
+            while(select.childNodes.length > 1) { select.removeChild(select.lastChild); }
+
+            const uniqueValues = [...new Set(data.map(item => item[column]).filter(v => v))].sort();
+            
             uniqueValues.forEach(val => {
                 const opt = document.createElement('option');
                 opt.value = val;
-                opt.innerText = val === "Sme" ? "SME" : val;
+                opt.innerText = column === 'PRODUCT' ? (val === 'Sme' ? 'SME' : val.replace(/_/g,' ')) : val;
                 select.appendChild(opt);
             });
-            if (uniqueValues.includes(currentValue)) {
-                select.value = currentValue;
-            } else {
-                select.value = "ALL";
-            }
+
+            if(uniqueValues.includes(savedVal)) { select.value = savedVal; } else { select.value = "ALL"; }
         }
 
         function handleFilterChange() {
-            const coBranchCleanVal = document.getElementById('filter-CO-BRANCH').value;
-            const officeCleanVal = document.getElementById('filter-OFFICE').value;
-            let dataForOffice = rawData;
-            if (coBranchCleanVal !== "ALL") dataForOffice = rawData.filter(row => row['CO-BRANCH-CLEAN'] === coBranchCleanVal);
-            populateFilterOptions('OFFICE', dataForOffice);
-            let dataForProduct = dataForOffice;
-            if (officeCleanVal !== "ALL") dataForProduct = dataForOffice.filter(row => row['OFFICE-CLEAN'] === officeCleanVal);
-            populateFilterOptions('PRODUCT', dataForProduct);
-            populateFilterOptions('GROUP', dataForProduct);
             applyFilters();
         }
 
         function applyFilters() {
-            const activeFilters = {};
+            let data = [...rawData];
+
             filterColumns.forEach(col => {
-                const val = document.getElementById(`filter-${col}`).value;
-                if (val !== "ALL") activeFilters[col] = val;
+                const select = document.getElementById(`filter-${col}`);
+                if(select && select.value !== "ALL") {
+                    data = data.filter(item => item[col] === select.value);
+                }
             });
-            filteredData = rawData.filter(row => {
-                let match = true;
-                if (activeFilters['CO-BRANCH']) match = match && row['CO-BRANCH-CLEAN'] === activeFilters['CO-BRANCH'];
-                if (activeFilters['OFFICE']) match = match && row['OFFICE-CLEAN'] === activeFilters['OFFICE'];
-                if (activeFilters['PRODUCT']) match = match && row['PRODUCT'] === activeFilters['PRODUCT'];
-                if (activeFilters['GROUP']) match = match && row['GROUP'] === activeFilters['GROUP'];
-                return match;
+
+            filteredData = data.map(row => {
+                let parsed = { ...row };
+                monthColumns.forEach(m => {
+                    if(parsed[m]) {
+                        let str = parsed[m].toString().replace(/\./g, '').replace(/,/g, '.');
+                        parsed[m] = parseFloat(str) || 0;
+                    } else {
+                        parsed[m] = 0;
+                    }
+                });
+                return parsed;
             });
+
+            filterColumns.forEach(col => {
+                let tempFilters = [...rawData];
+                filterColumns.forEach(c => {
+                    if(c !== col) {
+                        const sel = document.getElementById(`filter-${c}`);
+                        if(sel && sel.value !== "ALL") { tempFilters = tempFilters.filter(x => x[c] === sel.value); }
+                    }
+                });
+                populateFilterOptions(col, tempFilters);
+            });
+
             updateDashboard();
         }
 
-        window.changeTimeline = function(months) {
-            activeTimelineMonths = months;
-            const ids = {0:'btn-time-all',3:'btn-time-3',6:'btn-time-6',12:'btn-time-12'};
-            Object.entries(ids).forEach(([m,id]) => {
+        function changeTimeline(m) {
+            activeTimelineMonths = m;
+            ['btn-time-3','btn-time-6','btn-time-12','btn-time-all'].forEach(id => {
                 const btn = document.getElementById(id);
                 if(btn) {
-                    if(parseInt(m)===months) btn.className="flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
-                    else btn.className="flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
-                }
-            });
-            updateTrendChart();
-        }
-
-        window.resetFilters = function() {
-            filterColumns.forEach(col => {
-                const s=document.getElementById(`filter-${col}`);
-                if(s) s.value="ALL";
-            });
-            populateFilterOptions('CO-BRANCH',rawData);
-            populateFilterOptions('OFFICE',rawData);
-            populateFilterOptions('PRODUCT',rawData);
-            populateFilterOptions('GROUP',rawData);
-            filteredData=[...rawData];
-            activeTimelineMonths=0;
-            const ids={0:'btn-time-all',3:'btn-time-3',6:'btn-time-6',12:'btn-time-12'};
-            Object.entries(ids).forEach(([m,id])=>{
-                const btn=document.getElementById(id);
-                if(btn){
-                    if(parseInt(m)===0)btn.className="flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
-                    else btn.className="flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+                    if(parseInt(m) === 0 && id === 'btn-time-all') btn.className = "flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                    else if(parseInt(m) === 3 && id === 'btn-time-3') btn.className = "flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                    else if(parseInt(m) === 6 && id === 'btn-time-6') btn.className = "flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                    else if(parseInt(m) === 12 && id === 'btn-time-12') btn.className = "flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                    else btn.className = "flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
                 }
             });
             updateDashboard();
@@ -758,188 +647,433 @@
         }
 
         function formatChartValue(num, currentFileName) {
-            if (currentFileName === "Qris" || currentFileName === "MDin") return formatNumber(num);
-            return formatToBillion(num);
+            const isBillionFormat = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
+            if (isBillionFormat) {
+                if (!num && num !== 0) return "0,0 M";
+                let val = num / 1000000000;
+                return new Intl.NumberFormat('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1}).format(val) + " M";
+            }
+            return formatNumber(num);
+        }
+
+        // =======================================================
+        // PERUBAHAN UTAMA: DETEKSI .dark DI DOMAIN DOCUMENT.ELEMENT
+        // UNTUK KONTRAST FONT LEGENDA DI DARK THEME
+        // =======================================================
+        function getCustomLegendConfig() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#475569'; // Teks terang untuk dark mode, abu-abu gelap untuk light mode
+            return {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    boxWidth: window.innerWidth < 768 ? 4 : 6,
+                    padding: window.innerWidth < 768 ? 6 : 12,
+                    color: textColor,
+                    font: { size: window.innerWidth < 768 ? 8 : 10 },
+                    generateLabels: function(chart) {
+                        const datasets = chart.data.datasets;
+                        return datasets.map((ds, i) => ({
+                            text: ds.label,
+                            fillStyle: ds.backgroundColor,
+                            strokeStyle: ds.borderColor,
+                            lineWidth: 1,
+                            hidden: !chart.isDatasetVisible(i),
+                            datasetIndex: i,
+                            pointStyle: 'circle',
+                            usePointStyle: true,
+                            boxWidth: 0
+                        }));
+                    }
+                }
+            };
+        }
+
+        function getSquareLegendConfig() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#475569'; // Kontras legend box labels
+            return {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'rect',
+                    boxWidth: 6,
+                    padding: window.innerWidth < 768 ? 8 : 15,
+                    color: textColor,
+                    font: { size: window.innerWidth < 768 ? 8 : 10 },
+                    generateLabels: function(chart) {
+                        const datasets = chart.data.datasets;
+                        return datasets.map((ds, i) => ({
+                            text: ds.label,
+                            fillStyle: ds.backgroundColor,
+                            strokeStyle: ds.borderColor || ds.backgroundColor,
+                            lineWidth: 2,
+                            hidden: !chart.isDatasetVisible(i),
+                            datasetIndex: i,
+                            pointStyle: 'rect',
+                            usePointStyle: true,
+                            boxWidth: 6
+                        }));
+                    }
+                }
+            };
         }
 
         function updateKPIs() {
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
-            const isQrisOrMdin = (currentFileName === "Qris" || currentFileName === "MDin");
+            let groupTotals={}, productTotals={}, grandTotal=0;
+            let groupTotalsPrev={}, productTotalsPrev={}, grandTotalPrev=0;
+            groupLabels.forEach(grp=>{groupTotals[grp]=0;groupTotalsPrev[grp]=0;});
 
-            if (currentFileName === "NPF") {
-                document.getElementById('kpi-total-label').innerText = "Total NPF / Financing";
-                document.getElementById('kpi-segment1-label').innerText = "NPF Amount";
-                document.getElementById('kpi-segment2-label').innerText = "Lancat Amount";
-                document.getElementById('kpi-fourth-label').innerText = "NPF Ratio %";
-                document.getElementById('kpi-fourth-sublabel').innerText = "Persentase Kolektibilitas";
-            } else {
-                document.getElementById('kpi-total-label').innerText = `Total ${currentFileName}`;
-                document.getElementById('kpi-segment1-label').innerText = "Segment Retail";
-                document.getElementById('kpi-segment2-label').innerText = "Segment Wholesale";
-                document.getElementById('kpi-fourth-label').innerText = "Top Product";
-                document.getElementById('kpi-fourth-sublabel').innerText = "By Volume Month";
-            }
+            let caTotal = 0, saTotal = 0, tdTotal = 0;
+            let caTotalPrev = 0, saTotalPrev = 0, tdTotalPrev = 0;
+            let caPct = 0, saPct = 0, tdPct = 0;
 
-            let sumLast = 0, sumPrev = 0, sumPrevPrev = 0;
-            let sumSeg1Last = 0, sumSeg1Prev = 0;
-            let sumSeg2Last = 0, sumSeg2Prev = 0;
-            
-            let prodSums = {};
-            distinctProducts.forEach(p => prodSums[p] = 0);
+            filteredData.forEach(row=>{
+                const val=row[lastMonth]||0;
+                const valPrev=prevMonth?(row[prevMonth]||0):0;
+                const grp=row.GROUP;
+                const product=row.PRODUCT;
 
-            filteredData.forEach(row => {
-                sumLast += row[lastMonth] || 0;
-                if(prevMonth) sumPrev += row[prevMonth] || 0;
-                if(prevPrevMonth) sumPrevPrev += row[prevPrevMonth] || 0;
+                if(grp&&groupTotals[grp]!==undefined) groupTotals[grp]+=val;
+                if(grp&&groupTotalsPrev[grp]!==undefined) groupTotalsPrev[grp]+=valPrev;
 
-                const grp = row.GROUP ? row.GROUP.toUpperCase() : '';
-                if (grp === 'RETAIL' || grp === 'LANCAR' || grp === 'CONSUMER') {
-                    sumSeg1Last += row[lastMonth] || 0;
-                    if(prevMonth) sumSeg1Prev += row[prevMonth] || 0;
-                } else {
-                    sumSeg2Last += row[lastMonth] || 0;
-                    if(prevMonth) sumSeg2Prev += row[prevMonth] || 0;
-                }
+                if(!productTotals[product])productTotals[product]=0;
+                productTotals[product]+=val;
 
-                if (row.PRODUCT && prodSums[row.PRODUCT] !== undefined) {
-                    prodSums[row.PRODUCT] += row[lastMonth] || 0;
-                }
+                if(!productTotalsPrev[product])productTotalsPrev[product]=0;
+                productTotalsPrev[product]+=valPrev;
+
+                grandTotal+=val;
+                grandTotalPrev+=valPrev;
+
+                if(product === 'Giro') caTotal += val;
+                if(product === 'Tabungan') saTotal += val;
+                if(product === 'Deposito') tdTotal += val;
+                
+                if(product === 'Giro') caTotalPrev += valPrev;
+                if(product === 'Tabungan') saTotalPrev += valPrev;
+                if(product === 'Deposito') tdTotalPrev += valPrev;
             });
 
-            const totalEl = document.getElementById('kpi-total');
-            const seg1El = document.getElementById('kpi-segment1');
-            const seg2El = document.getElementById('kpi-segment2');
-            const fourthEl = document.getElementById('kpi-fourth-value');
+            let topProduct="-", maxVal=0;
+            for(let p in productTotals){if(productTotals[p]>maxVal){maxVal=productTotals[p];topProduct=p;}}
+            if(topProduct!=="-") topProduct = topProduct === "Sme" ? "SME" : topProduct.replace(/_/g,' ');
 
-            animateNumber(totalEl, isQrisOrMdin ? sumLast : sumLast / 1000000000, false, !isQrisOrMdin);
-            animateNumber(seg1El, isQrisOrMdin ? sumSeg1Last : sumSeg1Last / 1000000000, false, !isQrisOrMdin);
-            animateNumber(seg2El, isQrisOrMdin ? sumSeg2Last : sumSeg2Last / 1000000000, false, !isQrisOrMdin);
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isBillionFormat = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
 
-            document.getElementById('kpi-segment1-pct').innerText = sumLast ? ((sumSeg1Last/sumLast)*100).toFixed(1) + '%' : '0%';
-            document.getElementById('kpi-segment2-pct').innerText = sumLast ? ((sumSeg2Last/sumLast)*100).toFixed(1) + '%' : '0%';
+            const kpiTotalLabel = document.getElementById('kpi-total-label');
+            const kpiSegment1Label = document.getElementById('kpi-segment1-label');
+            const kpiSegment2Label = document.getElementById('kpi-segment2-label');
+            const kpiFourthLabel = document.getElementById('kpi-fourth-label');
+            const kpiFourthValue = document.getElementById('kpi-fourth-value');
+            const kpiFourthSublabel = document.getElementById('kpi-fourth-sublabel');
+            const kpiFourthIcon = document.getElementById('kpi-fourth-icon');
 
-            renderMoM(sumLast, sumPrev, 'mom-total');
-            renderMoM(sumSeg1Last, sumSeg1Prev, 'mom-seg1');
-            renderMoM(sumSeg2Last, sumSeg2Prev, 'mom-seg2');
+            document.getElementById('kpi-latest-lbl').innerText = lastMonth;
 
-            if (currentFileName === "NPF") {
-                const ratio = sumLast ? (sumSeg1Last / sumLast) * 100 : 0;
-                let prevRatio = 0;
-                if (sumPrev) prevRatio = (sumSeg1Prev / sumPrev) * 100;
-
-                fourthEl.innerText = ratio.toFixed(2) + '%';
-                const momFourth = document.getElementById('mom-fourth');
-                const diff = ratio - prevRatio;
-                if (diff > 0) {
-                    momFourth.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-red-500";
-                    momFourth.innerHTML = `<i class="fa-solid fa-arrow-trend-upmr-0.5"></i>+${diff.toFixed(2)}% MoM`;
-                } else if (diff < 0) {
-                    momFourth.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-emerald-500";
-                    momFourth.innerHTML = `<i class="fa-solid fa-arrow-trend-down mr-0.5"></i>${diff.toFixed(2)}% MoM`;
-                } else {
-                    momFourth.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-slate-400";
-                    momFourth.innerHTML = `0.00% MoM`;
-                }
-            } else {
-                let topProd = '-', topVal = -1;
-                Object.entries(prodSums).forEach(([p, v]) => {
-                    if (v > topVal) { topVal = v; topProd = p; }
-                });
-                fourthEl.className = "text-xs md:text-sm font-bold text-slate-800 dark:text-white mt-0.5 truncate";
-                fourthEl.innerText = topProd === "Sme" ? "SME" : topProd.replace(/_/g, ' ');
-                
-                const momFourth = document.getElementById('mom-fourth');
-                momFourth.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-slate-500 dark:text-slate-400";
-                momFourth.innerText = isQrisOrMdin ? formatNumber(topVal) : formatToBillion(topVal);
+            function renderMoM(elementId, current, previous) {
+                const el = document.getElementById(elementId);
+                if(!el) return;
+                if(!previous || previous === 0) { el.innerHTML = `<span class="text-slate-400 dark:text-slate-500">-- MoM</span>`; return; }
+                const pct = ((current - previous) / previous) * 100;
+                if(pct >= 0) { el.innerHTML = `<span class="text-emerald-500 font-semibold"><i class="fa-solid fa-caret-up mr-0.5"></i>+${pct.toFixed(1)}%</span> <span class="text-[8px] md:text-[9px] text-slate-400 dark:text-slate-500 font-normal">MoM</span>`; }
+                else { el.innerHTML = `<span class="text-red-500 font-semibold"><i class="fa-solid fa-caret-down mr-0.5"></i>${pct.toFixed(1)}%</span> <span class="text-[8px] md:text-[9px] text-slate-400 dark:text-slate-500 font-normal">MoM</span>`; }
             }
-        }
 
-        function renderMoM(curr, prev, elementId) {
-            const el = document.getElementById(elementId);
-            if (!el || !prev) { if(el) el.innerHTML = '-'; return; }
-            const pct = ((curr - prev) / prev) * 100;
-            if (pct > 0) {
-                el.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-emerald-500";
-                el.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-0.5"></i>+${pct.toFixed(1)}% MoM`;
-            } else if (pct < 0) {
-                el.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-red-500";
-                el.innerHTML = `<i class="fa-solid fa-arrow-trend-down mr-0.5"></i>${pct.toFixed(1)}% MoM`;
-            } else {
-                el.className = "mt-0.5 text-[9px] md:text-[10px] font-medium leading-none text-slate-400";
-                el.innerHTML = `0.0% MoM`;
+            if (currentFileName === "haji.csv") {
+                kpiTotalLabel.innerText = "Total Register";
+                kpiSegment1Label.innerText = "Reguler";
+                kpiSegment2Label.innerText = "Khusus";
+                
+                const totalReg = groupTotals['Reguler'] || 0;
+                const totalKhs = groupTotals['Khusus'] || 0;
+                
+                animateNumber(document.getElementById('kpi-total'), grandTotal);
+                animateNumber(document.getElementById('kpi-segment1'), totalReg);
+                animateNumber(document.getElementById('kpi-segment2'), totalKhs);
+                
+                renderMoM('mom-total', grandTotal, grandTotalPrev);
+                renderMoM('mom-seg1', totalReg, groupTotalsPrev['Reguler'] || 0);
+                renderMoM('mom-seg2', totalKhs, groupTotalsPrev['Khusus'] || 0);
+
+                const regPct = grandTotal > 0 ? (totalReg / grandTotal) * 100 : 0;
+                const khsPct = grandTotal > 0 ? (totalKhs / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment1-pct').innerText = `${regPct.toFixed(1)}% dari total`;
+                document.getElementById('kpi-segment2-pct').innerText = `${khsPct.toFixed(1)}% dari total`;
+
+                kpiFourthLabel.innerText = "Top Channel";
+                let topHajiChan = "-", maxHaji = 0;
+                for(let p in productTotals){if(productTotals[p] > maxHaji){maxHaji = productTotals[p]; topHajiChan = p;}}
+                kpiFourthValue.innerText = topHajiChan;
+                renderMoM('mom-fourth', maxHaji, productTotalsPrev[topHajiChan] || 0);
+                kpiFourthSublabel.innerText = `Volume: ${formatNumber(maxHaji)}`;
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 italic truncate";
+                kpiFourthIcon.className = "fa-solid fa-mosque";
+                document.getElementById('mix-chart-title').innerText = "Registration Mix";
+
+            } else if (currentFileName === "qris.csv") {
+                kpiTotalLabel.innerText = "Total Merchant";
+                kpiSegment1Label.innerText = "QRIS (Bertransaksi)";
+                kpiSegment2Label.innerText = "Non QRIS (Tidak)";
+                
+                const totalQris = groupTotals['QRIS'] || 0;
+                const totalNonQris = groupTotals['Non QRIS'] || 0;
+                
+                animateNumber(document.getElementById('kpi-total'), grandTotal);
+                animateNumber(document.getElementById('kpi-segment1'), totalQris);
+                animateNumber(document.getElementById('kpi-segment2'), totalNonQris);
+                
+                renderMoM('mom-total', grandTotal, grandTotalPrev);
+                renderMoM('mom-seg1', totalQris, groupTotalsPrev['QRIS'] || 0);
+                renderMoM('mom-seg2', totalNonQris, groupTotalsPrev['Non QRIS'] || 0);
+
+                const qrisPct = grandTotal > 0 ? (totalQris / grandTotal) * 100 : 0;
+                const nonQrisPct = grandTotal > 0 ? (totalNonQris / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment1-pct').innerText = `${qrisPct.toFixed(1)}% dari total`;
+                document.getElementById('kpi-segment2-pct').innerText = `${nonQrisPct.toFixed(1)}% dari total`;
+
+                kpiFourthLabel.innerText = "Rasio Aktif";
+                const activeRatio = grandTotal > 0 ? (totalQris / grandTotal) * 100 : 0;
+                kpiFourthValue.innerText = `${activeRatio.toFixed(1)}%`;
+                kpiFourthSublabel.innerText = "Target Aktifitas";
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 italic truncate";
+                kpiFourthIcon.className = "fa-solid fa-chart-pie";
+                document.getElementById('mix-chart-title').innerText = "Activity Mix";
+                ['mom-fourth'].forEach(id => document.getElementById(id).innerHTML='');
+
+            } else if (currentFileName === "mdin.csv") {
+                let m1 = monthColumns[monthColumns.length - 1] || '-';
+                let m2 = monthColumns[monthColumns.length - 2] || '-';
+                let m3 = monthColumns[monthColumns.length - 3] || '-';
+                let m4 = monthColumns[monthColumns.length - 4] || '-';
+
+                let totalM1 = 0, totalM2 = 0, totalM3 = 0, totalM4 = 0;
+                filteredData.forEach(row => {
+                    totalM1 += row[m1] || 0;
+                    if(m2 !== '-') totalM2 += row[m2] || 0;
+                    if(m3 !== '-') totalM3 += row[m3] || 0;
+                    if(m4 !== '-') totalM4 += row[m4] || 0;
+                });
+
+                kpiTotalLabel.innerText = `Akusisi (${m1})`;
+                kpiSegment1Label.innerText = `Akusisi (${m2})`;
+                kpiSegment2Label.innerText = `Akusisi (${m3})`;
+                
+                animateNumber(document.getElementById('kpi-total'), totalM1);
+                animateNumber(document.getElementById('kpi-segment1'), totalM2);
+                document.getElementById('kpi-segment1-pct').innerHTML = `<span class="text-slate-400 dark:text-slate-500 font-normal text-[8px]">Posisi 2 Bulan</span>`;
+                
+                animateNumber(document.getElementById('kpi-segment2'), totalM3);
+                document.getElementById('kpi-segment2-pct').innerHTML = `<span class="text-slate-400 dark:text-slate-500 font-normal text-[8px]">Posisi 3 Bulan</span>`;
+                
+                kpiFourthLabel.innerText = `Akusisi (${m4})`;
+                kpiFourthValue.innerText = formatNumber(totalM4);
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 not-italic truncate";
+                kpiFourthSublabel.innerText = "Posisi 4 bulan";
+                kpiFourthIcon.className = "fa-solid fa-calendar-check";
+                document.getElementById('mix-chart-title').innerText = "Acquisition Trend";
+                ['mom-total','mom-seg1','mom-seg2','mom-fourth'].forEach(id => document.getElementById(id).innerHTML='');
+
+            } else if (currentFileName === "financing.csv") {
+                kpiTotalLabel.innerText = "Total Booking";
+                if(isBillionFormat){document.getElementById('kpi-total').innerText=formatToBillion(grandTotal);}else{animateNumber(document.getElementById('kpi-total'),grandTotal);}
+                renderMoM('mom-total', grandTotal, grandTotalPrev);
+
+                kpiSegment1Label.innerText = "Consumer";
+                const totalConsumer = groupTotals['Consumer'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment1').innerText=formatToBillion(totalConsumer);}else{animateNumber(document.getElementById('kpi-segment1'),totalConsumer);}
+                renderMoM('mom-seg1', totalConsumer, groupTotalsPrev['Consumer'] || 0);
+                const consPct = grandTotal > 0 ? (totalConsumer / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment1-pct').innerText = `${consPct.toFixed(1)}% dari total`;
+
+                kpiSegment2Label.innerText = "SME";
+                const totalSme = groupTotals['SME'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment2').innerText=formatToBillion(totalSme);}else{animateNumber(document.getElementById('kpi-segment2'),totalSme);}
+                renderMoM('mom-seg2', totalSme, groupTotalsPrev['SME'] || 0);
+                const smePct = grandTotal > 0 ? (totalSme / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment2-pct').innerText = `${smePct.toFixed(1)}% dari total`;
+
+                kpiFourthLabel.innerText = "Top Product";
+                kpiFourthValue.innerText = topProduct;
+                renderMoM('mom-fourth', maxVal, productTotalsPrev[topProduct] || 0);
+                kpiFourthSublabel.innerText = `Volume: ${formatChartValue(maxVal, currentFileName)}`;
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 italic truncate";
+                kpiFourthIcon.className = "fa-solid fa-trophy";
+                document.getElementById('mix-chart-title').innerText = "Product Mix";
+
+            } else if (currentFileName === "funding.csv") {
+                kpiTotalLabel.innerText = "Total DPK";
+                if(isBillionFormat){document.getElementById('kpi-total').innerText=formatToBillion(grandTotal);}else{animateNumber(document.getElementById('kpi-total'),grandTotal);}
+                renderMoM('mom-total', grandTotal, grandTotalPrev);
+
+                kpiSegment1Label.innerText = "Total CASA";
+                const totalCasa = groupTotals['CASA'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment1').innerText=formatToBillion(totalCasa);}else{animateNumber(document.getElementById('kpi-segment1'),totalCasa);}
+                renderMoM('mom-seg1', totalCasa, groupTotalsPrev['CASA'] || 0);
+                const casaPct = grandTotal > 0 ? (totalCasa / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment1-pct').innerText = `${casaPct.toFixed(1)}% Rasio CASA`;
+
+                kpiSegment2Label.innerText = "Total TD (Term)";
+                const totalTd = groupTotals['TD'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment2').innerText=formatToBillion(totalTd);}else{animateNumber(document.getElementById('kpi-segment2'),totalTd);}
+                renderMoM('mom-seg2', totalTd, groupTotalsPrev['TD'] || 0);
+                const tdPctVal = grandTotal > 0 ? (totalTd / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment2-pct').innerText = `${tdPctVal.toFixed(1)}% Rasio Deposito`;
+
+                kpiFourthLabel.innerText = "Top Product";
+                kpiFourthValue.innerText = topProduct;
+                renderMoM('mom-fourth', maxVal, productTotalsPrev[topProduct] || 0);
+                kpiFourthSublabel.innerText = `Volume: ${formatChartValue(maxVal, currentFileName)}`;
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 italic truncate";
+                kpiFourthIcon.className = "fa-solid fa-trophy";
+                document.getElementById('mix-chart-title').innerText = "Product Mix";
+
+            } else if (currentFileName === "coll.csv") {
+                kpiTotalLabel.innerText = "Grand Total NPF";
+                if(isBillionFormat){document.getElementById('kpi-total').innerText=formatToBillion(grandTotal);}else{animateNumber(document.getElementById('kpi-total'),grandTotal);}
+                renderMoM('mom-total', grandTotal, grandTotalPrev);
+
+                kpiSegment1Label.innerText = "Kolektibilitas 2";
+                const totalKol2 = groupTotals['KOL2'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment1').innerText=formatToBillion(totalKol2);}else{animateNumber(document.getElementById('kpi-segment1'),totalKol2);}
+                renderMoM('mom-seg1', totalKol2, groupTotalsPrev['KOL2'] || 0);
+                const kol2Pct = grandTotal > 0 ? (totalKol2 / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment1-pct').innerText = `${kol2Pct.toFixed(1)}% dari total NPF`;
+
+                kpiSegment2Label.innerText = "NPF (3, 4, 5)";
+                const totalNpfReal = groupTotals['NPF'] || 0;
+                if(isBillionFormat){document.getElementById('kpi-segment2').innerText=formatToBillion(totalNpfReal);}else{animateNumber(document.getElementById('kpi-segment2'),totalNpfReal);}
+                renderMoM('mom-seg2', totalNpfReal, groupTotalsPrev['NPF'] || 0);
+                const npfRealPct = grandTotal > 0 ? (totalNpfReal / grandTotal) * 100 : 0;
+                document.getElementById('kpi-segment2-pct').innerText = `${npfRealPct.toFixed(1)}% Rasio NPF`;
+
+                kpiFourthLabel.innerText = "Highest Product";
+                kpiFourthValue.innerText = topProduct;
+                renderMoM('mom-fourth', maxVal, productTotalsPrev[topProduct] || 0);
+                kpiFourthSublabel.innerText = `Volume: ${formatChartValue(maxVal, currentFileName)}`;
+                kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 italic truncate";
+                kpiFourthIcon.className = "fa-solid fa-triangle-exclamation";
+                document.getElementById('mix-chart-title').innerText = "Category Breakdown";
             }
         }
 
         function updateCharts() {
-            // Deteksi tema aktif di root element untuk dikirim ke opsi Chart
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            const textColor = isDarkMode ? '#cbd5e1' : '#475569';
-            const gridColor = isDarkMode ? '#334155' : '#f1f5f9';
-
-            updateTrendChart(textColor, gridColor);
-            updateCompositionChart(textColor);
-            updateCoBranchChart(textColor, gridColor);
-            updateBranchChart(textColor, gridColor);
+            updateTrendChart();
+            updateCompositionChart();
+            updateCoBranchChart();
+            updateBranchChart();
         }
 
-        function updateTrendChart(textColor, gridColor) {
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
-            let displayMonths = [...monthColumns];
-            if (activeTimelineMonths > 0) {
-                displayMonths = displayMonths.slice(-activeTimelineMonths);
+        function updateTrendChart() {
+            const ctx = document.getElementById('trendChart');
+            if(!ctx) return;
+
+            if(charts.trend) { charts.trend.destroy(); }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            let labels = [...monthColumns];
+            if(activeTimelineMonths > 0) {
+                labels = labels.slice(-activeTimelineMonths);
             }
 
-            let chartData = displayMonths.map(m => {
-                let sum = 0;
-                filteredData.forEach(row => { sum += row[m] || 0; });
-                return sum;
+            document.getElementById('trend-title').innerText = `Trend (${labels[0]} to ${labels[labels.length-1]})`;
+
+            const getTransparentColor = (hex) => {
+                if(!hex || !hex.startsWith('#')) return 'rgba(0,0,0,0.15)';
+                const r = parseInt(hex.slice(1,3), 16);
+                const g = parseInt(hex.slice(3,5), 16);
+                const b = parseInt(hex.slice(5,7), 16);
+                return `rgba(${r},${g},${b},0.15)`;
+            };
+
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+
+            const datasets = distinctProducts.map(prod => {
+                const dataPoints = labels.map(month => {
+                    let sum = 0;
+                    filteredData.forEach(row => {
+                        if(row.PRODUCT === prod) sum += (row[month] || 0);
+                    });
+                    return sum;
+                });
+
+                return {
+                    label: prod === "Sme" ? "SME" : prod.replace(/_/g,' '),
+                    data: dataPoints,
+                    borderColor: productColors[prod],
+                    backgroundColor: getTransparentColor(productColors[prod]),
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: window.innerWidth < 768 ? 2 : 4,
+                    pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                    pointBorderColor: productColors[prod],
+                    pointBorderWidth: 1.5
+                };
             });
 
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            if (charts.trend) charts.trend.destroy();
+            if (currentFileName !== "mdin.csv") {
+                const totalDataPoints = labels.map(month => {
+                    let sum = 0;
+                    filteredData.forEach(row => { sum += (row[month] || 0); });
+                    return sum;
+                });
 
-            document.getElementById('trend-title').innerText = `${currentFileName} Trend`;
+                datasets.push({
+                    label: 'TOTAL',
+                    data: totalDataPoints,
+                    borderColor: isDark ? '#94a3b8' : '#1e293b',
+                    backgroundColor: 'rgba(30,41,59,0.05)',
+                    borderWidth: 2.5,
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: window.innerWidth < 768 ? 2 : 4,
+                    pointBackgroundColor: isDark ? '#0f172a' : '#ffffff',
+                    pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
+                    pointBorderWidth: 2
+                });
+            }
 
             charts.trend = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: displayMonths,
-                    datasets: [{
-                        label: currentFileName,
-                        data: chartData,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.05)',
-                        fill: true,
-                        tension: 0.3,
-                        borderWidth: 2,
-                        pointRadius: displayMonths.length > 12 ? 1 : 3,
-                        pointHoverRadius: 6
-                    }]
-                },
+                data: { labels: labels, datasets: datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: getCustomLegendConfig(),
                         tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                            bodyColor: isDark ? '#cbd5e1' : '#475569',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 10,
                             callbacks: {
                                 label: function(context) {
-                                    return ` Total: ${formatChartValue(context.parsed.y, currentFileName)}`;
+                                    return ` ${context.dataset.label}: ${formatChartValue(context.parsed.y, currentFileName)}`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            grid: { color: gridColor },
-                            ticks: { font: { size: 9 }, color: textColor }
+                        x: {
+                            grid: { color: isDark ? '#334155' : '#f1f5f9' },
+                            ticks: { color: textColor, font: { size: window.innerWidth < 768 ? 8 : 10 } }
                         },
-                        y: { 
-                            grid: { color: gridColor },
+                        y: {
+                            grid: { color: isDark ? '#334155' : '#f1f5f9' },
                             ticks: {
-                                font: { size: 9 },
                                 color: textColor,
-                                callback: function(value) { return formatChartValue(value, currentFileName); }
+                                font: { size: window.innerWidth < 768 ? 8 : 10 },
+                                callback: function(value) {
+                                    return formatChartValue(value, currentFileName);
+                                }
                             }
                         }
                     }
@@ -947,65 +1081,100 @@
             });
         }
 
-        function updateCompositionChart(textColor) {
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
-            
-            let prodSums = {};
-            distinctProducts.forEach(p => prodSums[p] = 0);
-            
-            let groupSums = {};
-            groupLabels.forEach(g => groupSums[g] = 0);
+        function updateCompositionChart() {
+            const ctx = document.getElementById('compositionChart');
+            if(!ctx) return;
 
-            let total = 0;
+            if(charts.comp) { charts.comp.destroy(); }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+
+            let compositionData = {};
+            let totalVal = 0;
+
+            if(currentFileName === "mdin.csv") {
+                let m1 = monthColumns[monthColumns.length - 1] || '-';
+                let m2 = monthColumns[monthColumns.length - 2] || '-';
+                let m3 = monthColumns[monthColumns.length - 3] || '-';
+                let m4 = monthColumns[monthColumns.length - 4] || '-';
+
+                let t1=0, t2=0, t3=0, t4=0;
+                filteredData.forEach(r => {
+                    t1 += r[m1] || 0;
+                    if(m2 !== '-') t2 += r[m2] || 0;
+                    if(m3 !== '-') t3 += r[m3] || 0;
+                    if(m4 !== '-') t4 += r[m4] || 0;
+                });
+
+                let labels = [m1, m2, m3, m4].filter(m => m !== '-').reverse();
+                let dataVals = [t4, t3, t2, t1].slice(-(labels.length));
+
+                charts.comp = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Acquisitions',
+                            data: dataVals,
+                            backgroundColor: '#4f46e5',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { color: isDark ? '#94a3b8' : '#64748b' } },
+                            y: { grid: { color: isDark ? '#334155' : '#f1f5f9' }, ticks: { color: isDark ? '#94a3b8' : '#64748b' } }
+                        }
+                    }
+                });
+                document.getElementById('dynamic-group-pct-labels').innerHTML = '';
+                return;
+            }
+
             filteredData.forEach(row => {
-                const val = row[lastMonth] || 0;
-                total += val;
-                if (row.PRODUCT && prodSums[row.PRODUCT] !== undefined) prodSums[row.PRODUCT] += val;
-                if (row.GROUP && groupSums[row.GROUP] !== undefined) groupSums[row.GROUP] += val;
-            });
-
-            groupLabels.forEach((grp, idx) => {
-                const el = document.getElementById(`comp-group-pct-${idx}`);
-                if (el) {
-                    const pct = total ? ((groupSums[grp] / total) * 100).toFixed(1) : '0.0';
-                    el.innerText = `${pct}%`;
+                const p = row.PRODUCT;
+                const v = row[lastMonth] || 0;
+                if(p) {
+                    compositionData[p] = (compositionData[p] || 0) + v;
+                    totalVal += v;
                 }
             });
 
-            const ctx = document.getElementById('compositionChart').getContext('2d');
-            if (charts.comp) charts.comp.destroy();
-
-            document.getElementById('mix-chart-title').innerText = `${currentFileName} Product Mix`;
+            const labels = Object.keys(compositionData);
+            const dataVals = Object.values(compositionData);
+            const bgColors = labels.map(l => productColors[l]);
 
             charts.comp = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: distinctProducts.map(p => p === "Sme" ? "SME" : p.replace(/_/g, ' ')),
+                    labels: labels.map(l => l === "Sme" ? "SME" : l.replace(/_/g,' ')),
                     datasets: [{
-                        data: distinctProducts.map(p => prodSums[p]),
-                        backgroundColor: distinctProducts.map(p => productColors[p]),
-                        borderWidth: 0
+                        data: dataVals,
+                        backgroundColor: bgColors,
+                        borderWidth: isDark ? 2 : 1,
+                        borderColor: isDark ? '#1e293b' : '#ffffff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
+                    cutoff: '65%',
                     plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 10,
-                                font: { size: 9 },
-                                padding: 8,
-                                color: textColor // Mengikuti tema aktif
-                            }
-                        },
+                        legend: getSquareLegendConfig(),
                         tooltip: {
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                            bodyColor: isDark ? '#cbd5e1' : '#475569',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     const val = context.parsed;
-                                    const pct = total ? ((val / total) * 100).toFixed(1) : 0;
+                                    const pct = totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0;
                                     return ` ${context.label}: ${formatChartValue(val, currentFileName)} (${pct}%)`;
                                 }
                             }
@@ -1013,28 +1182,58 @@
                     }
                 }
             });
-        }
 
-        function updateCoBranchChart(textColor, gridColor) {
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
+            const pctContainer = document.getElementById('dynamic-group-pct-labels');
+            pctContainer.innerHTML = '';
             
-            let coBranchMap = {};
+            let groupSum = {};
             filteredData.forEach(row => {
-                const key = row['CO-BRANCH-CLEAN'] || 'Unknown';
-                coBranchMap[key] = (coBranchMap[key] || 0) + (row[lastMonth] || 0);
+                if(row.GROUP) groupSum[row.GROUP] = (groupSum[row.GROUP] || 0) + (row[lastMonth] || 0);
             });
 
-            let sorted = Object.entries(coBranchMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            const ctx = document.getElementById('coBranchChart').getContext('2d');
-            if (charts.coBranch) charts.coBranch.destroy();
+            for(let g in groupSum) {
+                const pct = totalVal > 0 ? (groupSum[g] / totalVal) * 100 : 0;
+                const item = document.createElement('div');
+                item.className = "bg-slate-50 dark:bg-slate-800/60 rounded p-1 font-medium border border-slate-100 dark:border-slate-700/50 truncate text-[10px]";
+                item.innerHTML = `<span class="text-slate-400 dark:text-slate-500 font-normal block text-[8px] uppercase tracking-wider">${g}</span> <span class="text-slate-700 dark:text-slate-300 font-bold">${pct.toFixed(1)}%</span>`;
+                pctContainer.appendChild(item);
+            }
+        }
+
+        function updateCoBranchChart() {
+            const ctx = document.getElementById('coBranchChart');
+            if(!ctx) return;
+            if(charts.coBranch) { charts.coBranch.destroy(); }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+
+            let coBranchMap = {};
+            filteredData.forEach(row => {
+                const cb = row['CO-BRANCH'];
+                if(cb) coBranchMap[cb] = (coBranchMap[cb] || 0) + (row[lastMonth] || 0);
+            });
+
+            // LOGIK FILTER: Ambil TOP 5 / BOTTOM 5 Berdasarkan Aturan NPF
+            let sorted = Object.entries(coBranchMap);
+            if(currentFileName === "coll.csv") {
+                sorted.sort((a,b) => b[1] - a[1]); // NPF Tertinggi yang diprioritaskan
+            } else {
+                sorted.sort((a,b) => b[1] - a[1]); // Volume Tertinggi
+            }
+            
+            let top5 = sorted.slice(0, 5);
+            let labels = top5.map(x => x[0].split(' - ')[1] || x[0]);
+            let dataVals = top5.map(x => x[1]);
 
             charts.coBranch = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: sorted.map(x => x[0]),
+                    labels: labels,
                     datasets: [{
-                        data: sorted.map(x => x[1]),
-                        backgroundColor: '#3b82f6',
+                        label: currentFileName === "coll.csv" ? "NPF Outstanding" : "Volume",
+                        data: dataVals,
+                        backgroundColor: currentFileName === "coll.csv" ? '#ef4444' : '#3b82f6',
                         borderRadius: 4
                     }]
                 },
@@ -1046,157 +1245,222 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: function(context) { return ` Volume: ${formatChartValue(context.parsed.x, currentFileName)}`; }
+                                label: function(context) { return ` ${formatChartValue(context.parsed.x, currentFileName)}`; }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            grid: { color: gridColor },
-                            ticks: {
-                                font: { size: 9 },
-                                color: textColor,
-                                callback: function(value) { return formatChartValue(value, currentFileName); }
-                            }
-                        },
-                        y: { 
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, color: textColor }
-                        }
+                        x: { grid: { color: isDark ? '#334155' : '#f1f5f9' }, ticks: { color: isDark ? '#94a3b8' : '#64748b', callback: v => formatChartValue(v, currentFileName) } },
+                        y: { grid: { display: false }, ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 9 } } }
                     }
                 }
             });
         }
 
-        function updateBranchChart(textColor, gridColor) {
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
-            
+        function updateBranchChart() {
+            const ctx = document.getElementById('branchChart');
+            if(!ctx) return;
+            if(charts.branch) { charts.branch.destroy(); }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+
             let branchMap = {};
             filteredData.forEach(row => {
-                const key = row['OFFICE-CLEAN'] || 'Unknown';
-                branchMap[key] = (branchMap[key] || 0) + (row[lastMonth] || 0);
+                const b = row['OFFICE'];
+                if(b) branchMap[b] = (branchMap[b] || 0) + (row[lastMonth] || 0);
             });
 
-            let sorted = Object.entries(branchMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            const ctx = document.getElementById('branchChart').getContext('2d');
-            if (charts.branch) charts.branch.destroy();
+            // LOGIK FILTER: Ambil TOP 5 Berdasarkan Default / Aturan Chart
+            let sorted = Object.entries(branchMap);
+            if(currentFileName === "coll.csv") {
+                sorted.sort((a,b) => b[1] - a[1]); 
+            } else {
+                sorted.sort((a,b) => b[1] - a[1]); 
+            }
+            
+            let top5 = sorted.slice(0, 5);
+            let labels = top5.map(x => x[0].split(' - ')[1] || x[0]);
+            let dataVals = top5.map(x => x[1]);
 
             charts.branch = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: sorted.map(x => x[0]),
+                    labels: labels,
                     datasets: [{
-                        data: sorted.map(x => x[1]),
-                        backgroundColor: '#10b981',
+                        label: currentFileName === "coll.csv" ? "NPF Outstanding" : "Volume",
+                        data: dataVals,
+                        backgroundColor: currentFileName === "coll.csv" ? '#f97316' : '#10b981',
                         borderRadius: 4
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: function(context) { return ` Volume: ${formatChartValue(context.parsed.x, currentFileName)}`; }
+                                label: function(context) { return ` ${formatChartValue(context.parsed.y, currentFileName)}`; }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            grid: { color: gridColor },
-                            ticks: {
-                                font: { size: 9 },
-                                color: textColor,
-                                callback: function(value) { return formatChartValue(value, currentFileName); }
-                            }
-                        },
-                        y: { 
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, color: textColor }
-                        }
+                        x: { grid: { display: false }, ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 9 } } },
+                        y: { grid: { color: isDark ? '#334155' : '#f1f5f9' }, ticks: { color: isDark ? '#94a3b8' : '#64748b', callback: v => formatChartValue(v, currentFileName) } }
                     }
                 }
             });
         }
 
         function updateTable() {
-            let officeAgg = {};
+            const trHeader = document.getElementById('dynamic-table-header-row');
+            const tbody = document.getElementById('data-table-body');
+            if(!trHeader || !tbody) return;
+
+            trHeader.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isMdin = currentFileName === "mdin.csv";
+
+            let columnsToDisplay = [];
+            if(isMdin) {
+                columnsToDisplay = [...monthColumns].slice(-6); 
+            } else {
+                columnsToDisplay = monthColumns.length > 3 ? monthColumns.slice(-3) : [...monthColumns];
+            }
+
+            let thUnit = document.createElement('th');
+            thUnit.className = "px-3 py-2 text-[10px] md:text-xs font-semibold sticky-column text-slate-700 bg-slate-50";
+            thUnit.style.width = "130px";
+            thUnit.innerText = "CABANG / SEGMENT";
+            trHeader.appendChild(thUnit);
+
+            columnsToDisplay.forEach(m => {
+                let th = document.createElement('th');
+                th.className = "px-3 py-2 text-center text-[10px] md:text-xs font-semibold whitespace-nowrap text-slate-700";
+                th.innerText = m;
+                trHeader.appendChild(th);
+            });
+
+            let thTotal = document.createElement('th');
+            thTotal.className = "px-3 py-2 text-center text-[10px] md:text-xs font-semibold text-slate-700";
+            thTotal.innerText = isMdin ? "TOTAL AKUSISI" : "GRAND TOTAL";
+            trHeader.appendChild(thTotal);
+
+            let breakdownMap = {};
             filteredData.forEach(row => {
-                const b = row['OFFICE-CLEAN'] || 'Unknown';
-                const p = row['PRODUCT'];
-                const v = row[lastMonth] || 0;
-                if (!officeAgg[b]) {
-                    officeAgg[b] = { name: b, total: 0, products: {} };
-                    distinctProducts.forEach(prod => officeAgg[b].products[prod] = 0);
+                const office = row.OFFICE || 'UNKNOWN';
+                if(!breakdownMap[office]) {
+                    breakdownMap[office] = { name: office.split(' - ')[1] || office, data: {}, total: 0 };
+                    columnsToDisplay.forEach(m => breakdownMap[office].data[m] = 0);
                 }
-                officeAgg[b].total += v;
-                if (p && officeAgg[b].products[p] !== undefined) {
-                    officeAgg[b].products[p] += v;
+                columnsToDisplay.forEach(m => {
+                    breakdownMap[office].data[m] += (row[m] || 0);
+                });
+                
+                if(isMdin) {
+                    monthColumns.forEach(m => { breakdownMap[office].total += (row[m] || 0); });
+                } else {
+                    breakdownMap[office].total += (row[lastMonth] || 0);
                 }
             });
 
-            let sortedRows = Object.values(officeAgg).sort((a,b) => b.total - a.total);
-            const tbody = document.getElementById('data-table-body');
-            tbody.innerHTML = '';
-            
-            const fragment = document.createDocumentFragment();
-            const currentFileName = csvFilesConfig[currentActiveFileIndex].name;
-            const isQrisOrMdin = (currentFileName === "Qris" || currentFileName === "MDin");
+            let rowsArray = Object.values(breakdownMap);
+            rowsArray.sort((a,b) => b.total - a.total);
 
-            sortedRows.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors";
+            const fragment = document.createDocumentFragment();
+            rowsArray.forEach(item => {
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-700/50";
                 
                 let productCellsHtml = '';
-                distinctProducts.forEach(prod => {
-                    const val = item.products[prod];
-                    const valDisplay = isQrisOrMdin ? formatNumber(val) : formatToBillion(val);
-                    productCellsHtml += `<td class="px-2 py-2 text-center font-mono text-slate-600 dark:text-slate-400 text-[10px] md:text-xs">${valDisplay}</td>`;
+                columnsToDisplay.forEach(m => {
+                    const val = item.data[m] || 0;
+                    productCellsHtml += `<td class="px-3 py-2 text-center font-mono text-[10px] md:text-xs text-slate-600 dark:text-slate-300">${formatNumber(val)}</td>`;
                 });
 
-                const totalDisplay = isQrisOrMdin ? formatNumber(item.total) : formatToBillion(item.total);
+                let totalDisplay = formatNumber(item.total);
+                if(['financing.csv','funding.csv','coll.csv'].includes(currentFileName) && !isMdin) {
+                    totalDisplay = formatToBillion(item.total);
+                }
                 
-                tr.innerHTML = `<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-center font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs">${totalDisplay}</td>`;
+                tr.innerHTML = `<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-center font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs\">${totalDisplay}</td>`;
                 fragment.appendChild(tr);
             });
             tbody.appendChild(fragment);
         }
 
-        function animateNumber(element, targetValue, isPercentage=false, isBillion=false) {
+        function animateNumber(element, targetValue, isPercentage=false) {
             if(!element) return;
-            const startValue = 0; 
-            const duration = 600; 
-            let startTime = null;
-            
+            const startValue = 0; const duration = 600; let startTime = null;
             function animation(currentTime) {
                 if(!startTime) startTime = currentTime;
                 const progress = Math.min((currentTime - startTime) / duration, 1);
                 const easeProgress = progress * (2 - progress);
                 const currentValue = startValue + easeProgress * (targetValue - startValue);
-                
-                if(isPercentage) {
-                    element.innerText = currentValue.toFixed(1) + '%';
-                } else if(isBillion) {
-                    element.innerText = new Intl.NumberFormat('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1}).format(currentValue) + " M";
-                } else {
-                    element.innerText = formatNumber(currentValue);
-                }
-                
-                if(progress < 1) {
-                    requestAnimationFrame(animation);
-                } else {
-                    if(isPercentage) {
-                        element.innerText = targetValue.toFixed(1) + '%';
-                    } else if(isBillion) {
-                        element.innerText = new Intl.NumberFormat('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1}).format(targetValue) + " M";
-                    } else {
-                        element.innerText = formatNumber(targetValue);
-                    }
-                }
+                if(isPercentage) { element.innerText = currentValue.toFixed(1) + '%'; } else { element.innerText = formatNumber(currentValue); }
+                if(progress < 1) { requestAnimationFrame(animation); } else { if(isPercentage) { element.innerText = targetValue.toFixed(1) + '%'; } else { element.innerText = formatNumber(targetValue); } }
             }
             requestAnimationFrame(animation);
+        }
+
+        function resetFilters() {
+            filterColumns.forEach(col => {
+                const select = document.getElementById(`filter-${col}`);
+                if(select) select.value = "ALL";
+            });
+            applyFilters();
+        }
+
+        function initSidebarToggle() {
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const icon = document.getElementById('toggle-icon');
+            const sidebar = document.getElementById('sidebar');
+            
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    isSidebarCollapsed = !isSidebarCollapsed;
+                    if(isSidebarCollapsed) {
+                        sidebar.classList.add('collapsed');
+                        sidebar.style.width = '64px';
+                        icon.classList.remove('fa-chevron-left');
+                        icon.classList.add('fa-chevron-right');
+                    } else {
+                        sidebar.classList.remove('collapsed');
+                        sidebar.style.width = '250px';
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-left');
+                    }
+                    setTimeout(() => { if(charts.trend) charts.trend.resize(); if(charts.comp) charts.comp.resize(); }, 310);
+                });
+            }
+        }
+
+        function initMobileSidebar() {
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const closeBtn = document.getElementById('sidebar-close-mobile');
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+
+            if(menuBtn && sidebar && backdrop) {
+                menuBtn.addEventListener('click', () => {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            if(closeBtn && sidebar && backdrop) {
+                const closeSidebar = () => {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+                closeBtn.addEventListener('click', closeSidebar);
+                backdrop.addEventListener('click', closeSidebar);
+            }
         }
     </script>
 </body>
