@@ -1211,10 +1211,18 @@
             sortedOffices.forEach((item)=>{
                 const tr=document.createElement('tr'); tr.className="bg-white dark:bg-dark-card border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors";
                 let productCellsHtml='';
-                distinctProducts.forEach(prod=>{let displayVal=item[prod]||0;if(isBillionFormat){displayVal=formatToBillion(displayVal);}else{displayVal=formatNumber(displayVal);}productCellsHtml+=`<td class="px-2 py-2 text-right font-mono text-[9px] md:text-[10px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;});
-                let totalDisplay=item.total;if(isBillionFormat){totalDisplay=formatToBillion(totalDisplay);}else{totalDisplay=formatNumber(totalDisplay);}
+                distinctProducts.forEach(prod=>{
+                    let displayVal=item[prod]||0;
+                    if(isBillionFormat){displayVal=formatToBillion(displayVal);}
+                    else{displayVal=formatNumber(displayVal);}
+                    // PERUBAHAN: Mengubah text-right menjadi text-center untuk angka produk
+                    productCellsHtml+=`<td class="px-2 py-2 text-center font-mono text-[9px] md:text-[10px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;
+                });
+                let totalDisplay=item.total;
+                if(isBillionFormat){totalDisplay=formatToBillion(totalDisplay);}
+                else{totalDisplay=formatNumber(totalDisplay);}
                 
-                tr.innerHTML=`<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-right font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs">${totalDisplay}</td>`;
+                tr.innerHTML=`<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-center font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs">${totalDisplay}</td>`;
                 fragment.appendChild(tr);
             });
             tbody.appendChild(fragment);
