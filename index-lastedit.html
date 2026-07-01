@@ -1154,7 +1154,6 @@
                     pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
                     pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
                     pointBorderWidth:1.5
-                    // TOTAL tidak di-set hidden, jadi akan terlihat
                 });
             }
 
@@ -1169,14 +1168,14 @@
                     ctx.font = 'bold 10px Inter, sans-serif';
                     ctx.fillStyle = isDark ? '#f1f5f9' : '#1e293b';
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
+                    
+                    // PERBAIKAN: Mengatur baseline ke 'alphabetic' agar posisi teks lebih presisi saat digeser manual
+                    ctx.textBaseline = 'alphabetic'; 
 
                     chart.data.datasets.forEach((dataset, i) => {
-                        // Hanya tampilkan label data jika dataset terlihat
                         if (chart.isDatasetVisible(i)) {
                             const meta = chart.getDatasetMeta(i);
                             
-                            // Kondisi: Tampilkan angka untuk MDIN (index 0) ATAU dataset TOTAL (biasanya index terakhir)
                             const isMDIN = currentFileName === "mdin.csv" && i === 0;
                             const isTOTAL = currentFileName !== "mdin.csv" && dataset.label === 'TOTAL';
 
@@ -1184,14 +1183,15 @@
                                 meta.data.forEach((element, index) => {
                                     const value = dataset.data[index];
                                     if (value !== null && value !== undefined && value !== 0) {
-                                        // Format angka sesuai tipe file
                                         let displayValue = formatNumber(value);
                                         if (isBillionFormat) {
                                             displayValue = formatToBillion(value);
                                         }
                                         
-                                        // Gambar teks di atas titik
-                                        ctx.fillText(displayValue, element.x, element.y - 8);
+                                        // PERBAIKAN: Menambahkan offset Y (-12px) agar teks naik sedikit dari titik
+                                        // dan tidak terpotong oleh batas atas canvas
+                                        const yOffset = -12; 
+                                        ctx.fillText(displayValue, element.x, element.y + yOffset);
                                     }
                                 });
                             }
@@ -1201,7 +1201,40 @@
                 }
             }];
 
-            charts.trend=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:getUnifiedLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{y:{grid:{color: gridColor},ticks:{font:{size:9},color: textColor,callback:(val)=>formatChartValue(val, currentFileName)}},x:{grid:{display:false},ticks:{font:{size:9},color: textColor}}}}, plugins: trendPlugins});
+            charts.trend=new Chart(ctx,{
+                type:'line',
+                data:{labels:labels,datasets:datasets},
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    interaction:{mode:'index',intersect:false},
+                    // PERBAIKAN UTAMA: Menambahkan padding layout agar area gambar memiliki ruang ekstra
+                    // sehingga teks label data tidak terpotong di tepi canvas
+                    layout: {
+                        padding: {
+                            top: 25,    // Ruang ekstra di atas untuk angka tertinggi
+                            bottom: 5,
+                            left: 5,
+                            right: 5
+                        }
+                    },
+                    plugins:{
+                        legend:getUnifiedLegendConfig(),
+                        tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}
+                    },
+                    scales:{
+                        y:{
+                            grid:{color: gridColor},
+                            ticks:{font:{size:9},color: textColor,callback:(val)=>formatChartValue(val, currentFileName)}
+                        },
+                        x:{
+                            grid:{display:false},
+                            ticks:{font:{size:9},color: textColor}
+                        }
+                    }
+                }, 
+                plugins: trendPlugins
+            });
         }
 
         function updateCompositionChart(){
