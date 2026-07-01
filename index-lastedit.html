@@ -1119,7 +1119,8 @@
                         pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
                         pointBorderColor: productColors[prod],
                         pointBorderWidth: 2,
-                        hidden: false
+                        hidden: false,
+                        clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
                     };
                 } else {
                     return {
@@ -1133,7 +1134,8 @@
                         pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
                         pointBorderColor: productColors[prod],
                         pointBorderWidth: 1.5,
-                        hidden: true
+                        hidden: true,
+                        clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
                     };
                 }
             });
@@ -1151,17 +1153,18 @@
                     pointRadius:window.innerWidth<768?2:4,
                     pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
                     pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
-                    pointBorderWidth:1.5
+                    pointBorderWidth:1.5,
+                    clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
                 });
             }
 
             if(charts.trend)charts.trend.destroy();
             
-            // Plugin Data Labels dengan Pengecekan Mobile
+            // Plugin Data Labels
             const trendPlugins = [{
                 id: 'datalabels',
                 afterDatasetsDraw(chart) {
-                    // PERBAIKAN: Hanya tampilkan angka jika lebar layar > 768px (Desktop/Tablet)
+                    // Hanya tampilkan angka jika lebar layar > 768px (Desktop/Tablet)
                     if (window.innerWidth <= 768) return; 
 
                     const { ctx } = chart;
@@ -1206,13 +1209,13 @@
                     maintainAspectRatio:false,
                     interaction:{mode:'index',intersect:false},
                     
-                    // Padding tetap ada untuk menjaga layout garis tidak terlalu mepet
+                    // PERBAIKAN UTAMA: Padding Layout yang cukup besar
                     layout: {
                         padding: {
-                            top: 10,    // Dikurangi sedikit karena di mobile tidak ada label
+                            top: 30,    // Ruang ekstra di atas untuk angka tertinggi (mencegah terpotong atas)
                             bottom: 5,
-                            left: 10,   
-                            right: 10   
+                            left: 20,   // Ruang kiri
+                            right: 20   // Ruang kanan (mencegah terpotong samping)
                         }
                     },
                     
