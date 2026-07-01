@@ -23,8 +23,8 @@
                             bg: '#0f172a', // Slate 900
                             card: '#1e293b', // Slate 800
                             border: '#334155', // Slate 700
-                            text: '#ffffff', // Slate 100
-                            subtext: '#ffffff' // Slate 400
+                            text: '#f1f5f9', // Slate 100
+                            subtext: '#94a3b8' // Slate 400
                         }
                     }
                 }
@@ -88,10 +88,6 @@
             /* Compact Mobile Styles */
             .mobile-compact-p { padding: 0.5rem !important; }
             .mobile-compact-text { font-size: 0.75rem !important; line-height: 1rem !important; }
-        }
-        /* Pastikan canvas chart tidak mewarisi warna teks yang salah */
-        canvas {
-            display: block;
         }
     </style>
 </head>
@@ -175,12 +171,11 @@
                     <h2 class="text-sm md:text-lg font-semibold text-slate-800 dark:text-white truncate" id="dashboard-main-title">Performance Analytics</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- THEME TOGGLE BUTTON 
+                    <!-- THEME TOGGLE BUTTON -->
                     <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-yellow-400 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors focus:outline-none" title="Toggle Theme">
                         <i class="fa-solid fa-moon dark:hidden"></i>
                         <i class="fa-solid fa-sun hidden dark:block"></i>
                     </button>
-                    -->
 
                     <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-500 dark:text-slate-400">As of Date</p>
@@ -766,13 +761,8 @@
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
         function getUnifiedLegendConfig() {
-            // Deteksi apakah body memiliki class 'dark'
             const isDark = document.body.classList.contains('dark');
-            
-            // PERBAIKAN: Gunakan warna putih murni (#ffffff) atau abu sangat terang untuk Dark Mode
-            // Agar kontrasnya maksimal sesuai preferensi Anda.
-            const textColor = isDark ? '#f1f5f9' : '#64748b'; 
-            
+            const textColor = isDark ? '#94a3b8' : '#64748b';
             return {
                 position: 'bottom',
                 labels: {
@@ -780,11 +770,8 @@
                     pointStyle: 'circle',
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: textColor, // Ini kunci utamanya
-                    font: { 
-                        size: window.innerWidth < 768 ? 8 : 10,
-                        weight: '500' // Menambahkan ketebalan font agar lebih terbaca
-                    },
+                    color: textColor,
+                    font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
                         return datasets.map((ds, i) => ({
@@ -805,9 +792,7 @@
 
         function getSquareLegendConfig() {
             const isDark = document.body.classList.contains('dark');
-            // PERBAIKAN: Warna teks legend untuk chart batang (bar chart)
-            const textColor = isDark ? '#ffffff' : '#64748b';
-        
+            const textColor = isDark ? '#94a3b8' : '#64748b';
             return {
                 position: 'bottom',
                 labels: {
@@ -816,10 +801,7 @@
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
                     color: textColor,
-                    font: { 
-                        size: window.innerWidth < 768 ? 8 : 10,
-                        weight: '500'
-                    },
+                    font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
                         return datasets.map((ds, i) => ({
@@ -1111,7 +1093,7 @@
             const ctx=document.getElementById('trendChart').getContext('2d');
             const isDark = document.body.classList.contains('dark');
             const gridColor = isDark ? '#334155' : '#e2e8f0';
-            const textColor = isDark ? '#f1f5f9' : '#64748b';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
 
             let labels=[...monthColumns]; if(activeTimelineMonths>0){labels=labels.slice(-activeTimelineMonths);}
             document.getElementById('trend-title').innerText=`Trend (${labels[0]} to ${labels[labels.length-1]})`;
@@ -1119,14 +1101,40 @@
             
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
 
+            // MODIFIKASI: Menambahkan hidden: true untuk semua produk agar default hanya TOTAL yang terlihat
             const datasets=distinctProducts.map(prod=>{
                 const dataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[month]||0);});return sum;});
-                return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:dataPoints,borderColor:productColors[prod],backgroundColor:getTransparentColor(productColors[prod]),borderWidth:2,tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',pointBorderColor:productColors[prod],pointBorderWidth:1.5};
+                return{
+                    label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
+                    data:dataPoints,
+                    borderColor:productColors[prod],
+                    backgroundColor:getTransparentColor(productColors[prod]),
+                    borderWidth:2,
+                    tension:0.3,
+                    pointRadius:window.innerWidth<768?2:4,
+                    pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                    pointBorderColor:productColors[prod],
+                    pointBorderWidth:1.5,
+                    hidden: true // Default hidden
+                };
             });
 
             if (currentFileName !== "mdin.csv") {
                 const totalDataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
-                datasets.push({label:'TOTAL',data:totalDataPoints,borderColor: isDark ? '#94a3b8' : '#1e293b',backgroundColor:'rgba(30,41,59,0.05)',borderWidth:2.5,borderDash:[5,5],tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',pointBorderColor: isDark ? '#94a3b8' : '#1e293b',pointBorderWidth:1.5});
+                datasets.push({
+                    label:'TOTAL',
+                    data:totalDataPoints,
+                    borderColor: isDark ? '#94a3b8' : '#1e293b',
+                    backgroundColor:'rgba(30,41,59,0.05)',
+                    borderWidth:2.5,
+                    borderDash:[5,5],
+                    tension:0.3,
+                    pointRadius:window.innerWidth<768?2:4,
+                    pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                    pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
+                    pointBorderWidth:1.5
+                    // TOTAL tidak di-set hidden, jadi akan terlihat
+                });
             }
 
             if(charts.trend)charts.trend.destroy();
@@ -1146,7 +1154,7 @@
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 8 : 15,
                     boxWidth: 6,
-                    color: isDark ? '#f1f5f9' : '#64748b',
+                    color: isDark ? '#94a3b8' : '#64748b',
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const data = chart.data;
@@ -1188,8 +1196,17 @@
             } else {
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
+                
+                // MODIFIKASI: Menyembunyikan slice produk secara default kecuali 'TOTAL' (jika ada di pie, tapi biasanya pie chart per produk)
+                // Untuk Pie/Doughnut, kita sembunyikan semua produk individual agar fokus ke label grup di bawahnya atau biarkan user memilih
+                // Namun karena instruksi spesifik "semua item selain TOTAL", dan di composition chart biasanya tidak ada TOTAL sebagai slice,
+                // kita akan menyembunyikan semua slice produk individual agar chart terlihat kosong/bersih sampai dipilih, 
+                // ATAU kita tampilkan semua karena ini adalah komposisi. 
+                // Berdasarkan request "semua item selain TOTAL disembunyikan", dan Composition chart biasanya memecah total menjadi produk,
+                // maka kita sembunyikan semua produk individual.
+                
                 if(charts.comp)charts.comp.destroy();
-                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
+                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4, hidden: true}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
         }
 
@@ -1197,13 +1214,35 @@
             const ctx=document.getElementById('coBranchChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#f1f5f9' : '#64748b';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
 
             const totalCoBranchMap={};
             filteredData.forEach(row=>{const coBranch=row['CO-BRANCH-CLEAN'];if(coBranch){if(!totalCoBranchMap[coBranch])totalCoBranchMap[coBranch]=0;totalCoBranchMap[coBranch]+=(row[lastMonth]||0);}});
             const top5CoBranchNames=Object.entries(totalCoBranchMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
-            const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?10:14};});
+            
+            // MODIFIKASI: Menambahkan hidden: true untuk semua dataset produk
+            const datasetBreakdown=distinctProducts.map(prod=>{
+                return{
+                    label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
+                    data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
+                    backgroundColor:productColors[prod],
+                    barThickness:window.innerWidth<768?10:14,
+                    hidden: true // Default hidden
+                };
+            });
+            
+            // Tambahkan dataset TOTAL yang visible
+            const totalDataset = {
+                label: 'TOTAL',
+                data: top5CoBranchNames.map(coName => totalCoBranchMap[coName] || 0),
+                backgroundColor: isDark ? '#94a3b8' : '#1e293b',
+                barThickness: window.innerWidth<768?10:14,
+                borderWidth: 1,
+                borderColor: isDark ? '#64748b' : '#0f172a'
+            };
+            datasetBreakdown.push(totalDataset);
+
             if(charts.coBranch)charts.coBranch.destroy();
             
             charts.coBranch=new Chart(ctx,{type:'bar',data:{labels:top5CoBranchNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getSquareLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9},color: textColor}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
@@ -1213,12 +1252,34 @@
             const ctx=document.getElementById('branchChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#f1f5f9' : '#64748b';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
 
             const totalOfficeMap={};
             filteredData.forEach(row=>{const office=row['OFFICE-CLEAN'];if(office){if(!totalOfficeMap[office])totalOfficeMap[office]=0;totalOfficeMap[office]+=(row[lastMonth]||0);}});
             const top5OfficeNames=Object.entries(totalOfficeMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
-            const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?10:14};});
+            
+            // MODIFIKASI: Menambahkan hidden: true untuk semua dataset produk
+            const datasetBreakdown=distinctProducts.map(prod=>{
+                return{
+                    label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
+                    data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
+                    backgroundColor:productColors[prod],
+                    barThickness:window.innerWidth<768?10:14,
+                    hidden: true // Default hidden
+                };
+            });
+
+            // Tambahkan dataset TOTAL yang visible
+            const totalDataset = {
+                label: 'TOTAL',
+                data: top5OfficeNames.map(officeName => totalOfficeMap[officeName] || 0),
+                backgroundColor: isDark ? '#94a3b8' : '#1e293b',
+                barThickness: window.innerWidth<768?10:14,
+                borderWidth: 1,
+                borderColor: isDark ? '#64748b' : '#0f172a'
+            };
+            datasetBreakdown.push(totalDataset);
+
             if(charts.branch)charts.branch.destroy();
             
             charts.branch=new Chart(ctx,{type:'bar',data:{labels:top5OfficeNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getSquareLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9},color: textColor}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
