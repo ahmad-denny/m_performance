@@ -171,12 +171,8 @@
                     <h2 class="text-sm md:text-lg font-semibold text-slate-800 dark:text-white truncate" id="dashboard-main-title">Performance Analytics</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- THEME TOGGLE BUTTON -->
-                    <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-yellow-400 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors focus:outline-none color:white" title="Toggle Theme">
-                        <i class="fa-solid fa-moon dark:hidden"></i>
-                        <i class="fa-solid fa-sun hidden dark:block"></i>
-                    </button>
-                    
+                    <!-- TOMBOL THEME TELAH DIHAPUS DI SINI -->
+
                     <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-500 dark:text-slate-400">As of Date</p>
                         <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400" id="current-date">-</p>
@@ -354,12 +350,13 @@
             }
         }
 
+        // Fungsi toggleTheme tetap ada di JS untuk kompatibilitas internal, 
+        // tapi karena tombolnya sudah dihapus dari HTML, user tidak bisa lagi mengubahnya secara manual.
         window.toggleTheme = function() {
             const html = document.documentElement;
             const body = document.body;
             
-            if (html.classList.contains('dark')) 
-            {
+            if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 body.classList.remove('dark');
                 body.classList.add('light');
@@ -1090,7 +1087,7 @@
 
         function updateCharts(){updateTrendChart();updateCompositionChart();updateCoBranchChart();updateBranchChart();}
 
-                function updateTrendChart(){
+        function updateTrendChart(){
             const ctx=document.getElementById('trendChart').getContext('2d');
             const isDark = document.body.classList.contains('dark');
             const gridColor = isDark ? '#334155' : '#e2e8f0';
@@ -1120,7 +1117,7 @@
                         pointBorderColor: productColors[prod],
                         pointBorderWidth: 2,
                         hidden: false,
-                        clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
+                        clip: false // Izinkan elemen digambar di luar area plot
                     };
                 } else {
                     return {
@@ -1135,7 +1132,7 @@
                         pointBorderColor: productColors[prod],
                         pointBorderWidth: 1.5,
                         hidden: true,
-                        clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
+                        clip: false // Izinkan elemen digambar di luar area plot
                     };
                 }
             });
@@ -1154,7 +1151,7 @@
                     pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
                     pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
                     pointBorderWidth:1.5,
-                    clip: false // PERBAIKAN: Izinkan elemen digambar di luar area plot
+                    clip: false // Izinkan elemen digambar di luar area plot
                 });
             }
 
@@ -1209,13 +1206,13 @@
                     maintainAspectRatio:false,
                     interaction:{mode:'index',intersect:false},
                     
-                    // PERBAIKAN UTAMA: Padding Layout yang cukup besar
+                    // Padding Layout yang cukup besar
                     layout: {
                         padding: {
-                            top: 30,    // Ruang ekstra di atas untuk angka tertinggi (mencegah terpotong atas)
+                            top: 30,    // Ruang ekstra di atas untuk angka tertinggi
                             bottom: 5,
                             left: 20,   // Ruang kiri
-                            right: 20   // Ruang kanan (mencegah terpotong samping)
+                            right: 20   // Ruang kanan
                         }
                     },
                     
@@ -1237,7 +1234,7 @@
                 plugins: trendPlugins
             });
         }
-        
+
         function updateCompositionChart(){
             const ctx=document.getElementById('compositionChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
@@ -1294,8 +1291,7 @@
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
                 
-                // MODIFIKASI: Menampilkan semua produk secara default (tanpa hidden: true)
-                // Karena Composition Chart (Doughnut) tidak memiliki dataset "TOTAL" sebagai pembanding
+                // Menampilkan semua produk secara default (tanpa hidden: true)
                 if(charts.comp)charts.comp.destroy();
                 charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
@@ -1312,7 +1308,7 @@
             filteredData.forEach(row=>{const coBranch=row['CO-BRANCH-CLEAN'];if(coBranch){if(!totalCoBranchMap[coBranch])totalCoBranchMap[coBranch]=0;totalCoBranchMap[coBranch]+=(row[lastMonth]||0);}});
             const top5CoBranchNames=Object.entries(totalCoBranchMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             
-            // MODIFIKASI: Menambahkan hidden: true untuk semua dataset produk
+            // Menambahkan hidden: true untuk semua dataset produk
             const datasetBreakdown=distinctProducts.map(prod=>{
                 return{
                     label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
@@ -1349,7 +1345,7 @@
             filteredData.forEach(row=>{const office=row['OFFICE-CLEAN'];if(office){if(!totalOfficeMap[office])totalOfficeMap[office]=0;totalOfficeMap[office]+=(row[lastMonth]||0);}});
             const top5OfficeNames=Object.entries(totalOfficeMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             
-            // MODIFIKASI: Menambahkan hidden: true untuk semua dataset produk
+            // Menambahkan hidden: true untuk semua dataset produk
             const datasetBreakdown=distinctProducts.map(prod=>{
                 return{
                     label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
