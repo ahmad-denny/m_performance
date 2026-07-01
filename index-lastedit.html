@@ -23,8 +23,8 @@
                             bg: '#0f172a', // Slate 900
                             card: '#1e293b', // Slate 800
                             border: '#334155', // Slate 700
-                            text: '#94a3b8', // Slate 100
-                            subtext: '#94a3b8' // Slate 400
+                            text: '#ffffff', // Slate 100
+                            subtext: '#ffffff' // Slate 400
                         }
                     }
                 }
@@ -88,6 +88,10 @@
             /* Compact Mobile Styles */
             .mobile-compact-p { padding: 0.5rem !important; }
             .mobile-compact-text { font-size: 0.75rem !important; line-height: 1rem !important; }
+        }
+        /* Pastikan canvas chart tidak mewarisi warna teks yang salah */
+        canvas {
+            display: block;
         }
     </style>
 </head>
@@ -761,8 +765,13 @@
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
         function getUnifiedLegendConfig() {
+            // Deteksi apakah body memiliki class 'dark'
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#f1f5f9' : '#64748b';
+            
+            // PERBAIKAN: Gunakan warna putih murni (#ffffff) atau abu sangat terang untuk Dark Mode
+            // Agar kontrasnya maksimal sesuai preferensi Anda.
+            const textColor = isDark ? '#f1f5f9' : '#64748b'; 
+            
             return {
                 position: 'bottom',
                 labels: {
@@ -770,8 +779,11 @@
                     pointStyle: 'circle',
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: textColor,
-                    font: { size: window.innerWidth < 768 ? 8 : 10 },
+                    color: textColor, // Ini kunci utamanya
+                    font: { 
+                        size: window.innerWidth < 768 ? 8 : 10,
+                        weight: '500' // Menambahkan ketebalan font agar lebih terbaca
+                    },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
                         return datasets.map((ds, i) => ({
@@ -792,7 +804,9 @@
 
         function getSquareLegendConfig() {
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#f1f5f9' : '#64748b';
+            // PERBAIKAN: Warna teks legend untuk chart batang (bar chart)
+            const textColor = isDark ? '#ffffff' : '#64748b';
+        
             return {
                 position: 'bottom',
                 labels: {
@@ -801,7 +815,10 @@
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
                     color: textColor,
-                    font: { size: window.innerWidth < 768 ? 8 : 10 },
+                    font: { 
+                        size: window.innerWidth < 768 ? 8 : 10,
+                        weight: '500'
+                    },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
                         return datasets.map((ds, i) => ({
