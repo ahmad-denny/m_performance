@@ -23,7 +23,7 @@
                             bg: '#0f172a', // Slate 900
                             card: '#1e293b', // Slate 800
                             border: '#334155', // Slate 700
-                            text: '#f1f5f9', // Slate 100
+                            text: '#94a3b8', // Slate 100
                             subtext: '#94a3b8' // Slate 400
                         }
                     }
@@ -762,7 +762,7 @@
 
         function getUnifiedLegendConfig() {
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const textColor = isDark ? '#f1f5f9' : '#64748b';
             return {
                 position: 'bottom',
                 labels: {
@@ -792,7 +792,7 @@
 
         function getSquareLegendConfig() {
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const textColor = isDark ? '#f1f5f9' : '#64748b';
             return {
                 position: 'bottom',
                 labels: {
@@ -1093,7 +1093,7 @@
             const ctx=document.getElementById('trendChart').getContext('2d');
             const isDark = document.body.classList.contains('dark');
             const gridColor = isDark ? '#334155' : '#e2e8f0';
-            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const textColor = isDark ? '#f1f5f9' : '#64748b';
 
             let labels=[...monthColumns]; if(activeTimelineMonths>0){labels=labels.slice(-activeTimelineMonths);}
             document.getElementById('trend-title').innerText=`Trend (${labels[0]} to ${labels[labels.length-1]})`;
@@ -1128,7 +1128,7 @@
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 8 : 15,
                     boxWidth: 6,
-                    color: isDark ? '#94a3b8' : '#64748b',
+                    color: isDark ? '#f1f5f9' : '#64748b',
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const data = chart.data;
@@ -1179,7 +1179,7 @@
             const ctx=document.getElementById('coBranchChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const textColor = isDark ? '#f1f5f9' : '#64748b';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
 
             const totalCoBranchMap={};
@@ -1195,7 +1195,7 @@
             const ctx=document.getElementById('branchChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const textColor = isDark ? '#f1f5f9' : '#64748b';
 
             const totalOfficeMap={};
             filteredData.forEach(row=>{const office=row['OFFICE-CLEAN'];if(office){if(!totalOfficeMap[office])totalOfficeMap[office]=0;totalOfficeMap[office]+=(row[lastMonth]||0);}});
