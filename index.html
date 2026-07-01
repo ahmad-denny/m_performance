@@ -144,8 +144,6 @@
                     <h2 class="text-sm md:text-lg font-semibold text-slate-800 truncate" id="dashboard-main-title">Performance Analytics</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- THEME BUTTON DIHAPUS -->
-
                     <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-500">As of Date</p>
                         <p class="text-xs font-medium text-indigo-600" id="current-date">-</p>
@@ -307,7 +305,6 @@
         // ==========================================
         const DASHBOARD_PASSWORD = 'rbpm'; 
 
-        // Cek apakah sudah login sebelumnya (session based)
         if (sessionStorage.getItem('isLoggedIn') === 'true') {
             document.getElementById('login-overlay').classList.add('hidden');
         }
@@ -415,7 +412,6 @@
             
             currentActiveFileIndex = index;
             document.getElementById('loading').style.display = 'flex';
-            
             resetFilters(); 
             loadSelectedCSV(index);
         }
@@ -679,7 +675,6 @@
 
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-        // PERBAIKAN: Fungsi Legend Config Hardcoded ke Warna Gelap & Statis
         function getUnifiedLegendConfig() {
             return {
                 position: 'bottom',
@@ -688,7 +683,7 @@
                     pointStyle: 'circle',
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: '#475569', // Warna Slate-600 (Gelap) agar terbaca di background putih
+                    color: '#475569',
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
@@ -697,9 +692,7 @@
                             fillStyle: ds.backgroundColor,
                             strokeStyle: ds.borderColor || ds.backgroundColor,
                             lineWidth: 2,
-                            // PERBAIKAN: Jangan gunakan isDatasetVisible karena bisa berubah saat hover
-                            // Gunakan pengecekan sederhana apakah data ada
-                            hidden: !ds.data || ds.data.length === 0, 
+                            hidden: !ds.data || ds.data.length === 0,
                             datasetIndex: i,
                             pointStyle: 'circle',
                             usePointStyle: true,
@@ -718,7 +711,7 @@
                     pointStyle: 'rect',
                     boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: '#475569', // Warna Slate-600 (Gelap) agar terbaca di background putih
+                    color: '#475569',
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
@@ -727,7 +720,6 @@
                             fillStyle: ds.backgroundColor,
                             strokeStyle: ds.borderColor || ds.backgroundColor,
                             lineWidth: 2,
-                            // PERBAIKAN: Logika statis agar tidak hilang saat hover
                             hidden: !ds.data || ds.data.length === 0,
                             datasetIndex: i,
                             pointStyle: 'rect',
@@ -738,7 +730,7 @@
                 }
             };
         }
-        
+
         function updateKPIs() {
             let groupTotals={}, productTotals={}, grandTotal=0;
             let groupTotalsPrev={}, productTotalsPrev={}, grandTotalPrev=0;
@@ -1008,6 +1000,7 @@
 
         function updateCharts(){updateTrendChart();updateCompositionChart();updateCoBranchChart();updateBranchChart();}
 
+        // PERUBAHAN UTAMA DI SINI
         function updateTrendChart(){
             const ctx=document.getElementById('trendChart').getContext('2d');
             const gridColor = '#e2e8f0';
@@ -1020,104 +1013,32 @@
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
             const isBillionFormat = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
 
-            // Dataset Logic
+            // MODIFIKASI: Tampilkan SEMUA dataset produk secara default (hidden: false)
             const datasets=distinctProducts.map(prod=>{
                 const dataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[month]||0);});return sum;});
                 
-                if (currentFileName === "mdin.csv") {
-                    return {
-                        label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
-                        data: dataPoints,
-                        borderColor: productColors[prod],
-                        backgroundColor: getTransparentColor(productColors[prod]),
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointRadius: window.innerWidth < 768 ? 3 : 5,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: productColors[prod],
-                        pointBorderWidth: 2,
-                        hidden: false,
-                        clip: false
-                    };
-                } else {
-                    return {
-                        label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
-                        data: dataPoints,
-                        borderColor: productColors[prod],
-                        backgroundColor: getTransparentColor(productColors[prod]),
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointRadius: window.innerWidth < 768 ? 2 : 4,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: productColors[prod],
-                        pointBorderWidth: 1.5,
-                        hidden: true,
-                        clip: false
-                    };
-                }
+                return {
+                    label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
+                    data: dataPoints,
+                    borderColor: productColors[prod],
+                    backgroundColor: getTransparentColor(productColors[prod]),
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: window.innerWidth < 768 ? 2 : 4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: productColors[prod],
+                    pointBorderWidth: 1.5,
+                    hidden: false, // PERUBAHAN: Semua produk terlihat
+                    clip: false
+                };
             });
 
-            if (currentFileName !== "mdin.csv") {
-                const totalDataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
-                datasets.push({
-                    label:'TOTAL',
-                    data:totalDataPoints,
-                    borderColor: '#1e293b',
-                    backgroundColor:'rgba(30,41,59,0.05)',
-                    borderWidth:2.5,
-                    borderDash:[5,5],
-                    tension:0.3,
-                    pointRadius:window.innerWidth<768?2:4,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#1e293b',
-                    pointBorderWidth:1.5,
-                    clip: false
-                });
-            }
+            // MODIFIKASI: Hapus dataset TOTAL agar tidak menumpuk dengan jumlah produk individual
+            // if (currentFileName !== "mdin.csv") { ... datasets.push(TOTAL) ... } <-- Dihapus
 
             if(charts.trend)charts.trend.destroy();
             
-            // Plugin Data Labels
-            const trendPlugins = [{
-                id: 'datalabels',
-                afterDatasetsDraw(chart) {
-                    // Hanya tampilkan angka jika lebar layar > 768px (Desktop/Tablet)
-                    if (window.innerWidth <= 768) return; 
-
-                    const { ctx } = chart;
-                    ctx.save();
-                    ctx.font = 'bold 10px Inter, sans-serif';
-                    ctx.fillStyle = '#1e293b';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-
-                    chart.data.datasets.forEach((dataset, i) => {
-                        if (chart.isDatasetVisible(i)) {
-                            const meta = chart.getDatasetMeta(i);
-                            
-                            const isMDIN = currentFileName === "mdin.csv" && i === 0;
-                            const isTOTAL = currentFileName !== "mdin.csv" && dataset.label === 'TOTAL';
-
-                            if (isMDIN || isTOTAL) {
-                                meta.data.forEach((element, index) => {
-                                    const value = dataset.data[index];
-                                    if (value !== null && value !== undefined && value !== 0) {
-                                        let displayValue = formatNumber(value);
-                                        if (isBillionFormat) {
-                                            displayValue = formatToBillion(value);
-                                        }
-                                        
-                                        // Offset Y -8px agar teks tidak menabrak titik
-                                        ctx.fillText(displayValue, element.x, element.y - 8);
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    ctx.restore();
-                }
-            }];
-
+            // MODIFIKASI: Hapus plugin datalabels karena angka disembunyikan
             charts.trend=new Chart(ctx,{
                 type:'line',
                 data:{labels:labels,datasets:datasets},
@@ -1125,17 +1046,14 @@
                     responsive:true,
                     maintainAspectRatio:false,
                     interaction:{mode:'index',intersect:false},
-                    
-                    // Padding Layout yang cukup besar
                     layout: {
                         padding: {
-                            top: 30,    // Ruang ekstra di atas untuk angka tertinggi
+                            top: 10,    // Padding dikurangi karena tidak ada label angka di atas
                             bottom: 5,
-                            left: 20,   // Ruang kiri
-                            right: 20   // Ruang kanan
+                            left: 10,   
+                            right: 10   
                         }
                     },
-                    
                     plugins:{
                         legend:getUnifiedLegendConfig(),
                         tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}
@@ -1150,8 +1068,8 @@
                             ticks:{font:{size:9},color: textColor}
                         }
                     }
-                }, 
-                plugins: trendPlugins
+                }
+                // Tidak ada plugins: trendPlugins di sini
             });
         }
 
@@ -1167,7 +1085,7 @@
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 8 : 15,
                     boxWidth: 6,
-                    color: '#475569', 
+                    color: '#475569',
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const data = chart.data;
@@ -1210,7 +1128,6 @@
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
                 
-                // Menampilkan semua produk secara default (tanpa hidden: true)
                 if(charts.comp)charts.comp.destroy();
                 charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
@@ -1225,18 +1142,16 @@
             filteredData.forEach(row=>{const coBranch=row['CO-BRANCH-CLEAN'];if(coBranch){if(!totalCoBranchMap[coBranch])totalCoBranchMap[coBranch]=0;totalCoBranchMap[coBranch]+=(row[lastMonth]||0);}});
             const top5CoBranchNames=Object.entries(totalCoBranchMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             
-            // Menambahkan hidden: true untuk semua dataset produk
             const datasetBreakdown=distinctProducts.map(prod=>{
                 return{
                     label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
                     data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
                     backgroundColor:productColors[prod],
                     barThickness:window.innerWidth<768?10:14,
-                    hidden: true // Default hidden
+                    hidden: true
                 };
             });
             
-            // Tambahkan dataset TOTAL yang visible
             const totalDataset = {
                 label: 'TOTAL',
                 data: top5CoBranchNames.map(coName => totalCoBranchMap[coName] || 0),
@@ -1261,18 +1176,16 @@
             filteredData.forEach(row=>{const office=row['OFFICE-CLEAN'];if(office){if(!totalOfficeMap[office])totalOfficeMap[office]=0;totalOfficeMap[office]+=(row[lastMonth]||0);}});
             const top5OfficeNames=Object.entries(totalOfficeMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
             
-            // Menambahkan hidden: true untuk semua dataset produk
             const datasetBreakdown=distinctProducts.map(prod=>{
                 return{
                     label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
                     data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
                     backgroundColor:productColors[prod],
                     barThickness:window.innerWidth<768?10:14,
-                    hidden: true // Default hidden
+                    hidden: true
                 };
             });
 
-            // Tambahkan dataset TOTAL yang visible
             const totalDataset = {
                 label: 'TOTAL',
                 data: top5OfficeNames.map(officeName => totalOfficeMap[officeName] || 0),
