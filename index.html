@@ -153,7 +153,7 @@
                 <img src="https://ui-avatars.com/api/?name=AD&background=4f46e5&color=fff" alt="User" class="w-8 h-8 rounded-full border border-slate-600 shrink-0">
                 <div>
                     <p class="text-xs font-medium">RBPM - Region Sumatera</p>
-                    <p class="text-[10px] text-slate-400">Admin Access</p>
+                    <p class="text-[10px] text-slate-400">Typing-Create-Update-Repeat</p>
                 </div>
             </div>
         </div>
@@ -167,15 +167,11 @@
                 <div class="flex items-center gap-2">
                     <button id="mobile-menu-btn" class="md:hidden text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 -ml-2 focus:outline-none flex items-center justify-center">
                         <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
+                    </button>                    
                     <h2 class="text-sm md:text-lg font-semibold text-slate-800 dark:text-white truncate" id="dashboard-main-title">Performance Analytics</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- THEME TOGGLE BUTTON -->
-                    <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-yellow-400 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors focus:outline-none" title="Toggle Theme">
-                        <i class="fa-solid fa-moon dark:hidden"></i>
-                        <i class="fa-solid fa-sun hidden dark:block"></i>
-                    </button>
+                    <!-- TOMBOL THEME TELAH DIHAPUS DI SINI -->
 
                     <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-500 dark:text-slate-400">As of Date</p>
@@ -354,6 +350,8 @@
             }
         }
 
+        // Fungsi toggleTheme tetap ada di JS untuk kompatibilitas internal, 
+        // tapi karena tombolnya sudah dihapus dari HTML, user tidak bisa lagi mengubahnya secara manual.
         window.toggleTheme = function() {
             const html = document.documentElement;
             const body = document.body;
@@ -1100,19 +1098,141 @@
             const getTransparentColor=(hex)=>{if(!hex||!hex.startsWith('#'))return'rgba(0,0,0,0.15)';const r=parseInt(hex.slice(1,3),16);const g=parseInt(hex.slice(3,5),16);const b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},0.15)`;};
             
             const currentFileName = csvFilesConfig[currentActiveFileIndex].file;
+            const isBillionFormat = ['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
 
+            // Dataset Logic
             const datasets=distinctProducts.map(prod=>{
                 const dataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[month]||0);});return sum;});
-                return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:dataPoints,borderColor:productColors[prod],backgroundColor:getTransparentColor(productColors[prod]),borderWidth:2,tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',pointBorderColor:productColors[prod],pointBorderWidth:1.5};
+                
+                if (currentFileName === "mdin.csv") {
+                    return {
+                        label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
+                        data: dataPoints,
+                        borderColor: productColors[prod],
+                        backgroundColor: getTransparentColor(productColors[prod]),
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: window.innerWidth < 768 ? 3 : 5,
+                        pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                        pointBorderColor: productColors[prod],
+                        pointBorderWidth: 2,
+                        hidden: false,
+                        clip: false // Izinkan elemen digambar di luar area plot
+                    };
+                } else {
+                    return {
+                        label: prod === "Sme" ? "SME" : prod.replace(/_/g, ' '),
+                        data: dataPoints,
+                        borderColor: productColors[prod],
+                        backgroundColor: getTransparentColor(productColors[prod]),
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: window.innerWidth < 768 ? 2 : 4,
+                        pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                        pointBorderColor: productColors[prod],
+                        pointBorderWidth: 1.5,
+                        hidden: true,
+                        clip: false // Izinkan elemen digambar di luar area plot
+                    };
+                }
             });
 
             if (currentFileName !== "mdin.csv") {
                 const totalDataPoints=labels.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
-                datasets.push({label:'TOTAL',data:totalDataPoints,borderColor: isDark ? '#94a3b8' : '#1e293b',backgroundColor:'rgba(30,41,59,0.05)',borderWidth:2.5,borderDash:[5,5],tension:0.3,pointRadius:window.innerWidth<768?2:4,pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',pointBorderColor: isDark ? '#94a3b8' : '#1e293b',pointBorderWidth:1.5});
+                datasets.push({
+                    label:'TOTAL',
+                    data:totalDataPoints,
+                    borderColor: isDark ? '#94a3b8' : '#1e293b',
+                    backgroundColor:'rgba(30,41,59,0.05)',
+                    borderWidth:2.5,
+                    borderDash:[5,5],
+                    tension:0.3,
+                    pointRadius:window.innerWidth<768?2:4,
+                    pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                    pointBorderColor: isDark ? '#94a3b8' : '#1e293b',
+                    pointBorderWidth:1.5,
+                    clip: false // Izinkan elemen digambar di luar area plot
+                });
             }
 
             if(charts.trend)charts.trend.destroy();
-            charts.trend=new Chart(ctx,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:getUnifiedLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{y:{grid:{color: gridColor},ticks:{font:{size:9},color: textColor,callback:(val)=>formatChartValue(val, currentFileName)}},x:{grid:{display:false},ticks:{font:{size:9},color: textColor}}}}});
+            
+            // Plugin Data Labels
+            const trendPlugins = [{
+                id: 'datalabels',
+                afterDatasetsDraw(chart) {
+                    // Hanya tampilkan angka jika lebar layar > 768px (Desktop/Tablet)
+                    if (window.innerWidth <= 768) return; 
+
+                    const { ctx } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 10px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f1f5f9' : '#1e293b';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+
+                    chart.data.datasets.forEach((dataset, i) => {
+                        if (chart.isDatasetVisible(i)) {
+                            const meta = chart.getDatasetMeta(i);
+                            
+                            const isMDIN = currentFileName === "mdin.csv" && i === 0;
+                            const isTOTAL = currentFileName !== "mdin.csv" && dataset.label === 'TOTAL';
+
+                            if (isMDIN || isTOTAL) {
+                                meta.data.forEach((element, index) => {
+                                    const value = dataset.data[index];
+                                    if (value !== null && value !== undefined && value !== 0) {
+                                        let displayValue = formatNumber(value);
+                                        if (isBillionFormat) {
+                                            displayValue = formatToBillion(value);
+                                        }
+                                        
+                                        // Offset Y -8px agar teks tidak menabrak titik
+                                        ctx.fillText(displayValue, element.x, element.y - 8);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    ctx.restore();
+                }
+            }];
+
+            charts.trend=new Chart(ctx,{
+                type:'line',
+                data:{labels:labels,datasets:datasets},
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    interaction:{mode:'index',intersect:false},
+                    
+                    // Padding Layout yang cukup besar
+                    layout: {
+                        padding: {
+                            top: 30,    // Ruang ekstra di atas untuk angka tertinggi
+                            bottom: 5,
+                            left: 20,   // Ruang kiri
+                            right: 20   // Ruang kanan
+                        }
+                    },
+                    
+                    plugins:{
+                        legend:getUnifiedLegendConfig(),
+                        tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}
+                    },
+                    scales:{
+                        y:{
+                            grid:{color: gridColor},
+                            ticks:{font:{size:9},color: textColor,callback:(val)=>formatChartValue(val, currentFileName)}
+                        },
+                        x:{
+                            grid:{display:false},
+                            ticks:{font:{size:9},color: textColor}
+                        }
+                    }
+                }, 
+                plugins: trendPlugins
+            });
         }
 
         function updateCompositionChart(){
@@ -1170,6 +1290,8 @@
             } else {
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
+                
+                // Menampilkan semua produk secara default (tanpa hidden: true)
                 if(charts.comp)charts.comp.destroy();
                 charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
@@ -1185,7 +1307,29 @@
             const totalCoBranchMap={};
             filteredData.forEach(row=>{const coBranch=row['CO-BRANCH-CLEAN'];if(coBranch){if(!totalCoBranchMap[coBranch])totalCoBranchMap[coBranch]=0;totalCoBranchMap[coBranch]+=(row[lastMonth]||0);}});
             const top5CoBranchNames=Object.entries(totalCoBranchMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
-            const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?10:14};});
+            
+            // Menambahkan hidden: true untuk semua dataset produk
+            const datasetBreakdown=distinctProducts.map(prod=>{
+                return{
+                    label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
+                    data:top5CoBranchNames.map(coName=>{let totalProd=0;filteredData.forEach(row=>{if(row['CO-BRANCH-CLEAN']===coName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
+                    backgroundColor:productColors[prod],
+                    barThickness:window.innerWidth<768?10:14,
+                    hidden: true // Default hidden
+                };
+            });
+            
+            // Tambahkan dataset TOTAL yang visible
+            const totalDataset = {
+                label: 'TOTAL',
+                data: top5CoBranchNames.map(coName => totalCoBranchMap[coName] || 0),
+                backgroundColor: isDark ? '#94a3b8' : '#1e293b',
+                barThickness: window.innerWidth<768?10:14,
+                borderWidth: 1,
+                borderColor: isDark ? '#64748b' : '#0f172a'
+            };
+            datasetBreakdown.push(totalDataset);
+
             if(charts.coBranch)charts.coBranch.destroy();
             
             charts.coBranch=new Chart(ctx,{type:'bar',data:{labels:top5CoBranchNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getSquareLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9},color: textColor}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
@@ -1200,7 +1344,29 @@
             const totalOfficeMap={};
             filteredData.forEach(row=>{const office=row['OFFICE-CLEAN'];if(office){if(!totalOfficeMap[office])totalOfficeMap[office]=0;totalOfficeMap[office]+=(row[lastMonth]||0);}});
             const top5OfficeNames=Object.entries(totalOfficeMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(entry=>entry[0]);
-            const datasetBreakdown=distinctProducts.map(prod=>{return{label:prod==="Sme"?"SME":prod.replace(/_/g,' '),data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),backgroundColor:productColors[prod],barThickness:window.innerWidth<768?10:14};});
+            
+            // Menambahkan hidden: true untuk semua dataset produk
+            const datasetBreakdown=distinctProducts.map(prod=>{
+                return{
+                    label:prod==="Sme"?"SME":prod.replace(/_/g,' '),
+                    data:top5OfficeNames.map(officeName=>{let totalProd=0;filteredData.forEach(row=>{if(row['OFFICE-CLEAN']===officeName&&row.PRODUCT===prod){totalProd+=(row[lastMonth]||0);}});return totalProd;}),
+                    backgroundColor:productColors[prod],
+                    barThickness:window.innerWidth<768?10:14,
+                    hidden: true // Default hidden
+                };
+            });
+
+            // Tambahkan dataset TOTAL yang visible
+            const totalDataset = {
+                label: 'TOTAL',
+                data: top5OfficeNames.map(officeName => totalOfficeMap[officeName] || 0),
+                backgroundColor: isDark ? '#94a3b8' : '#1e293b',
+                barThickness: window.innerWidth<768?10:14,
+                borderWidth: 1,
+                borderColor: isDark ? '#64748b' : '#0f172a'
+            };
+            datasetBreakdown.push(totalDataset);
+
             if(charts.branch)charts.branch.destroy();
             
             charts.branch=new Chart(ctx,{type:'bar',data:{labels:top5OfficeNames,datasets:datasetBreakdown},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:getSquareLegendConfig(),tooltip:{callbacks:{label:function(context){return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);}}}},scales:{x:{stacked:true,display:false,grid:{display:false}},y:{stacked:true,grid:{display:false},ticks:{font:{size:9},color: textColor}}}},plugins:[{id:'internal_bar_labels_instant',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.font='bold 9px Inter, sans-serif';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';const labelsCount=chart.data.labels.length;for(let i=0;i<labelsCount;i++){let totalBarValue=0;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){totalBarValue+=dataset.data[i];}});if(totalBarValue===0)continue;chart.data.datasets.forEach((dataset,datasetIdx)=>{if(chart.isDatasetVisible(datasetIdx)){const element=chart.getDatasetMeta(datasetIdx).data[i];const val=dataset.data[i];if(element&&val>0){let displayText='';if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){displayText=formatNumber(val);}else{displayText=((val/totalBarValue)*100).toFixed(0)+'%';}const width=Math.abs(element.x-element.base);const centerX=element.base+((element.x-element.base)/2);const centerY=element.y;if(width>12){ctx.fillText(displayText,centerX,centerY);}}}});}ctx.restore();}}]});
