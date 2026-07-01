@@ -1197,16 +1197,10 @@
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
                 const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
                 
-                // MODIFIKASI: Menyembunyikan slice produk secara default kecuali 'TOTAL' (jika ada di pie, tapi biasanya pie chart per produk)
-                // Untuk Pie/Doughnut, kita sembunyikan semua produk individual agar fokus ke label grup di bawahnya atau biarkan user memilih
-                // Namun karena instruksi spesifik "semua item selain TOTAL", dan di composition chart biasanya tidak ada TOTAL sebagai slice,
-                // kita akan menyembunyikan semua slice produk individual agar chart terlihat kosong/bersih sampai dipilih, 
-                // ATAU kita tampilkan semua karena ini adalah komposisi. 
-                // Berdasarkan request "semua item selain TOTAL disembunyikan", dan Composition chart biasanya memecah total menjadi produk,
-                // maka kita sembunyikan semua produk individual.
-                
+                // MODIFIKASI: Menampilkan semua produk secara default (tanpa hidden: true)
+                // Karena Composition Chart (Doughnut) tidak memiliki dataset "TOTAL" sebagai pembanding
                 if(charts.comp)charts.comp.destroy();
-                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4, hidden: true}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
+                charts.comp=new Chart(ctx,{type:'doughnut',data:{labels:distinctProducts.map(p=>p==="Sme"?"SME":p.replace(/_/g,' ')),datasets:[{data:dataValues,backgroundColor:distinctProducts.map(p=>productColors[p]),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:mixLegendConfig,tooltip:{callbacks:{label:function(context){let total=context.dataset.data.reduce((a,b)=>a+b,0);let percentage=total?((context.raw/total)*100).toFixed(1)+'%':'0%';return context.label+': '+formatChartValue(context.raw, currentFileName)+' ('+percentage+')';}}}}}});
             }
         }
 
