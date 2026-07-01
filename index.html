@@ -249,8 +249,7 @@
                                 <button onclick="changeTimeline(0)" id="btn-time-all" class="flex-1 sm:flex-none px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">All</button>
                             </div>
                         </div>
-                        <!-- PERBAIKAN 1: Menambah tinggi canvas desktop dari h-64 menjadi h-72 agar legend muat -->
-                        <div class="relative h-48 md:h-72 w-full flex-1">
+                        <div class="relative h-48 md:h-64 w-full flex-1">
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
@@ -680,16 +679,16 @@
 
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-        // PERBAIKAN 2 & 3: Hardcode warna legend ke gelap dan perbaiki konfigurasi
+        // PERBAIKAN UTAMA DI SINI: Mengubah boxWidth dari 0 menjadi 8
         function getUnifiedLegendConfig() {
             return {
                 position: 'bottom',
                 labels: {
                     usePointStyle: true,
                     pointStyle: 'circle',
-                    boxWidth: 8, // Diperbesar sedikit agar titik warna lebih jelas
+                    boxWidth: 8, // Diubah dari 0 menjadi 8 agar marker terlihat jelas
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: '#475569', // Warna Slate-600 (Gelap) agar terbaca di background putih
+                    color: '#475569', 
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
@@ -702,7 +701,7 @@
                             datasetIndex: i,
                             pointStyle: 'circle',
                             usePointStyle: true,
-                            boxWidth: 8 
+                            boxWidth: 8 // Pastikan konsisten dengan boxWidth utama
                         }));
                     }
                 }
@@ -715,9 +714,9 @@
                 labels: {
                     usePointStyle: true,
                     pointStyle: 'rect',
-                    boxWidth: 8,
+                    boxWidth: 6,
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    color: '#475569', // Warna Slate-600 (Gelap)
+                    color: '#475569', 
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const datasets = chart.data.datasets;
@@ -730,7 +729,7 @@
                             datasetIndex: i,
                             pointStyle: 'rect',
                             usePointStyle: true,
-                            boxWidth: 8 
+                            boxWidth: 6 
                         }));
                     }
                 }
@@ -1164,8 +1163,8 @@
                     usePointStyle: true,
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 8 : 15,
-                    boxWidth: 8,
-                    color: '#475569', // Warna Gelap Hardcoded
+                    boxWidth: 6,
+                    color: '#475569', 
                     font: { size: window.innerWidth < 768 ? 8 : 10 },
                     generateLabels: function(chart) {
                         const data = chart.data;
