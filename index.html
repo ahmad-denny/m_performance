@@ -116,13 +116,22 @@
         .bg-mom-neutral { background-color: #f1f5f9; color: #475569; }
         .dark .bg-mom-neutral { background-color: #334155; color: #cbd5e1; }
 
-        /* Legend Text Fix */
+        /* Legend Text Fix - Memaksa Warna Terang di Dark Mode */
         .chartjs-legend li span,
         canvas + div ul li span {
             text-decoration: none !important;
             border-bottom: none !important;
             text-decoration-line: none !important;
             -webkit-text-decoration: none !important;
+            
+            /* Default Light Mode */
+            color: #1e293b !important; 
+        }
+
+        /* Override Khusus Dark Mode */
+        body.dark .chartjs-legend li span,
+        body.dark canvas + div ul li span {
+            color: #f1f5f9 !important; /* Slate-100: Putih Terang */
         }
     </style>
 </head>
@@ -507,6 +516,9 @@
             if (!window.customLegendStates[chartId]) window.customLegendStates[chartId] = {};
             const state = window.customLegendStates[chartId];
 
+            // Tentukan warna teks berdasarkan tema
+            const legendTextColor = isDark ? '#f1f5f9' : '#1e293b'; 
+
             return {
                 position: 'bottom',
                 labels: {
@@ -514,7 +526,10 @@
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 12 : 20,
                     boxWidth: 10,
-                    color: isDark ? '#f1f5f9' : '#1e293b', 
+                    
+                    // PERBAIKAN UTAMA DI SINI
+                    color: legendTextColor, 
+                    
                     font: { size: window.innerWidth < 768 ? 10 : 11, weight: '500' },
                     generateLabels: function(chart) {
                         const data = chart.data;
@@ -540,7 +555,9 @@
                                     strokeStyle: isHidden ? (isDark ? '#475569' : '#cbd5e1') : baseColor,
                                     lineWidth: 3,
                                     hidden: false,
-                                    datasetIndex: 0
+                                    datasetIndex: 0,
+                                    // Pastikan teks label juga mewarisi warna yang benar
+                                    fontColor: legendTextColor 
                                 };
                             });
                         } else {
@@ -565,7 +582,8 @@
                                     strokeStyle: isHidden ? (isDark ? '#475569' : '#cbd5e1') : baseColor,
                                     lineWidth: 3,
                                     hidden: false,
-                                    datasetIndex: i
+                                    datasetIndex: i,
+                                    fontColor: legendTextColor
                                 };
                             });
                         }
