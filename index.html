@@ -89,6 +89,34 @@
             .mobile-compact-p { padding: 0.5rem !important; }
             .mobile-compact-text { font-size: 0.75rem !important; line-height: 1rem !important; }
         }
+
+        /* MoM Badge Styles */
+        .mom-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            font-size: 9px;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        /* Positive (Green) */
+        .bg-mom-positive { background-color: #dcfce7; color: #166534; }
+        .dark .bg-mom-positive { background-color: #14532d; color: #bbf7d0; }
+        
+        /* Negative (Red) */
+        .bg-mom-negative { background-color: #fee2e2; color: #991b1b; }
+        .dark .bg-mom-negative { background-color: #7f1d1d; color: #fecaca; }
+        
+        /* Neutral */
+        .bg-mom-neutral { background-color: #f1f5f9; color: #475569; }
+        .dark .bg-mom-neutral { background-color: #334155; color: #cbd5e1; }
+
+        /* Legend Text Fix */
         .chartjs-legend li span,
         canvas + div ul li span {
             text-decoration: none !important;
@@ -131,10 +159,10 @@
         </div>
     </div>
 
-    <!-- BACKDROP MOBILE - Z-INDEX DITINGKATKAN KE 55 -->
+    <!-- BACKDROP MOBILE -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[55] hidden md:hidden transition-opacity duration-300"></div>
 
-    <!-- SIDEBAR - Z-INDEX DITINGKATKAN KE 60 AGAR DI ATAS STICKY HEADER/KPI -->
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:sticky w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-[60] sidebar-transition h-[100dvh]">
         <button id="sidebar-toggle" class="hidden md:flex absolute -right-3 top-6 bg-indigo-500 text-white w-6 h-6 rounded-full items-center justify-center shadow-lg hover:bg-indigo-600 z-30 focus:outline-none">
             <i class="fa-solid fa-chevron-left text-xs transition-transform" id="toggle-icon"></i>
@@ -178,7 +206,6 @@
                     <h2 class="text-sm md:text-lg font-semibold text-slate-800 dark:text-white truncate" id="dashboard-main-title">Performance Analytics</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- THEME TOGGLE BUTTON -->
                     <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-yellow-400 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors focus:outline-none" title="Toggle Theme">
                         <i class="fa-solid fa-moon dark:hidden"></i>
                         <i class="fa-solid fa-sun hidden dark:block"></i>
@@ -196,7 +223,7 @@
             <div class="flex gap-1 border-b border-slate-100 dark:border-slate-700 -mx-3 px-3 overflow-x-auto whitespace-nowrap scrollbar-none mt-1" id="csv-tabs-container"></div>
         </header>
 
-        <!-- KPI CONTAINER - COMPACT MOBILE -->
+        <!-- KPI CONTAINER -->
         <div class="sticky top-[75px] md:top-[85px] z-40 bg-[#f8fafc] dark:bg-dark-bg px-3 md:px-6 pt-2 pb-2 border-b border-slate-200/60 dark:border-dark-border shadow-sm transition-colors duration-300" id="kpi-container">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
                 
@@ -206,7 +233,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" id="kpi-total-label">Total Outstanding</p>
                             <h3 class="text-sm md:text-lg font-bold text-slate-800 dark:text-white mt-0.5 truncate" id="kpi-total">0</h3>
-                            <div id="mom-total" class="mt-0.5 text-[9px] md:text-[10px] font-medium leading-none"></div>
+                            <div id="mom-total" class="mt-1"></div>
                         </div>                        
                         <div class="p-1 bg-indigo-50 dark:bg-indigo-900/30 rounded text-indigo-600 dark:text-indigo-400 text-xs shrink-0">
                             <i class="fa-solid fa-calculator"></i>
@@ -223,7 +250,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" id="kpi-segment1-label">Segment 1</p>
                             <h3 class="text-sm md:text-lg font-bold text-slate-800 dark:text-white mt-0.5 truncate" id="kpi-segment1">0</h3>
-                            <div id="mom-seg1" class="mt-0.5 text-[9px] md:text-[10px] font-medium leading-none"></div>
+                            <div id="mom-seg1" class="mt-1"></div>
                         </div>
                         <div class="p-1 bg-emerald-50 dark:bg-emerald-900/30 rounded text-emerald-600 dark:text-emerald-400 text-xs shrink-0">
                             <i class="fa-solid fa-layer-group"></i>
@@ -240,7 +267,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" id="kpi-segment2-label">Segment 2</p>
                             <h3 class="text-sm md:text-lg font-bold text-slate-800 dark:text-white mt-0.5 truncate" id="kpi-segment2">0</h3>
-                            <div id="mom-seg2" class="mt-0.5 text-[9px] md:text-[10px] font-medium leading-none"></div>
+                            <div id="mom-seg2" class="mt-1"></div>
                         </div>
                         <div class="p-1 bg-amber-50 dark:bg-amber-900/30 rounded text-amber-600 dark:text-amber-400 text-xs shrink-0">
                             <i class="fa-solid fa-boxes-stacked"></i>
@@ -257,7 +284,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-[9px] md:text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" id="kpi-fourth-label">Top Product</p>
                             <h3 class="text-sm md:text-lg font-bold text-slate-800 dark:text-white mt-0.5 truncate" id="kpi-fourth-value">-</h3>
-                            <div id="mom-fourth" class="mt-0.5 text-[9px] md:text-[10px] font-medium leading-none"></div>
+                            <div id="mom-fourth" class="mt-1"></div>
                         </div>
                         <div class="p-1 bg-blue-50 dark:bg-blue-900/30 rounded text-blue-600 dark:text-blue-400 text-xs shrink-0">
                             <i class="fa-solid fa-trophy" id="kpi-fourth-icon"></i>
@@ -305,40 +332,45 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
                     <!-- Top 5 CO-Branches -->
                     <div class="bg-white dark:bg-dark-card rounded-xl p-3 md:p-5 card-shadow transition-colors duration-300">
-                        <!-- Wrapper untuk Header & Toggle -->
                         <div id="co-branch-header" class="flex justify-between items-center mb-2 min-h-[24px]">
                             <h3 class="font-semibold text-xs md:text-sm text-slate-700 dark:text-slate-200" id="co-branch-title">Top 5 CO-Branches</h3>
                             
-                            <!-- Tombol Toggle Best/Worst -->
+                            <!-- Toggle NPF -->
                             <div id="npf-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
-                                <button onclick="setNpfMode('co', 'worst')" id="btn-npf-worst-co" 
-                                    class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
-                                <button onclick="setNpfMode('co', 'best')" id="btn-npf-best-co" 
-                                    class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
+                                <button onclick="setNpfMode('co', 'worst')" id="btn-npf-worst-co" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
+                                <button onclick="setNpfMode('co', 'best')" id="btn-npf-best-co" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
+                            </div>
+
+                            <!-- Toggle General (Top/Bottom) -->
+                            <div id="general-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                                <button onclick="setGeneralMode('co', 'top')" id="btn-general-top-co" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Top</button>
+                                <button onclick="setGeneralMode('co', 'bottom')" id="btn-general-bottom-co" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Bottom</button>
                             </div>
                         </div>
                         
-                        <!-- Chart Area -->
                         <div class="relative h-48 md:h-56 w-full">
                             <canvas id="coBranchChart"></canvas>
                         </div>
                     </div>
+
                     <!-- Top 5 Branches -->
                     <div class="bg-white dark:bg-dark-card rounded-xl p-3 md:p-5 card-shadow transition-colors duration-300">
-                        <!-- Wrapper untuk Header & Toggle -->
                         <div id="branch-header" class="flex justify-between items-center mb-2 min-h-[24px]">
                             <h3 class="font-semibold text-xs md:text-sm text-slate-700 dark:text-slate-200" id="branch-title">Top 5 Branches</h3>
                             
-                            <!-- Tombol Toggle Best/Worst -->
+                            <!-- Toggle NPF -->
                             <div id="npf-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
-                                <button onclick="setNpfMode('branch', 'worst')" id="btn-npf-worst-branch" 
-                                    class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
-                                <button onclick="setNpfMode('branch', 'best')" id="btn-npf-best-branch" 
-                                    class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
+                                <button onclick="setNpfMode('branch', 'worst')" id="btn-npf-worst-branch" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
+                                <button onclick="setNpfMode('branch', 'best')" id="btn-npf-best-branch" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
+                            </div>
+
+                            <!-- Toggle General (Top/Bottom) -->
+                            <div id="general-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                                <button onclick="setGeneralMode('branch', 'top')" id="btn-general-top-branch" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Top</button>
+                                <button onclick="setGeneralMode('branch', 'bottom')" id="btn-general-bottom-branch" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Bottom</button>
                             </div>
                         </div>
                         
-                        <!-- Chart Area -->
                         <div class="relative h-48 md:h-56 w-full">
                             <canvas id="branchChart"></canvas>
                         </div>
@@ -372,7 +404,6 @@
         // ==========================================
         const DASHBOARD_PASSWORD = 'rbpm'; 
 
-        // Theme Logic
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -403,17 +434,14 @@
                 body.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
             }
-            // Re-render charts to update colors
             if(charts.trend) updateTrendChart();
             if(charts.comp) updateCompositionChart();
             if(charts.coBranch) updateCoBranchChart();
             if(charts.branch) updateBranchChart();
         }
 
-        // Init Theme immediately
         initTheme();
 
-        // Cek apakah sudah login sebelumnya (session based)
         if (sessionStorage.getItem('isLoggedIn') === 'true') {
             document.getElementById('login-overlay').classList.add('hidden');
         }
@@ -460,10 +488,13 @@
             }
         });
 
-        // State global untuk menyimpan status toggle legend per chart
+        // ==========================================
+        // GLOBAL STATE & HELPERS
+        // ==========================================
         window.customLegendStates = window.customLegendStates || {};
+        let npfMode = { co: 'worst', branch: 'worst' };
+        let generalMode = { co: 'top', branch: 'top' };
 
-        // Helper warna outline
         function getOutlineColor(hex, opacity = 0.2) {
             if (!hex || !hex.startsWith('#')) return `rgba(0,0,0,${opacity})`;
             const r = parseInt(hex.slice(1,3), 16);
@@ -491,10 +522,6 @@
                         
                         const chartType = chart.config.type;
                         
-                        // PERBEDAAN STRUKTUR DATA:
-                        // Line & Bar: Setiap produk adalah 1 Dataset → iterate data.datasets
-                        // Doughnut: Semua produk ada di 1 Dataset → iterate data.labels
-                        
                         if (chartType === 'doughnut' || chartType === 'pie') {
                             const dataset = data.datasets[0];
                             return data.labels.map((label, i) => {
@@ -506,18 +533,17 @@
                                 const isHidden = state[i] === true;
                                 
                                 return {
-                                    text: label, // Nama produk dari data.labels
+                                    text: label,
                                     index: i,
                                     pointStyle: 'circle',
                                     fillStyle: isHidden ? 'rgba(148, 163, 184, 0.1)' : getOutlineColor(baseColor, 0.2),
                                     strokeStyle: isHidden ? (isDark ? '#475569' : '#cbd5e1') : baseColor,
                                     lineWidth: 3,
                                     hidden: false,
-                                    datasetIndex: 0 // Selalu 0 karena hanya ada 1 dataset
+                                    datasetIndex: 0
                                 };
                             });
                         } else {
-                            // Line & Bar Chart: iterate datasets
                             return data.datasets.map((ds, i) => {
                                 let baseColor = '';
                                 let labelText = ds.label;
@@ -554,13 +580,11 @@
                     const chartType = ci.config.type;
                     
                     if (chartType === 'doughnut' || chartType === 'pie') {
-                        // Doughnut: toggle titik data spesifik di dataset tunggal
                         const meta = ci.getDatasetMeta(0);
                         if (meta.data[index]) {
                             meta.data[index].hidden = state[index];
                         }
                     } else {
-                        // Line & Bar: toggle seluruh dataset
                         const meta = ci.getDatasetMeta(index);
                         if (meta) {
                             meta.hidden = state[index];
@@ -572,7 +596,48 @@
             };
         }
 
+        // Toggle Handlers
+        window.setNpfMode = function(chartType, mode) {
+            npfMode[chartType] = mode;
+            const prefix = chartType === 'co' ? 'co' : 'branch';
+            const btnWorst = document.getElementById(`btn-npf-worst-${prefix}`);
+            const btnBest = document.getElementById(`btn-npf-best-${prefix}`);
+            
+            const activeClass = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+            const inactiveClass = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+            
+            if (mode === 'worst') {
+                btnWorst.className = activeClass; btnBest.className = inactiveClass;
+            } else {
+                btnWorst.className = inactiveClass; btnBest.className = activeClass;
+            }
+            
+            if (chartType === 'co') updateCoBranchChart();
+            else updateBranchChart();
+        }
 
+        window.setGeneralMode = function(chartType, mode) {
+            generalMode[chartType] = mode;
+            const prefix = chartType === 'co' ? 'co' : 'branch';
+            const btnTop = document.getElementById(`btn-general-top-${prefix}`);
+            const btnBottom = document.getElementById(`btn-general-bottom-${prefix}`);
+            
+            const activeClass = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+            const inactiveClass = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+            
+            if (mode === 'top') {
+                btnTop.className = activeClass; btnBottom.className = inactiveClass;
+            } else {
+                btnTop.className = inactiveClass; btnBottom.className = activeClass;
+            }
+            
+            if (chartType === 'co') updateCoBranchChart();
+            else updateBranchChart();
+        }
+
+        // ==========================================
+        // DATA CONFIGURATION
+        // ==========================================
         const csvFilesConfig = [
             { name: "Financing", file: "financing.csv", icon: "fa-hand-holding-dollar" },
             { name: "Funding", file: "funding.csv", icon: "fa-vault" },
@@ -613,7 +678,6 @@
             csvFilesConfig.forEach((cfg, idx) => {
                 const btn = document.createElement('button');
                 btn.id = `tab-csv-${idx}`;
-                // Dark mode support for tabs
                 const activeClass = 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20';
                 const inactiveClass = 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600';
                 
@@ -635,10 +699,7 @@
             
             currentActiveFileIndex = index;
             document.getElementById('loading').style.display = 'flex';
-            
-            // FIX: Reset Timeline saat ganti tab
             resetFilters(); 
-            
             loadSelectedCSV(index);
         }
 
@@ -687,16 +748,13 @@
 
         function buildDynamicTableHeader() {
             const headerRow = document.getElementById('dynamic-table-header-row');
-            // Header Branch tetap rata kiri
             let headerHtml = `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs font-bold bg-slate-50 dark:bg-slate-800 sticky-column text-left truncate">Branch</th>`;
             
             distinctProducts.forEach(prod => {
                 let displayProdName = prod === "Sme" ? "SME" : prod.replace(/_/g, ' ');
-                // PERUBAHAN: Menggunakan break-words, text-center, dan mengganti _ dengan <br> untuk mobile look
                 headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold whitespace-normal break-words max-w-[80px]" style="color: ${productColors[prod]};">${displayProdName}</th>`;
             });
             
-            // Header Total Amount diganti _ dengan <br> agar jadi 2 baris
             headerHtml += `<th scope="col" class="px-2 py-2 text-[9px] md:text-xs text-center font-bold bg-slate-50 dark:bg-slate-800 max-w-[90px] whitespace-normal break-words">Total<br>Amount</th>`;
             
             headerRow.innerHTML = headerHtml;
@@ -726,7 +784,6 @@
             }
         }
 
-        // PERBAIKAN LOGIKA MOBILE SIDEBAR
         function initMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -737,7 +794,6 @@
                 sidebar.classList.remove('-translate-x-full'); 
                 sidebar.classList.add('translate-x-0'); 
                 backdrop.classList.remove('hidden'); 
-                // Mencegah scroll pada body utama saat menu terbuka agar filter bisa diakses
                 document.body.style.overflow = 'hidden'; 
             }
             
@@ -745,7 +801,6 @@
                 sidebar.classList.remove('translate-x-0'); 
                 sidebar.classList.add('-translate-x-full'); 
                 backdrop.classList.add('hidden'); 
-                // Mengembalikan scroll pada body utama
                 document.body.style.overflow = ''; 
             }
             
@@ -881,91 +936,40 @@
         function renderMoM(elementId, currentVal, prevVal, isBillion = false, isNPF = false, comparisonLabel = null) {
             const el = document.getElementById(elementId);
             if (!el) return;
-            if (prevVal === undefined || prevVal === null) { el.innerHTML = ''; return; }
+            if (prevVal === undefined || prevVal === null) { 
+                el.innerHTML = ''; 
+                el.className = ''; 
+                return; 
+            }
             
             let diff = currentVal - prevVal;
-            let colorClass = '';
             let arrow = '';
+            let colorClass = '';
             
             if (isNPF) {
-                if (diff < 0) { colorClass = 'text-emerald-600 dark:text-emerald-400'; arrow = 'fa-arrow-down'; } 
-                else if (diff > 0) { colorClass = 'text-rose-600 dark:text-rose-400'; arrow = 'fa-arrow-up'; } 
-                else { colorClass = 'text-slate-400'; arrow = 'fa-minus'; }
+                if (diff < 0) { colorClass = 'bg-mom-positive'; arrow = 'fa-arrow-down'; } 
+                else if (diff > 0) { colorClass = 'bg-mom-negative'; arrow = 'fa-arrow-up'; } 
+                else { colorClass = 'bg-mom-neutral'; arrow = 'fa-minus'; }
             } else {
-                if (diff > 0) { colorClass = 'text-emerald-600 dark:text-emerald-400'; arrow = 'fa-arrow-up'; } 
-                else if (diff < 0) { colorClass = 'text-rose-600 dark:text-rose-400'; arrow = 'fa-arrow-down'; } 
-                else { colorClass = 'text-slate-400'; arrow = 'fa-minus'; }
+                if (diff > 0) { colorClass = 'bg-mom-positive'; arrow = 'fa-arrow-up'; } 
+                else if (diff < 0) { colorClass = 'bg-mom-negative'; arrow = 'fa-arrow-down'; } 
+                else { colorClass = 'bg-mom-neutral'; arrow = 'fa-minus'; }
             }
 
             const sign = diff > 0 ? '+' : '';
             const formattedDiff = isBillion ? formatToBillion(diff) : formatNumber(diff);
             const labelText = comparisonLabel || prevMonth;
             
-            el.className = `mt-0.5 text-[9px] md:text-[10px] font-medium leading-none ${colorClass}`;
-            el.innerHTML = `<i class="fa-solid ${arrow} text-[0.8em] mr-1"></i>${sign}${formattedDiff} vs ${labelText}`;
+            el.className = `mom-badge ${colorClass}`; 
+            
+            el.innerHTML = `
+                <i class="fa-solid ${arrow} text-[10px]"></i>
+                <span>${sign}${formattedDiff}</span>
+                <span class="opacity-75 text-[8px] ml-0.5">vs ${labelText}</span>
+            `;
         }
 
         function toProperCase(str) { if(!str) return "-"; if(str.toLowerCase()==="sme") return "SME"; return str.toLowerCase().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
-
-        function getUnifiedLegendConfig() {
-            const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-            return {
-                position: 'bottom',
-                labels: {
-                    usePointStyle: true,
-                    pointStyle: 'circle',
-                    boxWidth: 6,
-                    padding: window.innerWidth < 768 ? 8 : 15,
-                    color: textColor,
-                    font: { size: window.innerWidth < 768 ? 8 : 10 },
-                    generateLabels: function(chart) {
-                        const datasets = chart.data.datasets;
-                        return datasets.map((ds, i) => ({
-                            text: ds.label,
-                            fillStyle: ds.backgroundColor,
-                            strokeStyle: ds.borderColor || ds.backgroundColor,
-                            lineWidth: 2,
-                            hidden: !chart.isDatasetVisible(i),
-                            datasetIndex: i,
-                            pointStyle: 'circle',
-                            usePointStyle: true,
-                            boxWidth: 0 
-                        }));
-                    }
-                }
-            };
-        }
-
-        function getSquareLegendConfig() {
-            const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-            return {
-                position: 'bottom',
-                labels: {
-                    usePointStyle: true,
-                    pointStyle: 'rect',
-                    boxWidth: 6,
-                    padding: window.innerWidth < 768 ? 8 : 15,
-                    color: textColor,
-                    font: { size: window.innerWidth < 768 ? 8 : 10 },
-                    generateLabels: function(chart) {
-                        const datasets = chart.data.datasets;
-                        return datasets.map((ds, i) => ({
-                            text: ds.label,
-                            fillStyle: ds.backgroundColor,
-                            strokeStyle: ds.borderColor || ds.backgroundColor,
-                            lineWidth: 2,
-                            hidden: !chart.isDatasetVisible(i),
-                            datasetIndex: i,
-                            pointStyle: 'rect',
-                            usePointStyle: true,
-                            boxWidth: 6 
-                        }));
-                    }
-                }
-            };
-        }
 
         function updateKPIs() {
             let groupTotals={}, productTotals={}, grandTotal=0;
@@ -974,7 +978,6 @@
 
             let caTotal = 0, saTotal = 0, tdTotal = 0;
             let caTotalPrev = 0, saTotalPrev = 0, tdTotalPrev = 0;
-            let caPct = 0, saPct = 0, tdPct = 0;
 
             filteredData.forEach(row=>{
                 const val=row[lastMonth]||0;
@@ -1072,23 +1075,20 @@
                 document.getElementById('kpi-segment1-label').innerText = "CA (Giro)";
                 if(isBillionFormat){document.getElementById('kpi-segment1').innerText=formatToBillion(caTotal);}else{animateNumber(document.getElementById('kpi-segment1'),caTotal);}
                 renderMoM('mom-seg1', caTotal, caTotalPrev, isBillionFormat, isNPF);
-                caPct = grandTotal ? ((caTotal/grandTotal)*100) : 0;
                 document.getElementById('kpi-segment1-pct').innerHTML=`<span id="anim-ca-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-ca-pct'),caPct,true);
+                animateNumber(document.getElementById('anim-ca-pct'),caTotal/grandTotal*100,true);
 
                 document.getElementById('kpi-segment2-label').innerText = "SA (Tabungan)";
                 if(isBillionFormat){document.getElementById('kpi-segment2').innerText=formatToBillion(saTotal);}else{animateNumber(document.getElementById('kpi-segment2'),saTotal);}
                 renderMoM('mom-seg2', saTotal, saTotalPrev, isBillionFormat, isNPF);
-                saPct = grandTotal ? ((saTotal/grandTotal)*100) : 0;
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-sa-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-sa-pct'),saPct,true);
+                animateNumber(document.getElementById('anim-sa-pct'),saTotal/grandTotal*100,true);
 
                 kpiFourthLabel.innerText = "Total TD";
                 kpiFourthSublabel.className = "text-slate-400 dark:text-slate-500 not-italic truncate";
                 if(isBillionFormat){ kpiFourthValue.innerText = formatToBillion(tdTotal); } else { animateNumber(kpiFourthValue, tdTotal); }
                 renderMoM('mom-fourth', tdTotal, tdTotalPrev, isBillionFormat, isNPF);
-                tdPct = grandTotal ? ((tdTotal/grandTotal)*100) : 0;
-                kpiFourthSublabel.innerText = `${tdPct.toFixed(1)}% dari total`;
+                kpiFourthSublabel.innerText = `${(tdTotal/grandTotal*100).toFixed(1)}% dari total`;
                 kpiFourthIcon.className = "fa-solid fa-coins";
 
             } else if (currentFileName === "haji.csv") {
@@ -1097,20 +1097,17 @@
                 renderMoM('mom-total', grandTotal, grandTotalPrev, false, isNPF);
 
                 const g1=groupLabels[0]; const g2=groupLabels[1];
-                const g1Pct=grandTotal?((groupTotals[g1]/grandTotal)*100):0;
-                const g2Pct=grandTotal?((groupTotals[g2]/grandTotal)*100):0;
-
                 document.getElementById('kpi-segment1-label').innerText=g1?`${g1}`:'Segment 1';
                 animateNumber(document.getElementById('kpi-segment1'), g1?groupTotals[g1]:0);
                 renderMoM('mom-seg1', g1?groupTotals[g1]:0, g1?groupTotalsPrev[g1]:0, false, isNPF);
                 document.getElementById('kpi-segment1-pct').innerHTML=`<span id="anim-g1-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g1-pct'),g1Pct,true);
+                animateNumber(document.getElementById('anim-g1-pct'),grandTotal?((groupTotals[g1]/grandTotal)*100):0,true);
 
                 document.getElementById('kpi-segment2-label').innerText=g2?`${g2}`:'Segment 2';
                 animateNumber(document.getElementById('kpi-segment2'), g2?groupTotals[g2]:0);
                 renderMoM('mom-seg2', g2?groupTotals[g2]:0, g2?groupTotalsPrev[g2]:0, false, isNPF);
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-g2-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g2-pct'),g2Pct,true);
+                animateNumber(document.getElementById('anim-g2-pct'),grandTotal?((groupTotals[g2]/grandTotal)*100):0,true);
 
                 kpiFourthLabel.innerText = "Last Month";
                 kpiFourthValue.innerText = formatNumber(prevMonthGrandTotal);
@@ -1161,20 +1158,17 @@
                 renderMoM('mom-total', grandTotal, grandTotalPrev, isBillionFormat, isNPF);
 
                 const g1=groupLabels[0]; const g2=groupLabels[1];
-                const g1Pct=grandTotal?((groupTotals[g1]/grandTotal)*100):0;
-                const g2Pct=grandTotal?((groupTotals[g2]/grandTotal)*100):0;
-
                 document.getElementById('kpi-segment1-label').innerText=g1?`${g1}`:'Segment 1';
                 if(isBillionFormat){document.getElementById('kpi-segment1').innerText=g1?formatToBillion(groupTotals[g1]):"0";}else{animateNumber(document.getElementById('kpi-segment1'),g1?groupTotals[g1]:0);}
                 renderMoM('mom-seg1', g1?groupTotals[g1]:0, g1?groupTotalsPrev[g1]:0, isBillionFormat, isNPF);
                 document.getElementById('kpi-segment1-pct').innerHTML=`<span id="anim-g1-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g1-pct'),g1Pct,true);
+                animateNumber(document.getElementById('anim-g1-pct'),grandTotal?((groupTotals[g1]/grandTotal)*100):0,true);
 
                 document.getElementById('kpi-segment2-label').innerText=g2?`${g2}`:'Segment 2';
                 if(isBillionFormat){document.getElementById('kpi-segment2').innerText=g2?formatToBillion(groupTotals[g2]):"0";}else{animateNumber(document.getElementById('kpi-segment2'),g2?groupTotals[g2]:0);}
                 renderMoM('mom-seg2', g2?groupTotals[g2]:0, g2?groupTotalsPrev[g2]:0, isBillionFormat, isNPF);
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-g2-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g2-pct'),g2Pct,true);
+                animateNumber(document.getElementById('anim-g2-pct'),grandTotal?((groupTotals[g2]/grandTotal)*100):0,true);
 
                 kpiFourthLabel.innerText = "Last Month";
                 kpiFourthValue.innerText = isBillionFormat ? formatToBillion(prevMonthGrandTotal) : formatNumber(prevMonthGrandTotal);
@@ -1190,27 +1184,23 @@
                 kpiFourthIcon.className = "fa-solid fa-trophy";
 
                 let totalLabelText = "Total Outstanding";
-                if(currentFileName==="pembiayaan.csv") totalLabelText="Total Booking";
                 document.getElementById('kpi-total-label').innerText = totalLabelText;
 
                 if(isBillionFormat){document.getElementById('kpi-total').innerText=formatToBillion(grandTotal);}else{animateNumber(document.getElementById('kpi-total'),grandTotal);}
                 renderMoM('mom-total', grandTotal, grandTotalPrev, isBillionFormat, isNPF);
 
                 const g1=groupLabels[0]; const g2=groupLabels[1];
-                const g1Pct=grandTotal?((groupTotals[g1]/grandTotal)*100):0;
-                const g2Pct=grandTotal?((groupTotals[g2]/grandTotal)*100):0;
-
                 document.getElementById('kpi-segment1-label').innerText=g1?`${g1}`:'Segment 1';
                 if(isBillionFormat){document.getElementById('kpi-segment1').innerText=g1?formatToBillion(groupTotals[g1]):"0";}else{animateNumber(document.getElementById('kpi-segment1'),g1?groupTotals[g1]:0);}
                 renderMoM('mom-seg1', g1?groupTotals[g1]:0, g1?groupTotalsPrev[g1]:0, isBillionFormat, isNPF);
                 document.getElementById('kpi-segment1-pct').innerHTML=`<span id="anim-g1-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g1-pct'),g1Pct,true);
+                animateNumber(document.getElementById('anim-g1-pct'),grandTotal?((groupTotals[g1]/grandTotal)*100):0,true);
 
                 document.getElementById('kpi-segment2-label').innerText=g2?`${g2}`:'Segment 2';
                 if(isBillionFormat){document.getElementById('kpi-segment2').innerText=g2?formatToBillion(groupTotals[g2]):"0";}else{animateNumber(document.getElementById('kpi-segment2'),g2?groupTotals[g2]:0);}
                 renderMoM('mom-seg2', g2?groupTotals[g2]:0, g2?groupTotalsPrev[g2]:0, isBillionFormat, isNPF);
                 document.getElementById('kpi-segment2-pct').innerHTML=`<span id="anim-g2-pct">0%</span> <span class="text-[8px] text-slate-400 dark:text-slate-500 font-normal">dari total</span>`;
-                animateNumber(document.getElementById('anim-g2-pct'),g2Pct,true);
+                animateNumber(document.getElementById('anim-g2-pct'),grandTotal?((groupTotals[g2]/grandTotal)*100):0,true);
 
                 let topProduct="-"; let maxVal=0;
                 for(const[prod,total]of Object.entries(productTotals)){if(total>maxVal){maxVal=total;topProduct=prod;}}
@@ -1267,7 +1257,6 @@
                 };
             });
 
-            // Tambahkan Total Line jika bukan mdin
             if (currentFileName !== "mdin.csv") {
                 const totalDataPoints=labels.map(month=>{
                     let sum=0;
@@ -1297,7 +1286,6 @@
                     responsive:true, maintainAspectRatio:false,
                     interaction:{ mode:'index', intersect:false },
                     plugins: {
-                        // GUNAKAN HELPER OUTLINE LEGEND DI SINI
                         legend: getOutlineLegendConfig('trendChart', isDark),
                         tooltip: {
                             callbacks: {
@@ -1321,39 +1309,29 @@
             });
         }
 
-        if (typeof window.customLegendState === 'undefined') window.customLegendState = {};
-
         function updateCompositionChart(){
             const ctx=document.getElementById('compositionChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
             
-            // Plugin Persentase Statis (tetap sama seperti sebelumnya)
-                        // Plugin Kustom: Menampilkan Persentase (%) secara statis di tengah slice
             const staticPercentPlugin = {
                 id: 'staticPercentPlugin',
                 afterDatasetsDraw(chart, args, options) {
                     const { ctx, data } = chart;
-                    const isDark = document.body.classList.contains('dark'); // Deteksi mode gelap
-                    
                     ctx.save();
                     
                     const meta = chart.getDatasetMeta(0);
-                    // Hitung total untuk persentase
                     const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
                     
                     if (!meta.data || meta.data.length === 0 || total === 0) return;
 
                     meta.data.forEach((element, index) => {
                         if (element.hidden) return;
-
                         const value = data.datasets[0].data[index];
                         if (value === 0) return;
 
-                        // Hitung persentase
                         const percentage = ((value / total) * 100).toFixed(1) + '%';
                         
-                        // Geometri posisi tengah slice
                         const { startAngle, endAngle, x, y, outerRadius, innerRadius } = element;
                         const angle = (startAngle + endAngle) / 2;
                         const midRadius = (outerRadius + innerRadius) / 2;
@@ -1361,35 +1339,27 @@
                         const textX = x + Math.cos(angle) * midRadius;
                         const textY = y + Math.sin(angle) * midRadius;
 
-                        // Cek lebar slice agar teks tidak bertumpuk
                         const sliceAngleDeg = (endAngle - startAngle) * (180 / Math.PI);
                         
-                        // Tampilkan hanya jika slice > 20 derajat (sedikit dinaikkan agar lebih aman)
                         if (sliceAngleDeg > 20) { 
-                            ctx.font = 'bold 11px Inter, sans-serif'; // Font sedikit diperbesar
+                            ctx.font = 'bold 11px Inter, sans-serif';
                             
-                            // PERBAIKAN WARNA DI SINI
                             if (isDark) {
-                                // MODE GELAP: Putih murni + Shadow hitam agar kontras maksimal
                                 ctx.fillStyle = '#ffffff';
                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
                                 ctx.shadowBlur = 4;
                                 ctx.shadowOffsetX = 1;
                                 ctx.shadowOffsetY = 1;
                             } else {
-                                // MODE TERANG: Hitam pekat + Shadow putih tipis
-                                ctx.fillStyle = '#0f172a'; // Slate-900 (hitam pekat)
+                                ctx.fillStyle = '#0f172a';
                                 ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
                                 ctx.shadowBlur = 3;
                             }
 
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            
-                            // Render teks persentase
                             ctx.fillText(percentage, textX, textY);
                             
-                            // Reset shadow setelah menggambar agar tidak mempengaruhi elemen lain
                             ctx.shadowColor = 'transparent';
                             ctx.shadowBlur = 0;
                             ctx.shadowOffsetX = 0;
@@ -1403,11 +1373,7 @@
             if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){
                 document.getElementById('dynamic-group-pct-labels').style.display = 'none';
                 const last4Months=monthColumns.slice(-4).reverse();
-                const dataValues=last4Months.map(month=>{
-                    let sum=0;
-                    filteredData.forEach(row=>{ sum+=(row[month]||0); });
-                    return sum;
-                });
+                const dataValues=last4Months.map(month=>{let sum=0;filteredData.forEach(row=>{sum+=(row[month]||0);});return sum;});
                 
                 if(charts.comp) charts.comp.destroy();
                 charts.comp=new Chart(ctx, {
@@ -1426,7 +1392,6 @@
                         maintainAspectRatio: false,
                         cutout: '70%',
                         plugins: {
-                            // GUNAKAN HELPER OUTLINE LEGEND DI SINI
                             legend: getOutlineLegendConfig('compChart', isDark),
                             tooltip: {
                                 callbacks: {
@@ -1443,13 +1408,7 @@
                 });
             } else {
                 document.getElementById('dynamic-group-pct-labels').style.display = 'grid';
-                const dataValues=distinctProducts.map(prod=>{
-                    let sum=0;
-                    filteredData.forEach(row=>{
-                        if(row.PRODUCT===prod) sum+=(row[lastMonth]||0);
-                    });
-                    return sum;
-                });
+                const dataValues=distinctProducts.map(prod=>{let sum=0;filteredData.forEach(row=>{if(row.PRODUCT===prod)sum+=(row[lastMonth]||0);});return sum;});
                 
                 if(charts.comp) charts.comp.destroy();
                 charts.comp=new Chart(ctx, {
@@ -1468,7 +1427,6 @@
                         maintainAspectRatio: false,
                         cutout: '70%',
                         plugins: {
-                            // GUNAKAN HELPER OUTLINE LEGEND DI SINI
                             legend: getOutlineLegendConfig('compChart', isDark),
                             tooltip: {
                                 callbacks: {
@@ -1486,75 +1444,52 @@
             }
         }
 
-        // State untuk mode NPF (default: worst)
-        let npfMode = { co: 'worst', branch: 'worst' };
-        window.setNpfMode = function(chartType, mode) {
-            npfMode[chartType] = mode;
-            
-            // Update UI Button Styles
-            const prefix = chartType === 'co' ? 'co' : 'branch';
-            const btnWorst = document.getElementById(`btn-npf-worst-${prefix}`);
-            const btnBest = document.getElementById(`btn-npf-best-${prefix}`);
-            
-            const activeClass = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
-            const inactiveClass = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
-            
-            if (mode === 'worst') {
-                btnWorst.className = activeClass;
-                btnBest.className = inactiveClass;
-            } else {
-                btnWorst.className = inactiveClass;
-                btnBest.className = activeClass;
-            }
-            
-            // Re-render chart yang bersangkutan
-            if (chartType === 'co') updateCoBranchChart();
-            else updateBranchChart();
-        }
-
         function updateCoBranchChart(){
             const ctx=document.getElementById('coBranchChart').getContext('2d');
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isDark = document.body.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#64748b';
+            
             const isNpfTab = currentFileName === 'coll.csv';
+            const isGeneralTab = ['financing.csv','funding.csv','haji.csv','qris.csv','mdin.csv'].includes(currentFileName);
             
-            // Elemen DOM
             const titleEl = document.getElementById('co-branch-title');
-            const toggleContainer = document.getElementById('npf-toggle-co');
+            const npfToggle = document.getElementById('npf-toggle-co');
+            const genToggle = document.getElementById('general-toggle-co');
             
-            // PERBAIKAN LOGIKA TAMPILAN HEADER
             if (isNpfTab) {
-                // Tab NPF: Sembunyikan JUDUL saja, TAMPILKAN toggle
                 if(titleEl) titleEl.style.display = 'none';
-                if(toggleContainer) toggleContainer.classList.remove('hidden');
+                if(npfToggle) npfToggle.classList.remove('hidden');
+                if(genToggle) genToggle.classList.add('hidden');
+                
+                const btnWorst = document.getElementById('btn-npf-worst-co');
+                const btnBest = document.getElementById('btn-npf-best-co');
+                const active = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                const inactive = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+                if(npfMode.co==='worst'){btnWorst.className=active;btnBest.className=inactive;}
+                else{btnWorst.className=inactive;btnBest.className=active;}
+                
+            } else if (isGeneralTab) {
+                if(titleEl) titleEl.style.display = 'none';
+                if(genToggle) genToggle.classList.remove('hidden');
+                if(npfToggle) npfToggle.classList.add('hidden');
+                
+                const btnTop = document.getElementById('btn-general-top-co');
+                const btnBottom = document.getElementById('btn-general-bottom-co');
+                const active = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                const inactive = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+                if(generalMode.co==='top'){btnTop.className=active;btnBottom.className=inactive;}
+                else{btnTop.className=inactive;btnBottom.className=active;}
+                
             } else {
-                // Tab Lain: Tampilkan JUDUL, SEMBUNYIKAN toggle
                 if(titleEl) {
                     titleEl.style.display = 'block';
                     titleEl.innerText = 'Top 5 CO-Branches';
                 }
-                if(toggleContainer) toggleContainer.classList.add('hidden');
+                if(npfToggle) npfToggle.classList.add('hidden');
+                if(genToggle) genToggle.classList.add('hidden');
             }
 
-            // Update State Tombol Toggle (Visual Active/Inactive)
-            if (isNpfTab && toggleContainer) {
-                const btnWorst = document.getElementById('btn-npf-worst-co');
-                const btnBest = document.getElementById('btn-npf-best-co');
-                
-                const activeClass = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
-                const inactiveClass = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
-
-                if (npfMode.co === 'worst') {
-                    btnWorst.className = activeClass;
-                    btnBest.className = inactiveClass;
-                } else {
-                    btnWorst.className = inactiveClass;
-                    btnBest.className = activeClass;
-                }
-            }            
-
-            // 1. Hitung Total per CO-Branch
             const totalCoBranchMap={};
             filteredData.forEach(row=>{
                 const coBranch=row['CO-BRANCH-CLEAN'];
@@ -1564,24 +1499,17 @@
                 }
             });
 
-            // LOGIKA SORTING DINAMIS
             let sortedEntries;
             if (isNpfTab) {
-                if (npfMode.co === 'worst') {
-                    // Worst = Nilai Tertinggi (Descending)
-                    sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-                } else {
-                    // Best = Nilai Terendah (Ascending)
-                    sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => a[1] - b[1]).slice(0, 5);
-                }
+                sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => npfMode.co === 'worst' ? b[1]-a[1] : a[1]-b[1]).slice(0, 5);
+            } else if (isGeneralTab) {
+                sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => generalMode.co === 'top' ? b[1]-a[1] : a[1]-b[1]).slice(0, 5);
             } else {
-                // Default Top 5 (Descending)
-                sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                sortedEntries = Object.entries(totalCoBranchMap).sort((a,b) => b[1]-a[1]).slice(0, 5);
             }
             
             const top5CoBranchNames = sortedEntries.map(entry => entry[0]);
             
-            // 2. Siapkan Dataset Breakdown
             const datasetBreakdown=distinctProducts.map(prod=>{
                 return {
                     label: prod==="Sme" ? "SME" : prod.replace(/_/g,' '),
@@ -1606,13 +1534,7 @@
                     indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false,
                     plugins: {
                         legend: getOutlineLegendConfig('coBranchChart', isDark),
-                        tooltip: {
-                            callbacks: {
-                                label: function(context){
-                                    return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);
-                                }
-                            }
-                        }
+                        tooltip: { callbacks: { label: function(c){ return c.dataset.label+': '+formatChartValue(c.raw, currentFileName); } } }
                     },
                     scales: {
                         x: { stacked:true, display:false, grid:{display:false} },
@@ -1631,26 +1553,20 @@
                         const labelsCount=chart.data.labels.length;
                         for(let i=0;i<labelsCount;i++){
                             let totalBarValue=0;
-                            chart.data.datasets.forEach((dataset,datasetIdx)=>{
-                                if(chart.isDatasetVisible(datasetIdx)) totalBarValue+=dataset.data[i];
-                            });
+                            chart.data.datasets.forEach((ds,di)=>{ if(chart.isDatasetVisible(di)) totalBarValue+=ds.data[i]; });
                             if(totalBarValue===0) continue;
                             
-                            chart.data.datasets.forEach((dataset,datasetIdx)=>{
-                                if(chart.isDatasetVisible(datasetIdx)){
-                                    const element=chart.getDatasetMeta(datasetIdx).data[i];
-                                    const val=dataset.data[i];
-                                    if(element && val>0){
-                                        let displayText='';
-                                        if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){
-                                            displayText=formatNumber(val);
-                                        } else {
-                                            displayText=((val/totalBarValue)*100).toFixed(0)+'%';
-                                        }
-                                        const width=Math.abs(element.x-element.base);
-                                        const centerX=element.base+((element.x-element.base)/2);
-                                        const centerY=element.y;
-                                        if(width>12) ctx.fillText(displayText,centerX,centerY);
+                            chart.data.datasets.forEach((ds,di)=>{
+                                if(chart.isDatasetVisible(di)){
+                                    const el=chart.getDatasetMeta(di).data[i];
+                                    const val=ds.data[i];
+                                    if(el && val>0){
+                                        let txt = (currentFileName==="mdin.csv" || currentFileName==="qris.csv") 
+                                            ? formatNumber(val) 
+                                            : ((val/totalBarValue)*100).toFixed(0)+'%';
+                                        const w=Math.abs(el.x-el.base);
+                                        const cx=el.base+((el.x-el.base)/2);
+                                        if(w>12) ctx.fillText(txt,cx,el.y);
                                     }
                                 }
                             });
@@ -1661,149 +1577,138 @@
             });
         }
 
-    function updateBranchChart(){
-        const ctx=document.getElementById('branchChart').getContext('2d');
-        const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
-        const isDark = document.body.classList.contains('dark');
-        const textColor = isDark ? '#94a3b8' : '#64748b';
-        const isNpfTab = currentFileName === 'coll.csv';
-
-        // Elemen DOM
-        const titleEl = document.getElementById('branch-title');
-        const toggleContainer = document.getElementById('npf-toggle-branch');
-
-        // PERBAIKAN LOGIKA TAMPILAN HEADER
-        if (isNpfTab) {
-            // Tab NPF: Sembunyikan JUDUL saja, TAMPILKAN toggle
-            if(titleEl) titleEl.style.display = 'none';
-            if(toggleContainer) toggleContainer.classList.remove('hidden');
-        } else {
-            // Tab Lain: Tampilkan JUDUL, SEMBUNYIKAN toggle
-            if(titleEl) {
-                titleEl.style.display = 'block';
-                titleEl.innerText = 'Top 5 Branches';
-            }
-            if(toggleContainer) toggleContainer.classList.add('hidden');
-        }
-        
-        // Update State Tombol Toggle
-        if (isNpfTab && toggleContainer) {
-            const btnWorst = document.getElementById('btn-npf-worst-branch');
-            const btnBest = document.getElementById('btn-npf-best-branch');
+        function updateBranchChart(){
+            const ctx=document.getElementById('branchChart').getContext('2d');
+            const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
+            const isDark = document.body.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b';
             
-            const activeClass = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
-            const inactiveClass = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
-
-            if (npfMode.branch === 'worst') {
-                btnWorst.className = activeClass;
-                btnBest.className = inactiveClass;
-            } else {
-                btnWorst.className = inactiveClass;
-                btnBest.className = activeClass;
-            }
-        }
-
-        const totalOfficeMap={};
-        filteredData.forEach(row=>{
-            const office=row['OFFICE-CLEAN'];
-            if(office){
-                if(!totalOfficeMap[office]) totalOfficeMap[office]=0;
-                totalOfficeMap[office]+=(row[lastMonth]||0);
-            }
-        });
-
-        // LOGIKA SORTING DINAMIS
-        let sortedEntries;
-        if (isNpfTab) {
-            if (npfMode.branch === 'worst') {
-                sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            } else {
-                sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => a[1] - b[1]).slice(0, 5);
-            }
-        } else {
-            sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-        }
-        
-        const top5OfficeNames = sortedEntries.map(entry => entry[0]);
-        
-        const datasetBreakdown=distinctProducts.map(prod=>{
-            return {
-                label: prod==="Sme" ? "SME" : prod.replace(/_/g,' '),
-                data: top5OfficeNames.map(officeName=>{
-                    let totalProd=0;
-                    filteredData.forEach(row=>{
-                        if(row['OFFICE-CLEAN']===officeName && row.PRODUCT===prod) totalProd+=(row[lastMonth]||0);
-                    });
-                    return totalProd;
-                }),
-                backgroundColor: productColors[prod],
-                barThickness: window.innerWidth<768 ? 10 : 14
-            };
-        });
-
-        if(charts.branch) charts.branch.destroy();
+            const isNpfTab = currentFileName === 'coll.csv';
+            const isGeneralTab = ['financing.csv','funding.csv','haji.csv','qris.csv','mdin.csv'].includes(currentFileName);
+            
+            const titleEl = document.getElementById('branch-title');
+            const npfToggle = document.getElementById('npf-toggle-branch');
+            const genToggle = document.getElementById('general-toggle-branch');
+            
+            if (isNpfTab) {
+                if(titleEl) titleEl.style.display = 'none';
+                if(npfToggle) npfToggle.classList.remove('hidden');
+                if(genToggle) genToggle.classList.add('hidden');
                 
-        charts.branch=new Chart(ctx, {
-            type:'bar',
-            data: { labels: top5OfficeNames, datasets: datasetBreakdown },
-            options: {
-                indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false,
-                plugins: {
-                    legend: getOutlineLegendConfig('branchChart', isDark),
-                    tooltip: {
-                        callbacks: {
-                            label: function(context){
-                                return context.dataset.label+': '+formatChartValue(context.raw, currentFileName);
-                            }
-                        }
+                const btnWorst = document.getElementById('btn-npf-worst-branch');
+                const btnBest = document.getElementById('btn-npf-best-branch');
+                const active = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                const inactive = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+                if(npfMode.branch==='worst'){btnWorst.className=active;btnBest.className=inactive;}
+                else{btnWorst.className=inactive;btnBest.className=active;}
+                
+            } else if (isGeneralTab) {
+                if(titleEl) titleEl.style.display = 'none';
+                if(genToggle) genToggle.classList.remove('hidden');
+                if(npfToggle) npfToggle.classList.add('hidden');
+                
+                const btnTop = document.getElementById('btn-general-top-branch');
+                const btnBottom = document.getElementById('btn-general-bottom-branch');
+                const active = "px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all";
+                const inactive = "px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all";
+                if(generalMode.branch==='top'){btnTop.className=active;btnBottom.className=inactive;}
+                else{btnTop.className=inactive;btnBottom.className=active;}
+                
+            } else {
+                if(titleEl) {
+                    titleEl.style.display = 'block';
+                    titleEl.innerText = 'Top 5 Branches';
+                }
+                if(npfToggle) npfToggle.classList.add('hidden');
+                if(genToggle) genToggle.classList.add('hidden');
+            }
+
+            const totalOfficeMap={};
+            filteredData.forEach(row=>{
+                const office=row['OFFICE-CLEAN'];
+                if(office){
+                    if(!totalOfficeMap[office]) totalOfficeMap[office]=0;
+                    totalOfficeMap[office]+=(row[lastMonth]||0);
+                }
+            });
+
+            let sortedEntries;
+            if (isNpfTab) {
+                sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => npfMode.branch === 'worst' ? b[1]-a[1] : a[1]-b[1]).slice(0, 5);
+            } else if (isGeneralTab) {
+                sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => generalMode.branch === 'top' ? b[1]-a[1] : a[1]-b[1]).slice(0, 5);
+            } else {
+                sortedEntries = Object.entries(totalOfficeMap).sort((a,b) => b[1]-a[1]).slice(0, 5);
+            }
+            
+            const top5OfficeNames = sortedEntries.map(entry => entry[0]);
+            
+            const datasetBreakdown=distinctProducts.map(prod=>{
+                return {
+                    label: prod==="Sme" ? "SME" : prod.replace(/_/g,' '),
+                    data: top5OfficeNames.map(officeName=>{
+                        let totalProd=0;
+                        filteredData.forEach(row=>{
+                            if(row['OFFICE-CLEAN']===officeName && row.PRODUCT===prod) totalProd+=(row[lastMonth]||0);
+                        });
+                        return totalProd;
+                    }),
+                    backgroundColor: productColors[prod],
+                    barThickness: window.innerWidth<768 ? 10 : 14
+                };
+            });
+
+            if(charts.branch) charts.branch.destroy();
+            
+            charts.branch=new Chart(ctx, {
+                type:'bar',
+                data: { labels: top5OfficeNames, datasets: datasetBreakdown },
+                options: {
+                    indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false,
+                    plugins: {
+                        legend: getOutlineLegendConfig('branchChart', isDark),
+                        tooltip: { callbacks: { label: function(c){ return c.dataset.label+': '+formatChartValue(c.raw, currentFileName); } } }
+                    },
+                    scales: {
+                        x: { stacked:true, display:false, grid:{display:false} },
+                        y: { stacked:true, grid:{display:false}, ticks:{font:{size:9}, color: textColor} }
                     }
                 },
-                scales: {
-                    x: { stacked:true, display:false, grid:{display:false} },
-                    y: { stacked:true, grid:{display:false}, ticks:{font:{size:9}, color: textColor} }
-                }
-            },
-            plugins: [{
-                id:'internal_bar_labels_instant',
-                afterDatasetsDraw(chart){
-                    const {ctx}=chart;
-                    ctx.save();
-                    ctx.font='bold 9px Inter, sans-serif';
-                    ctx.fillStyle='#ffffff';
-                    ctx.textAlign='center';
-                    ctx.textBaseline='middle';
-                    const labelsCount=chart.data.labels.length;
-                    for(let i=0;i<labelsCount;i++){
-                        let totalBarValue=0;
-                        chart.data.datasets.forEach((dataset,datasetIdx)=>{
-                            if(chart.isDatasetVisible(datasetIdx)) totalBarValue+=dataset.data[i];
-                        });
-                        if(totalBarValue===0) continue;
-                        
-                        chart.data.datasets.forEach((dataset,datasetIdx)=>{
-                            if(chart.isDatasetVisible(datasetIdx)){
-                                const element=chart.getDatasetMeta(datasetIdx).data[i];
-                                const val=dataset.data[i];
-                                if(element && val>0){
-                                    let displayText='';
-                                    if(currentFileName==="mdin.csv" || currentFileName==="qris.csv"){
-                                        displayText=formatNumber(val);
-                                    } else {
-                                        displayText=((val/totalBarValue)*100).toFixed(0)+'%';
+                plugins: [{
+                    id:'internal_bar_labels_instant',
+                    afterDatasetsDraw(chart){
+                        const {ctx}=chart;
+                        ctx.save();
+                        ctx.font='bold 9px Inter, sans-serif';
+                        ctx.fillStyle='#ffffff';
+                        ctx.textAlign='center';
+                        ctx.textBaseline='middle';
+                        const labelsCount=chart.data.labels.length;
+                        for(let i=0;i<labelsCount;i++){
+                            let totalBarValue=0;
+                            chart.data.datasets.forEach((ds,di)=>{ if(chart.isDatasetVisible(di)) totalBarValue+=ds.data[i]; });
+                            if(totalBarValue===0) continue;
+                            
+                            chart.data.datasets.forEach((ds,di)=>{
+                                if(chart.isDatasetVisible(di)){
+                                    const el=chart.getDatasetMeta(di).data[i];
+                                    const val=ds.data[i];
+                                    if(el && val>0){
+                                        let txt = (currentFileName==="mdin.csv" || currentFileName==="qris.csv") 
+                                            ? formatNumber(val) 
+                                            : ((val/totalBarValue)*100).toFixed(0)+'%';
+                                        const w=Math.abs(el.x-el.base);
+                                        const cx=el.base+((el.x-el.base)/2);
+                                        if(w>12) ctx.fillText(txt,cx,el.y);
                                     }
-                                    const width=Math.abs(element.x-element.base);
-                                    const centerX=element.base+((element.x-element.base)/2);
-                                    const centerY=element.y;
-                                    if(width>12) ctx.fillText(displayText,centerX,centerY);
                                 }
-                            }
-                        });
+                            });
+                        }
+                        ctx.restore();
                     }
-                    ctx.restore();
-                }
-            }]
-        });
-    }
+                }]
+            });
+        }
 
         function updateTable(){
             const tbody=document.getElementById('data-table-body'); tbody.innerHTML='';
@@ -1820,14 +1725,12 @@
                     let displayVal=item[prod]||0;
                     if(isBillionFormat){displayVal=formatToBillion(displayVal);}
                     else{displayVal=formatNumber(displayVal);}
-                    // PERUBAHAN: Mengubah text-right menjadi text-center untuk angka produk
                     productCellsHtml+=`<td class="px-2 py-2 text-center font-mono text-[9px] md:text-[10px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;
                 });
                 let totalDisplay=item.total;
                 if(isBillionFormat){totalDisplay=formatToBillion(totalDisplay);}
                 else{totalDisplay=formatNumber(totalDisplay);}
                 
-                // PERUBAHAN: Mengubah text-right menjadi text-center untuk total amount
                 tr.innerHTML=`<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-center font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs">${totalDisplay}</td>`;
                 fragment.appendChild(tr);
             });
