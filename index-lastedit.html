@@ -20,11 +20,11 @@
                 extend: {
                     colors: {
                         dark: {
-                            bg: '#0f172a', // Slate 900
-                            card: '#1e293b', // Slate 800
-                            border: '#334155', // Slate 700
-                            text: '#f1f5f9', // Slate 100
-                            subtext: '#94a3b8' // Slate 400
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            text: '#f1f5f9',
+                            subtext: '#94a3b8'
                         }
                     }
                 }
@@ -33,13 +33,27 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            transition: background-color 0.3s, color 0.3s; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        input, select, textarea {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
         
-        /* Light Mode Defaults */
         body.light { background-color: #f8fafc; color: #1e293b; }
         .light .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
         
-        /* Dark Mode Overrides */
         body.dark { background-color: #0f172a; color: #f1f5f9; }
         .dark .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
         .dark input, .dark select { background-color: #1e293b; border-color: #334155; color: #f1f5f9; }
@@ -66,7 +80,6 @@
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Desktop Collapse Logic */
         @media (min-width: 768px) {
             .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             .collapsed .nav-text, 
@@ -84,8 +97,6 @@
                 min-width: 110px !important; max-width: 130px !important;
             }
             #main-content { overflow-y: auto !important; }
-            
-            /* Compact Mobile Styles */
             .mobile-compact-p { padding: 0.5rem !important; }
             .mobile-compact-text { font-size: 0.75rem !important; line-height: 1rem !important; }
         }
@@ -104,38 +115,32 @@
             transition: all 0.3s ease;
         }
         
-        /* Positive (Green) */
         .bg-mom-positive { background-color: #dcfce7; color: #166534; }
         .dark .bg-mom-positive { background-color: #14532d; color: #bbf7d0; }
         
-        /* Negative (Red) */
         .bg-mom-negative { background-color: #fee2e2; color: #991b1b; }
         .dark .bg-mom-negative { background-color: #7f1d1d; color: #fecaca; }
         
-        /* Neutral */
         .bg-mom-neutral { background-color: #f1f5f9; color: #475569; }
         .dark .bg-mom-neutral { background-color: #334155; color: #cbd5e1; }
 
-        /* Legend Text Fix - Memaksa Warna Terang di Dark Mode */
+        /* Legend Text Fix */
         .chartjs-legend li span,
         canvas + div ul li span {
             text-decoration: none !important;
             border-bottom: none !important;
             text-decoration-line: none !important;
             -webkit-text-decoration: none !important;
-            
-            /* Default Light Mode */
             color: #1e293b !important; 
         }
 
-        /* Override Khusus Dark Mode */
         body.dark .chartjs-legend li span,
         body.dark canvas + div ul li span {
-            color: #f1f5f9 !important; /* Slate-100: Putih Terang */
+            color: #f1f5f9 !important;
         }
     </style>
 </head>
-<body class="light h-screen h-[100dvh] flex overflow-hidden relative">
+<body class="light h-screen h-[100dvh] flex overflow-hidden relative" oncontextmenu="return false;" onkeydown="return blockShortcuts(event);" ondragstart="return false;">
 
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex items-center justify-center p-4">
@@ -339,19 +344,21 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
-                    <!-- Top 5 CO-Branches -->
+                    <!-- Top 5 CO-Branches (KIRI) -->
                     <div class="bg-white dark:bg-dark-card rounded-xl p-3 md:p-5 card-shadow transition-colors duration-300">
                         <div id="co-branch-header" class="flex justify-between items-center mb-2 min-h-[24px]">
                             <h3 class="font-semibold text-xs md:text-sm text-slate-700 dark:text-slate-200" id="co-branch-title">Top 5 CO-Branches</h3>
                             
-                            <!-- Toggle NPF -->
-                            <div id="npf-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                            <!-- Toggle NPF (KIRI) -->
+                            <div id="npf-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5 items-center gap-2">
+                                <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Co-Branch</span>
                                 <button onclick="setNpfMode('co', 'worst')" id="btn-npf-worst-co" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
                                 <button onclick="setNpfMode('co', 'best')" id="btn-npf-best-co" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
                             </div>
 
-                            <!-- Toggle General (Top/Bottom) -->
-                            <div id="general-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                            <!-- Toggle General Top/Bottom (KIRI) -->
+                            <div id="general-toggle-co" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5 items-center gap-2">
+                                <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Co-Branch</span>
                                 <button onclick="setGeneralMode('co', 'top')" id="btn-general-top-co" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Top</button>
                                 <button onclick="setGeneralMode('co', 'bottom')" id="btn-general-bottom-co" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Bottom</button>
                             </div>
@@ -362,19 +369,21 @@
                         </div>
                     </div>
 
-                    <!-- Top 5 Branches -->
+                    <!-- Top 5 Branches (KANAN) -->
                     <div class="bg-white dark:bg-dark-card rounded-xl p-3 md:p-5 card-shadow transition-colors duration-300">
                         <div id="branch-header" class="flex justify-between items-center mb-2 min-h-[24px]">
                             <h3 class="font-semibold text-xs md:text-sm text-slate-700 dark:text-slate-200" id="branch-title">Top 5 Branches</h3>
                             
-                            <!-- Toggle NPF -->
-                            <div id="npf-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                            <!-- Toggle NPF (KANAN) -->
+                            <div id="npf-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5 items-center gap-2">
+                                <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Branch</span>
                                 <button onclick="setNpfMode('branch', 'worst')" id="btn-npf-worst-branch" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Worst</button>
                                 <button onclick="setNpfMode('branch', 'best')" id="btn-npf-best-branch" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Best</button>
                             </div>
 
-                            <!-- Toggle General (Top/Bottom) -->
-                            <div id="general-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5">
+                            <!-- Toggle General Top/Bottom (KANAN) -->
+                            <div id="general-toggle-branch" class="hidden inline-flex rounded-md shadow-sm bg-slate-100 dark:bg-slate-700 p-0.5 items-center gap-2">
+                                <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Branch</span>
                                 <button onclick="setGeneralMode('branch', 'top')" id="btn-general-top-branch" class="px-2 py-0.5 text-[10px] font-medium text-white bg-indigo-600 rounded transition-all">Top</button>
                                 <button onclick="setGeneralMode('branch', 'bottom')" id="btn-general-bottom-branch" class="px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 rounded hover:bg-white dark:hover:bg-slate-600 transition-all">Bottom</button>
                             </div>
@@ -408,6 +417,28 @@
     </div>
 
     <script>
+        // ==========================================
+        // PROTEKSI KEAMANAN DASAR
+        // ==========================================
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        function blockShortcuts(e) {
+            if (e.keyCode === 123) return false; // F12
+            if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false; // Ctrl+Shift+I/J/C
+            if (e.ctrlKey && e.keyCode === 85) return false; // Ctrl+U
+            if (e.ctrlKey && e.keyCode === 83) return false; // Ctrl+S
+        }
+
+        setInterval(function() {
+            const widthThreshold = window.outerWidth - window.innerWidth > 160;
+            const heightThreshold = window.outerHeight - window.innerHeight > 160;
+            if (widthThreshold || heightThreshold) console.clear();
+        }, 1000);
+
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.tagName === 'IMG') e.preventDefault();
+        });
+
         // ==========================================
         // KONFIGURASI PASSWORD & TEMA
         // ==========================================
@@ -516,7 +547,6 @@
             if (!window.customLegendStates[chartId]) window.customLegendStates[chartId] = {};
             const state = window.customLegendStates[chartId];
 
-            // Tentukan warna teks berdasarkan tema
             const legendTextColor = isDark ? '#f1f5f9' : '#1e293b'; 
 
             return {
@@ -526,10 +556,7 @@
                     pointStyle: 'circle',
                     padding: window.innerWidth < 768 ? 12 : 20,
                     boxWidth: 10,
-                    
-                    // PERBAIKAN UTAMA DI SINI
                     color: legendTextColor, 
-                    
                     font: { size: window.innerWidth < 768 ? 10 : 11, weight: '500' },
                     generateLabels: function(chart) {
                         const data = chart.data;
@@ -556,7 +583,6 @@
                                     lineWidth: 3,
                                     hidden: false,
                                     datasetIndex: 0,
-                                    // Pastikan teks label juga mewarisi warna yang benar
                                     fontColor: legendTextColor 
                                 };
                             });
@@ -709,6 +735,12 @@
         function switchCSVTab(index) {
             if(index === currentActiveFileIndex) return;
             
+            const currentFilters = {};
+            filterColumns.forEach(col => {
+                const el = document.getElementById(`filter-${col}`);
+                if(el && el.value !== "ALL") currentFilters[col] = el.value;
+            });
+
             const activeClass = 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20';
             const inactiveClass = 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600';
 
@@ -717,11 +749,11 @@
             
             currentActiveFileIndex = index;
             document.getElementById('loading').style.display = 'flex';
-            resetFilters(); 
-            loadSelectedCSV(index);
+            
+            loadSelectedCSV(index, currentFilters);
         }
 
-        function loadSelectedCSV(index) {
+        function loadSelectedCSV(index, preservedFilters = {}) {
             const targetFile = csvFilesConfig[index];
             document.getElementById('dashboard-main-title').innerText = `${targetFile.name.split(' / ')[0]} Dashboard`;
             Papa.parse(targetFile.file, {
@@ -737,7 +769,7 @@
                             buildDynamicTableHeader();
                         }
                         processData();
-                        initFilters();
+                        initFilters(preservedFilters);
                         updateDashboard();
                     } catch (e) {
                         console.error("Error processing data:", e);
@@ -849,7 +881,7 @@
             filteredData = [...rawData];
         }
 
-        function initFilters() {
+        function initFilters(preservedFilters = {}) {
             const container = document.getElementById('filter-container');
             container.innerHTML = '';
             filterColumns.forEach(col => {
@@ -866,10 +898,32 @@
                 select.addEventListener('change', () => { handleFilterChange(); if(window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebar-backdrop').classList.add('hidden'); document.body.style.overflow = ''; }});
                 wrapper.appendChild(label); wrapper.appendChild(select); container.appendChild(wrapper);
             });
+
             populateFilterOptions('CO-BRANCH', rawData);
             populateFilterOptions('OFFICE', rawData);
             populateFilterOptions('PRODUCT', rawData);
             populateFilterOptions('GROUP', rawData);
+
+            if (Object.keys(preservedFilters).length > 0) {
+                const colsToApply = ['CO-BRANCH', 'OFFICE', 'PRODUCT', 'GROUP'];
+                let tempData = rawData;
+
+                colsToApply.forEach(col => {
+                    const savedVal = preservedFilters[col];
+                    if (savedVal && savedVal !== "ALL") {
+                        const select = document.getElementById(`filter-${col}`);
+                        const options = Array.from(select.options).map(opt => opt.value);
+                        
+                        if (options.includes(savedVal)) {
+                            select.value = savedVal;
+                            const displayColumn = col === 'CO-BRANCH' ? 'CO-BRANCH-CLEAN' : col === 'OFFICE' ? 'OFFICE-CLEAN' : col;
+                            tempData = tempData.filter(row => row[displayColumn] === savedVal);
+                        }
+                    }
+                });
+                
+                applyFilters();
+            }
         }
 
         function populateFilterOptions(column, dataSource) {
@@ -879,7 +933,7 @@
             const uniqueValues = [...new Set(dataSource.map(item => item[displayColumn]))].filter(Boolean).sort();
             while (select.options.length > 1) { select.remove(1); }
             uniqueValues.forEach(val => { const opt = document.createElement('option'); opt.value = val; opt.innerText = val === "Sme" ? "SME" : val; select.appendChild(opt); });
-            if (uniqueValues.includes(currentValue)) { select.value = currentValue; } else { select.value = "ALL"; }
+            if (uniqueValues.includes(currentValue)) { select.value = currentValue; } 
         }
 
         function handleFilterChange() {
@@ -1737,19 +1791,24 @@
             const currentFileName=csvFilesConfig[currentActiveFileIndex].file;
             const isBillionFormat=['financing.csv','funding.csv','coll.csv'].includes(currentFileName);
             sortedOffices.forEach((item)=>{
-                const tr=document.createElement('tr'); tr.className="bg-white dark:bg-dark-card border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors";
+                const tr=document.createElement('tr'); 
+                // PERUBAHAN: text-[10px] md:text-sm diubah menjadi text-xs md:text-base
+                tr.className="bg-white dark:bg-dark-card border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-xs md:text-base";
+                
                 let productCellsHtml='';
                 distinctProducts.forEach(prod=>{
                     let displayVal=item[prod]||0;
                     if(isBillionFormat){displayVal=formatToBillion(displayVal);}
                     else{displayVal=formatNumber(displayVal);}
-                    productCellsHtml+=`<td class="px-2 py-2 text-center font-mono text-[9px] md:text-[10px] max-w-[80px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;
+                    // PERUBAHAN: text-[9px] md:text-[10px] diubah menjadi text-xs md:text-sm
+                    productCellsHtml+=`<td class="px-2 py-3 text-center font-mono text-xs md:text-sm max-w-[100px] truncate" style="color: ${productColors[prod]};">${displayVal}</td>`;
                 });
                 let totalDisplay=item.total;
                 if(isBillionFormat){totalDisplay=formatToBillion(totalDisplay);}
                 else{totalDisplay=formatNumber(totalDisplay);}
                 
-                tr.innerHTML=`<td class="px-3 py-2 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-[10px] md:text-xs">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-2 text-center font-mono font-bold text-slate-800 dark:text-white text-[10px] md:text-xs">${totalDisplay}</td>`;
+                // PERUBAHAN: text-[10px] md:text-xs diubah menjadi text-xs md:text-sm
+                tr.innerHTML=`<td class="px-3 py-3 font-medium sticky-column"><span class="text-slate-700 dark:text-slate-200 font-semibold text-xs md:text-sm">${item.name}</span></td>${productCellsHtml}<td class="px-3 py-3 text-center font-mono font-bold text-slate-800 dark:text-white text-xs md:text-sm">${totalDisplay}</td>`;
                 fragment.appendChild(tr);
             });
             tbody.appendChild(fragment);
